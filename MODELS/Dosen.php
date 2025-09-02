@@ -1,9 +1,7 @@
 <?php
 namespace MODEL;
 
-class Dosen{
-    private $username; 
-    private $password;
+class Dosen extends Akun{
     private $npk;
     private $foto_extention;
 
@@ -17,21 +15,13 @@ class Dosen{
      * @param int $angkatan Menyimpan tahun angkatan Dosen
      * @param string $foto_extention Menyimpan ???????? (opo iki)
      */
-    public function __construct($username, $password, $npk,$foto_extention) {
-        $this->setUsername($username);
-        $this->setPassword($password);
+    public function __construct($username, $nama, $password, $npk,$foto_extention){
+        parent::__construct($username,$nama,$password,"DOSEN");
         $this->setNPK($npk);
         $this->setFotoExtention($foto_extention);
     }
 
     // --- Getters ---
-    /**
-     * Memberikan nilai username
-     * @return string 
-     */
-    public function getUsername() {
-        return $this->username;
-    }
 
     /**
      * Memberikan nilai kode npk Dosen
@@ -50,23 +40,6 @@ class Dosen{
     }
 
     // --- Setters ---
-
-    /**
-     * Menyimpan nilali username kedalam class
-     * @param string $username
-     */
-    public function setUsername($username) {
-        $this->username = $username;
-    }
-
-    /**
-     * Menyimpan nilai password kedalam class
-     * @param string $password
-     */
-    public function setPassword($password) {
-        $this->password = $password;
-    }
-
     /**
      * Menyimpan nilai npk kedalam class
      * @param string $npk

@@ -1,9 +1,9 @@
 <?php
+
 namespace MODEL;
 
-class Mahasiswa{
-    private $username; 
-    private $password;
+class Mahasiswa extends Akun
+{
     private $nrp;
     private $tanggal_lahir;
     private $gender;
@@ -20,9 +20,9 @@ class Mahasiswa{
      * @param int $angkatan Menyimpan tahun angkatan mahasiswa
      * @param string $foto_extention Menyimpan ???????? (opo iki)
      */
-    public function __construct($username, $password, $nrp, $tanggal_lahir,$gender, $angkatan, $foto_extention) {
-        $this->setUsername($username);
-        $this->setPassword($password);
+    public function __construct($username, $nama, $password, $nrp, $tanggal_lahir, $gender, $angkatan, $foto_extention)
+    {
+        parent::__construct($username,$nama, $password, "MAHASISWA");
         $this->setNRP($nrp);
         $this->setTanggalLahir($tanggal_lahir);
         $this->setGender($gender);
@@ -31,19 +31,13 @@ class Mahasiswa{
     }
 
     // --- Getters ---
-    /**
-     * Memberikan nilai username
-     * @return string 
-     */
-    public function getUsername() {
-        return $this->username;
-    }
 
     /**
      * Memberikan nilai kode NRP mahasiswa
      * @return string 
      */
-    public function getNRP() {
+    public function getNRP()
+    {
         return $this->nrp;
     }
 
@@ -51,7 +45,8 @@ class Mahasiswa{
      * Memberikan nilai tanggal lahir mahasiswa
      * @return string 
      */
-    public function getTanggalLahir() {
+    public function getTanggalLahir()
+    {
         return $this->tanggal_lahir;
     }
 
@@ -59,7 +54,8 @@ class Mahasiswa{
      * Memberikan nilai tahun angkatan mahasiswa
      * @return int 
      */
-    public function getAngkatan() {
+    public function getAngkatan()
+    {
         return $this->angkatan;
     }
 
@@ -67,41 +63,27 @@ class Mahasiswa{
      * apakah maksudnya yang ini ga tau aku. (NOTES: ditanyakan!!!!)
      * @return string 
      */
-    public function getFotoExtention() {
+    public function getFotoExtention()
+    {
         return $this->foto_extention;
     }
     /**
      * Memberikan gender mahasaiswa
      * @return string 
      */
-    public function getGender() {
+    public function getGender()
+    {
         return $this->gender;
     }
 
 
     // --- Setters ---
-
-    /**
-     * Menyimpan nilali username kedalam class
-     * @param string $username
-     */
-    public function setUsername($username) {
-        $this->username = $username;
-    }
-
-    /**
-     * Menyimpan nilai password kedalam class
-     * @param string $password
-     */
-    public function setPassword($password) {
-        $this->password = $password;
-    }
-
     /**
      * Menyimpan nilai nrp kedalam class
      * @param string $nrp
      */
-    public function setNRP($nrp) {
+    public function setNRP($nrp)
+    {
         $this->nrp = $nrp;
     }
 
@@ -109,7 +91,8 @@ class Mahasiswa{
      * Menyimpan tanggal lahir kedalam class
      * @param string $tanggal_lahir
      */
-    public function setTanggalLahir($tanggal_lahir) {
+    public function setTanggalLahir($tanggal_lahir)
+    {
         $this->tanggal_lahir = $tanggal_lahir;
     }
 
@@ -117,7 +100,8 @@ class Mahasiswa{
      * Menyimpan tahun angkatan kedalam class
      * @param int $angkatan
      */
-    public function setAngkatan($angkatan) {
+    public function setAngkatan($angkatan)
+    {
         $this->angkatan = $angkatan;
     }
 
@@ -125,7 +109,8 @@ class Mahasiswa{
      * Menyimpan ??? kedalam class
      * @param string $foto_extention
      */
-    public function setFotoExtention($foto_extention) {
+    public function setFotoExtention($foto_extention)
+    {
         $this->foto_extention = $foto_extention;
     }
 
@@ -133,8 +118,8 @@ class Mahasiswa{
      * Menyimpan gender mahasiswa ('Pria','Wanita') kedalam class
      * @param string $foto_extention
      */
-    public function setGender($gender) {
+    public function setGender($gender)
+    {
         $this->gender = $gender;
     }
 }
-?>
