@@ -1,6 +1,6 @@
 <?php
 
-namespace MODEL;
+namespace MODELS;
 
 class Group
 {
@@ -11,8 +11,8 @@ class Group
     private $tanggalDibuat;
     private $jenis; // ENUM (isinya apa ini?)
     private $kode;
-    private $listMember[];
-    private $listThread[];
+    private $listMember;
+    private $listThread;
     /**
      * Constructor untuk Class Mahasiswa
      *
@@ -117,7 +117,7 @@ class Group
      * Merubah nilai id grup pada database ke dalam atribut id
      * @param int $id
      */
-    public function setId($id)
+    public function setId(int $id)
     {
         if ($id == null) $this->id = 0;
         else $this->id = $id;
@@ -127,7 +127,7 @@ class Group
      * Merubah nilai username pembuat grup
      * @param string $madeBy
      */
-    public function setMadeBy($madeBy)
+    public function setMadeBy(string $madeBy)
     {
         if ($madeBy == "") $this->madeBy = "Tidak Dicantumkan";
         else $this->madeBy = $madeBy;
@@ -137,7 +137,7 @@ class Group
      * Merubah nilai nama grup
      * @param string $nama
      */
-    public function setNama($nama)
+    public function setNama(string $nama)
     {
         if ($nama == "") $this->nama = "Grup Baru";
         else $this->nama = $nama;
@@ -147,7 +147,7 @@ class Group
      * Merubah nilai deskripsi grup
      * @param string $deskripsi
      */
-    public function setDeskripsi($deskripsi)
+    public function setDeskripsi(string $deskripsi)
     {
         if ($deskripsi == "") $this->deskripsi = "Tidak Ada Deskripsi Grup";
         else $this->deskripsi = $deskripsi;
@@ -156,7 +156,7 @@ class Group
      * Merubah nilai tanggal pembuatan grup
      * @param string $tanggal
      */
-    public function setTanggalDibuat($tanggal)
+    public function setTanggalDibuat(string $tanggal)
     {
         if ($tanggal == "") $this->tanggalDibuat = "1970-01-01";
         else $this->tanggalDibuat = $tanggal;
@@ -166,7 +166,7 @@ class Group
      * Merubah nilai jenis grup (APA INI???)
      * @param string $jenis
      */
-    public function setJenis($jenis)
+    public function setJenis(string $jenis)
     {
         if ($jenis == "") $this->jenis = "Normal";
         else $this->jenis = $jenis;
@@ -175,7 +175,7 @@ class Group
      * Merubah nilai kode pendaftaran grup (APA INI???)
      * @param string $kode
      */
-    public function setKode($kode)
+    public function setKode(string $kode)
     {
         if ($kode == "") $this->kode = "0000";
         else $this->kode = $kode;
@@ -221,5 +221,51 @@ class Group
         $this->listThread[] = $thread;
     }
 
+    // Function ======================================================================================================
+
+     /**
+     * Memberikan list member sesuai jenis member tersebut
+     * @param string $jenis member yang ingin dicari
+     * @return Array array Akun member sesuai jenis
+     */
+    private function FilterListMemberDariJenis($jenis){
+        $listMem = [];
+        foreach($this->listMember as $key => $member){
+            if($member->getJenis() == $jenis) $listMem[] = $member;
+        }
+        return $listMem;
+    }
+
+     /**
+     * Memberikan list member sesuai jenis member tersebut yang berupa dosen
+     * @param string $jenis member yang ingin dicari
+     * @return Array array Akun member sesuai jenis
+     */
+    public function FilterListMemberDosen(){
+        return $this->FilterListMemberDariJenis("DOSEN");
+    }
+
+
+     /**
+     * Memberikan list member sesuai jenis member tersebut yang berupa mahasiswa
+     * @param string $jenis member yang ingin dicari
+     * @return Array array Akun member sesuai jenis
+     */
+    public function FilterListMemberMahasiswa(){
+        return $this->FilterListMemberDariJenis("MAHASISWA");
+    }
+
+     /**
+     * Memberikan list member sesuai nama member tersebut
+     * @param string $nama 
+     * @return Array array Akun member sesuai nama
+     */
+    public function CariAnggotaDariNama($nama){
+        $listMem = [];
+        foreach($this->listMember as $key => $member){
+            if($member->getNama()->strpos($nama)) $listMem[] = $member;
+        }
+        return $listMem;
+    }
 
 }

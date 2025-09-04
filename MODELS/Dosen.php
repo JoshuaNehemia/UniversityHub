@@ -1,5 +1,8 @@
 <?php
-namespace MODEL;
+namespace MODELS;
+
+require_once __DIR__ .'/Akun.php';
+use MODELS\Akun;
 
 class Dosen extends Akun{
     private $npk;
@@ -44,14 +47,14 @@ class Dosen extends Akun{
      * Menyimpan nilai npk kedalam class
      * @param string $npk
      */
-    public function setNPK($npk) {
+    public function setNPK(string $npk) {
         $this->npk = $npk;
     }
     /**
      * Menyimpan ??? kedalam class
      * @param string $foto_extention
      */
-    public function setFotoExtention($foto_extention) {
+    public function setFotoExtention(string $foto_extention) {
         $this->foto_extention = $foto_extention;
     }
 }

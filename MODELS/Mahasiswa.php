@@ -1,6 +1,8 @@
 <?php
+namespace MODELS;
 
-namespace MODEL;
+require_once __DIR__ .'/Akun.php';
+use MODELS\Akun;
 
 class Mahasiswa extends Akun
 {
@@ -82,7 +84,7 @@ class Mahasiswa extends Akun
      * Menyimpan nilai nrp kedalam class
      * @param string $nrp
      */
-    public function setNRP($nrp)
+    public function setNRP(string $nrp)
     {
         $this->nrp = $nrp;
     }
@@ -91,7 +93,7 @@ class Mahasiswa extends Akun
      * Menyimpan tanggal lahir kedalam class
      * @param string $tanggal_lahir
      */
-    public function setTanggalLahir($tanggal_lahir)
+    public function setTanggalLahir(string $tanggal_lahir)
     {
         $this->tanggal_lahir = $tanggal_lahir;
     }
@@ -100,7 +102,7 @@ class Mahasiswa extends Akun
      * Menyimpan tahun angkatan kedalam class
      * @param int $angkatan
      */
-    public function setAngkatan($angkatan)
+    public function setAngkatan(int $angkatan)
     {
         $this->angkatan = $angkatan;
     }
@@ -109,7 +111,7 @@ class Mahasiswa extends Akun
      * Menyimpan ??? kedalam class
      * @param string $foto_extention
      */
-    public function setFotoExtention($foto_extention)
+    public function setFotoExtention(string $foto_extention)
     {
         $this->foto_extention = $foto_extention;
     }
@@ -118,7 +120,7 @@ class Mahasiswa extends Akun
      * Menyimpan gender mahasiswa ('Pria','Wanita') kedalam class
      * @param string $foto_extention
      */
-    public function setGender($gender)
+    public function setGender(string $gender)
     {
         $this->gender = $gender;
     }
