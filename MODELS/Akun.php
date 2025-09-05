@@ -92,7 +92,7 @@ class Akun
      * Melakukan log in dengan mengecek username dan password ke Database
      * @param string $username username akun
      * @param string $password password akun
-     * @return array array dari akun tersebut;
+     * @return Akun akun tersebut;
      */
     public static function LogIn(string $username, string $password)
     {
@@ -108,9 +108,23 @@ class Akun
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
         }
+        else{
+            return null;
+        }
 
         $stmt->close();
         Connection::closeConnection();
-        return $row;
+        $jenis = '';
+        if($row['isadmin']=='1'){
+            $jenis = 'ADMIN';
+        }
+        else if(isset($row['npk_dosen'])){
+            $jenis = 'DOSEN';
+        }
+        else if(isset($row['nrp_mahasiswa'])){
+            $jenis = 'MAHASISWA';
+        }
+
+        return new Akun($row['username'],'no-name',$jenis);
     }
 }

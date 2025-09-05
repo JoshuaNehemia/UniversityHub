@@ -1,7 +1,11 @@
 <?php
+
 namespace MODELS;
 
-require_once __DIR__ .'/Akun.php';
+require_once __DIR__ . '/../DATABASE/Connection.php';
+require_once __DIR__ . '/Akun.php';
+
+use DATABASE\Connection;
 use MODELS\Akun;
 
 class Mahasiswa extends Akun
@@ -14,17 +18,17 @@ class Mahasiswa extends Akun
 
     /**
      * Constructor untuk Class Mahasiswa
-     *
      * @param string $username Menyimpan nama akun
-     * @param string $password Menyimpan password akun
+     * @param string $nama Menyimpan password akun
      * @param string $nrp Menyimpan kode NRP mahasiswa
      * @param string $tanggal_lahir Menyimpan tanggal lahir mahasiswa
+     * @param string $gender Menyimpan tahun angkatan mahasiswa
      * @param int $angkatan Menyimpan tahun angkatan mahasiswa
      * @param string $foto_extention Menyimpan ???????? (opo iki)
      */
-    public function __construct($username, $nama, $password, $nrp, $tanggal_lahir, $gender, $angkatan, $foto_extention)
+    public function __construct($username, $nama, $nrp, $tanggal_lahir, $gender, $angkatan, $foto_extention)
     {
-        parent::__construct($username,$nama, $password, "MAHASISWA");
+        parent::__construct($username, $nama, "MAHASISWA");
         $this->setNRP($nrp);
         $this->setTanggalLahir($tanggal_lahir);
         $this->setGender($gender);
@@ -123,5 +127,27 @@ class Mahasiswa extends Akun
     public function setGender(string $gender)
     {
         $this->gender = $gender;
+    }
+
+    // Function =====================================================================
+    public static function LogIn(string $username, string $password)
+    {
+        $sql = "SELECT `username`,`nrp`,`nama`,`gender`,`tanggal_lahir`,`angkatan`,`foto_extention` FROM `akun` INNER JOIN `mahasiswa` ON `akun`.`nrp_mahasiswa` = `mahasiswa`.`nrp` WHERE `username` = ? AND `password` = ?;";
+        Connection::startConnection();
+        $stmt = Connection::getCOnnection()->prepare($sql);
+        $stmt->bind_param('ss', $username, $password);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = [];
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+        }
+        else{
+            return null;
+        }
+        $stmt->close();
+        Connection::closeConnection();
+        return new Mahasiswa($row['username'], $row['nama'], $row['nrp'], $row['tanggal_lahir'], $row['gender'], $row['angkatan'], $row['foto_extention']);
     }
 }
