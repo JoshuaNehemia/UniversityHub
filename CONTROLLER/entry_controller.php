@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 $debug = [];
 $headto = "../PAGES/";
 
@@ -14,21 +13,39 @@ use MODELS\Dosen;
 use MODELS\Mahasiswa;
 use DATABASE\Connection;
 
-// Check user udah pernah  di session
-if (isset($_SESSION['currentAccount'])) {
-    if ($_SESSION['currentAccount']['isadmin']) {
-        echo "<p>You are <br>LOGGED IN AS ADMIN<br>Go to Admin Page!<br><a href='../ADMIN/home.php'>Click Here!</a></p>";
-        //header("Location: ../ADMIN/home.php");
-    }
-    if ($_SESSION['currentAccount']['nrp_mahasiswa']) {
-        echo "<p>You are <br>LOGGED IN AS MAHASISWA<br>Go to MAHASISWA Page!<br><a href='../PAGES/home.php'>Click Here!</a></p>";
-        //header("Location: ../PAGES/home.php");
-    }
-    if ($_SESSION['currentAccount']['npk_dosen']) {
-        echo "<p>You are <br>LOGGED IN AS DOSEN<br>Go to DOSEN Page!<br><a href='../PAGES/home.php'>Click Here!</a></p>";
-        //header("Location: ../PAGES/home.php");
+function IsLoggedIn(){
+    return isset($_SESSION['currentAccount']);
+}
+
+function Transfering($currentAccount){
+    if($currentAccount->getJenis()=='ADMIN'){
+
     }
 }
+
+function AdminLogIn($arrAkun)
+{
+    // Buat kelas trus masukin session
+    $akun = new Akun($arrAkun['username'], 'Admin', 'ADMIN');
+    $_SESSION['currentAccount'] = $akun;
+
+    // Masuk sebagai Admin
+    echo "<p>Succesfully logged in asADMIN<br>
+    Go to Admin Page!<br>
+    <a href='../ADMIN/home.php'>Click Here!</a>
+    </p>";
+
+    $headto = "../ADMIN/home.php";
+}
+
+function MahasiswaLogIn($arrAkun) {
+
+}
+
+function DosenLogIn($arrAkun) {
+
+}
+
 
 function login()
 {
@@ -41,53 +58,34 @@ function login()
     $debug['password'] = $password;
 
     // Cari di Database
-    $debug[] = "FETCHING CONNECTION";
+    $debug[] = "FETCHING DATA FROM DATABASE";
 
     // Dapat dari Database
-    $debug[] = "MAKING TO CLASS";
     $arrAkun = Akun::LogIn($username, $password);
     $debug['Akun dari DB'] = $arrAkun;
 
     if ($arrAkun['isadmin'] == 1) {
-        //  masukin session
-        $_SESSION['currentAccount'] = $arrAkun;
-        // Jadi Admin
-        echo "<p>You are ADMIN<br>Go to Admin Page!<br><a href='../ADMIN/home.php'>Click Here!</a></p>";
-        // header location (Kalau lagi nge-DEBUG di Comment)
-        // header('Location: ../ADMIN/home.php');
+        AdminlogIn($arrAkun);
     }
-
-    if(isset($arrAkun['nrp_mahasiswa'])){
-
+    else if (isset($arrAkun['nrp_mahasiswa'])) {
     }
-
-    if(isset($arrAkun['npk_dosen'])){
-
+    else if (isset($arrAkun['npk_dosen'])) {
     }
     $headto .= "";
     $debug['destination'] = $headto;
 }
 
-function signup()
-{
-    global $debug, $headto;
-    $debug[] = "CURRENTLY SIGN UP";
-    if ($_POST['jenis'] == "DOSEN") {
-        //Buat Akun Dosen
-        $debug[] = "CREATING DOSEN";
-    } else if ($_POST['jenis'] == "MAHASISWA") {
-        //Buat Akun Mahasiswa
-        $debug[] = "CREATING MAHASISWA";
-    }
-}
 
-
-if ($_POST['type'] == "login") {
+// Check user udah pernah  di session
+if (IsLoggedIn()) {
+    $currentAccount = $_SESSION['currentAccount'];
+    echo '<p> You are LOGGED IN</p>';
+    Transfering($currentAccount);
+} else {
     login();
-} else if ($_POST['type'] == "signup") {
-    signup();
 }
 
+//Comment if not debugging
 if (1 == 0) {
     header("Location: " . $headto);
 }

@@ -10,7 +10,6 @@ class Akun
 {
     private $username;
     private $nama;
-    private $password;
     private $jenis; //Enum value Admin, Dosen, atau Mahasiswa
 
     /**
@@ -21,11 +20,10 @@ class Akun
      * @param string $password Menyimpan password akun
      * @param string $jenis Menyimpan jenis akun
      */
-    public function __construct($username, $nama, $password, $jenis)
+    public function __construct($username, $nama, $jenis)
     {
         $this->setUsername($username);
         $this->setNama($nama);
-        $this->setPassword($password);
         $this->setJenis($jenis);
     }
 
@@ -69,16 +67,6 @@ class Akun
     }
 
     /**
-     * Menyimpan nilai password kedalam class
-     * @param string $password
-     */
-    public function setPassword(string $password)
-    {
-        if ($password == "") $this->password = "" . random_bytes(10);
-        $this->password = $password;
-    }
-
-    /**
      * Menyimpan nilai nama kedalam class
      * @param string $nama
      */
@@ -108,7 +96,7 @@ class Akun
      */
     public static function LogIn(string $username, string $password)
     {
-        $sql = "SELECT * FROM `akun` WHERE `username` = ? AND `password` = ?;";
+        $sql = "SELECT `username`,`nrp_mahasiswa`,`npk_dosen`,`isadmin` FROM `akun` WHERE `username` = ? AND `password` = ?;";
 
         Connection::startConnection();
         $stmt = Connection::getCOnnection()->prepare($sql);

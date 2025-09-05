@@ -1,7 +1,10 @@
 <?php
 namespace MODELS;
 
+require_once __DIR__ . '/../DATABASE/Connection.php';
 require_once __DIR__ .'/Akun.php';
+
+use DATABASE\Connection;
 use MODELS\Akun;
 
 class Dosen extends Akun{
@@ -56,6 +59,27 @@ class Dosen extends Akun{
      */
     public function setFotoExtention(string $foto_extention) {
         $this->foto_extention = $foto_extention;
+    }
+
+    // Function
+        public static function LogIn(string $username, string $password)
+    {
+        $sql = "SELECT `username`,`npk_dosen` FROM `akun` INNER JOIN `dosen` ON `akun`.`npk_dosen` = `dosen`.`npk` WHERE `username` = ? AND `password` = ?;";
+
+        Connection::startConnection();
+        $stmt = Connection::getCOnnection()->prepare($sql);
+        $stmt->bind_param('ss', $username,$password);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+        }
+
+        $stmt->close();
+        Connection::closeConnection();
+        return $row;
     }
 }
 ?>

@@ -27,8 +27,6 @@ if(isset($_SESSION['currentAccount'])){
             <label for="password">Password</label><br>
             <input type="password" name="password" placeholder="Fill your password"><br>
 
-            <input type="hidden" name="type" value="login">
-
             <input type="submit">
         </form>
     </div>
