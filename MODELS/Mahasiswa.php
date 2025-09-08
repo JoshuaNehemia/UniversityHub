@@ -7,6 +7,7 @@ require_once __DIR__ . '/Akun.php';
 
 use DATABASE\Connection;
 use MODELS\Akun;
+use Exception;
 
 class Mahasiswa extends Akun
 {
@@ -133,21 +134,65 @@ class Mahasiswa extends Akun
     public static function LogIn(string $username, string $password)
     {
         $sql = "SELECT `username`,`nrp`,`nama`,`gender`,`tanggal_lahir`,`angkatan`,`foto_extention` FROM `akun` INNER JOIN `mahasiswa` ON `akun`.`nrp_mahasiswa` = `mahasiswa`.`nrp` WHERE `username` = ? AND `password` = ?;";
+
         Connection::startConnection();
         $stmt = Connection::getCOnnection()->prepare($sql);
         $stmt->bind_param('ss', $username, $password);
 
         $stmt->execute();
         $result = $stmt->get_result();
+
         $row = [];
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
-        }
-        else{
+        } else {
             return null;
         }
+
         $stmt->close();
-        Connection::closeConnection();
+        if (Connection::getConnection() !== null) {
+            Connection::closeConnection();
+        }
         return new Mahasiswa($row['username'], $row['nama'], $row['nrp'], $row['tanggal_lahir'], $row['gender'], $row['angkatan'], $row['foto_extention']);
+    }
+
+
+    public function signUp($password)
+    {
+        $sql_mahasiswa = "INSERT INTO `mahasiswa` (`nrp`, `nama`, `gender`, `tanggal_lahir`, `angkatan`, `foto_extention`) VALUES (?, ?, ?, ?, ?, ?);";
+        $sql_akun = "INSERT INTO `akun`(`username`,`password`,`nrp_mahasiswa`) VALUES (?,?,?)";
+
+        Connection::startConnection();
+        Connection::getConnection()->begin_transaction();
+        $stmtMHS = Connection::getConnection()->prepare($sql_mahasiswa);
+
+        $stmtMHS->bind_param(
+            'ssssis',
+            $this->getNRP(),
+            $this->getNama(),
+            $this->getGender(),
+            $this->getTanggalLahir(),
+            $this->getAngkatan(),
+            $this->getFotoExtention()
+        );
+
+        $stmtMHS->execute();
+        $stmtMHS->close();
+
+        $stmtAkun = Connection::getConnection()->prepare($sql_akun);
+
+        $stmtAkun->bind_param(
+            'sss',
+            $this->getUsername(),
+            $password,
+            $this->getNRP()
+        );
+
+        $stmtAkun->execute();
+        $stmtAkun->close();
+        Connection::getConnection()->commit();
+        if (Connection::getConnection() !== null) {
+            Connection::closeConnection();
+        }
     }
 }

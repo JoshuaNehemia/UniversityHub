@@ -33,20 +33,23 @@ if (isset($_SESSION['currentAccount'])) {
         </div>
         <div class="error block">
             <p class="error message">
-            <?php
-            if (isset($_GET['error_msg'])) {
-                $err_no = $_GET['error_msg'];
-                echo "<p>";
-                switch ($err_no) {
-                    case 1:
-                        echo "Username atau password salah";
-                        break;
-                    case 2:
-                        echo "Akun anda telah dibuat, namun terjadi kesalahan pada data anda.<br>Mohon hubungi admin";
-                        break;
+                <?php 
+                if (isset($_GET['error_msg'])) {
+                    $err_no = $_GET['error_msg'];
+                    echo "<p>";
+                    switch ($err_no) {
+                        case 1:
+                            echo "Username atau password salah";
+                            break;
+                        case 2:
+                            echo "Akun anda telah dibuat, namun terjadi kesalahan pada data anda.<br>Mohon hubungi admin";
+                            break;
+                        case 3:
+                            echo "Proses log in terjadi kesalahan<br>Mohon ulangi";
+                            break;
+                    }
                 }
-            }
-            ?>
+                ?>
             </p>
         </div>
     </div>

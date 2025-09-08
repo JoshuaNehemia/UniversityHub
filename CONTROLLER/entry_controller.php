@@ -32,9 +32,11 @@ function Transfering($currentAccount)
         }
         if (is_null($currentAccount)) {
             header("Location: ../PAGES/login.php?error_msg=2");
+            exit();
         } else {
             $_SESSION['currentAccount'] = $currentAccount;
             header('Location: ../PAGES/home.php');
+            exit();
         }
     } else if ($currentAccount->getJenis() == 'DOSEN') {
         if (!($currentAccount instanceof Dosen)) {
@@ -42,12 +44,15 @@ function Transfering($currentAccount)
         }
         if (is_null($currentAccount)) {
             header("Location: ../PAGES/login.php?error_msg=2");
+            exit();
         } else {
             $_SESSION['currentAccount'] = $currentAccount;
             header('Location: ../PAGES/home.php');
+            exit();
         }
     } else {
         header("Location: ../PAGES/login.php?error_msg=2");
+        exit();
     }
 }
 
@@ -58,11 +63,13 @@ function login()
         $currentAccount = Akun::LogIn($_POST['username'], $_POST['password']);
         if (is_null($currentAccount)) {
             header("Location: ../PAGES/login.php?error_msg=1");
+            exit();
         }
         // Log In Sebagai Apa?
         Transfering($currentAccount);
     } else {
         header("Location: ../PAGES/login.php");
+        exit();
     }
 }
 

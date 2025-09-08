@@ -5,6 +5,7 @@ namespace MODELS;
 require_once __DIR__ . '/../DATABASE/Connection.php';
 
 use DATABASE\Connection;
+use Exception;
 
 class Akun
 {
@@ -100,31 +101,28 @@ class Akun
 
         Connection::startConnection();
         $stmt = Connection::getCOnnection()->prepare($sql);
-        $stmt->bind_param('ss', $username,$password);
-
+        $stmt->bind_param('ss', $username, $password);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
-        }
-        else{
+        } else {
             return null;
         }
 
         $stmt->close();
-        Connection::closeConnection();
         $jenis = '';
-        if($row['isadmin']=='1'){
+        if ($row['isadmin'] == '1') {
             $jenis = 'ADMIN';
-        }
-        else if(isset($row['npk_dosen'])){
+        } else if (isset($row['npk_dosen'])) {
             $jenis = 'DOSEN';
-        }
-        else if(isset($row['nrp_mahasiswa'])){
+        } else if (isset($row['nrp_mahasiswa'])) {
             $jenis = 'MAHASISWA';
         }
-
-        return new Akun($row['username'],'no-name',$jenis);
+        if (Connection::getConnection() !== null) {
+            Connection::closeConnection();
+        }
+        return new Akun($row['username'], 'no-name', $jenis);
     }
 }

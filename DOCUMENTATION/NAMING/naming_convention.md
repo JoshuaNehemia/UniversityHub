@@ -2,4 +2,4 @@
 
 ## Current Logged In Account
 Variable biasa  : `$currentAcc`
-Session         : `$_SESSION['currentAcc']`
+Session Account        : `$_SESSION['currentAcc']`

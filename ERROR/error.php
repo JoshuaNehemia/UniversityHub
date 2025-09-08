@@ -1,5 +1,5 @@
 <?php
-$code = $_GET['kode'];
+$code = $_GET['code'];
 $msg = $_GET['msg'];
 ?>
 <!DOCTYPE html>
@@ -12,13 +12,12 @@ $msg = $_GET['msg'];
 </head>
 
 <body>
-    <h1>Mohon maaf, Sepertinya website ini sedang bermasalah.</h1>
-    <h2>
+    <h1 class="error code">
         <?php
             echo $code;
         ?>
-    </h2>
-    <p>
+    </h1>
+    <p class = "error message">
         <?php
         echo $msg;
         ?>

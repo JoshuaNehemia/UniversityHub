@@ -22,6 +22,7 @@ class Event
         $this->setJenis($jenis);
         $this->setPosterExtension($posterExtension);
     }
+    
     // GETTER
     public function getId()
     {

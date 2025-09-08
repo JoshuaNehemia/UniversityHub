@@ -7,6 +7,7 @@ require_once __DIR__ . '/Akun.php';
 
 use DATABASE\Connection;
 use MODELS\Akun;
+use Exception;
 
 class Dosen extends Akun
 {
@@ -72,23 +73,61 @@ class Dosen extends Akun
     public static function LogIn(string $username, string $password)
     {
         $sql = "SELECT `username`,`npk`,`nama`,`foto_extension` FROM `akun` INNER JOIN `dosen` ON `akun`.`npk_dosen` = `dosen`.`npk` WHERE `username` = ? AND `password` = ?;";
+
         Connection::startConnection();
         $stmt = Connection::getCOnnection()->prepare($sql);
         $stmt->bind_param('ss', $username, $password);
-
+        if ($stmt === false) {
+            throw new Exception("Gagal mempersiapkan data untuk disimpan ke database");
+        }
         $stmt->execute();
         $result = $stmt->get_result();
         $row = [];
-
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
-        }
-        else{
+        } else {
             return null;
         }
-
         $stmt->close();
-        Connection::closeConnection();
+        if (Connection::getConnection() !== null) {
+            Connection::closeConnection();
+        }
         return new Dosen($row['username'], $row['nama'], $row['npk'], $row['foto_extension']);
+    }
+
+    public function signUp($password)
+    {
+        $sql_dosen = "INSERT INTO `dosen` (`npk`, `nama`, `foto_extension`) VALUES (?, ?, ?);";
+        $sql_akun = "INSERT INTO `akun`(`username`,`password`,`npk_dosen`) VALUES (?,?,?)";
+
+        Connection::startConnection();
+        Connection::getConnection()->begin_transaction();
+        $stmtDSN = Connection::getConnection()->prepare($sql_dosen);
+
+        $stmtDSN->bind_param(
+            'sss',
+            $this->getNPK(),
+            $this->getNama(),
+            $this->getFotoExtention()
+        );
+
+        $stmtDSN->execute();
+        $stmtDSN->close();
+        $stmtAkun = Connection::getConnection()->prepare($sql_akun);
+
+        $stmtAkun->bind_param(
+            'sss',
+            $this->getUsername(),
+            $password,
+            $this->getNPK()
+        );
+
+        $stmtAkun->execute();
+        $stmtAkun->close();
+
+        if (Connection::getConnection() !== null) {
+            Connection::getConnection()->rollback();
+        }
+        Connection::getConnection()->commit();
     }
 }
