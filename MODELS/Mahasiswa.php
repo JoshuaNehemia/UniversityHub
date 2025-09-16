@@ -23,7 +23,7 @@ class Mahasiswa extends Akun
      * @param string $nama Menyimpan password akun
      * @param string $nrp Menyimpan kode NRP mahasiswa
      * @param string $tanggal_lahir Menyimpan tanggal lahir mahasiswa
-     * @param string $gender Menyimpan tahun angkatan mahasiswa
+     * @param string $gender Menyimpan gender mahasiswa (Enum: Pria / Wanita)
      * @param int $angkatan Menyimpan tahun angkatan mahasiswa
      * @param string $foto_extention Menyimpan ???????? (opo iki)
      */
@@ -142,7 +142,6 @@ class Mahasiswa extends Akun
         $stmt->execute();
         $result = $stmt->get_result();
 
-        $row = [];
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
         } else {
@@ -156,6 +155,60 @@ class Mahasiswa extends Akun
         return new Mahasiswa($row['username'], $row['nama'], $row['nrp'], $row['tanggal_lahir'], $row['gender'], $row['angkatan'], $row['foto_extention']);
     }
 
+    public static function LogIn_Mahasiswa(string $username, string $password)
+    {
+        $sql = "SELECT `username`,`nrp`,`nama`,`gender`,`tanggal_lahir`,`angkatan`,`foto_extention` FROM `akun` INNER JOIN `mahasiswa` ON `akun`.`nrp_mahasiswa` = `mahasiswa`.`nrp` WHERE `username` = ? AND `password` = ?;";
+        try {
+            Connection::startConnection();
+            $stmt = Connection::getCOnnection()->prepare($sql);
+            $stmt->bind_param('ss', $username, $password);
+
+            if ($stmt === false) {
+                throw new Exception("Gagal request ke database");
+            }
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows > 0) {
+                $row = $result->fetch_assoc();
+            } else {
+                throw new Exception("Tidak ditemukan data yang sesuai dengan permintaan");
+            }
+
+            if($row['gender']==="Pria"){
+                $nama = "Mahasiswa " .$row['nama'];
+            }
+            else{
+                $nama = "Mahasiswi " .$row['nama'];
+            }
+
+            $stmt->close();
+            return new Mahasiswa($row['username'], $nama, $row['nrp'], $row['tanggal_lahir'], $row['gender'], $row['angkatan'], $row['foto_extention']);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage(), $e->getCode());
+        } finally {
+            if (Connection::getConnection() !== null) {
+                Connection::closeConnection();
+            }
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $row = [];
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+        } else {
+            return null;
+        }
+
+        $stmt->close();
+        if (Connection::getConnection() !== null) {
+            Connection::closeConnection();
+        }
+        return new Mahasiswa($row['username'], $row['nama'], $row['nrp'], $row['tanggal_lahir'], $row['gender'], $row['angkatan'], $row['foto_extention']);
+    }
 
     public function signUp($password)
     {

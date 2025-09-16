@@ -63,7 +63,7 @@ class Akun
      */
     public function setUsername(string $username)
     {
-        if ($username == "") $username = "" . random_bytes(10) . "_" . date("Y-m-d-H-i-s");
+        if ($username == "") throw new Exception("Username tidak boleh kosong", 1);
         $this->username = $username;
     }
 
@@ -73,7 +73,7 @@ class Akun
      */
     public function setNama(string $nama)
     {
-        if ($nama == "") $this->nama = "John Doe";
+        if ($nama == "") throw new Exception("Nama tidak boleh kosong", 1);
         $this->nama = $nama;
     }
 
@@ -83,7 +83,7 @@ class Akun
      */
     public function setJenis($jenis)
     {
-        if ($jenis == "") $this->jenis = "MAHASISWA";
+        if ($jenis == "") throw new Exception("Jenis tidak boleh kosong");
         $this->jenis = $jenis;
     }
 
@@ -95,34 +95,47 @@ class Akun
      * @param string $password password akun
      * @return Akun akun tersebut;
      */
-    public static function LogIn(string $username, string $password)
+    public static function LogIn_Akun($username, $password)
     {
         $sql = "SELECT `username`,`nrp_mahasiswa`,`npk_dosen`,`isadmin` FROM `akun` WHERE `username` = ? AND `password` = ?;";
+        try {
+            Connection::startConnection();
+            $stmt = Connection::getCOnnection()->prepare($sql);
+            $stmt->bind_param('ss', $username, $password);
 
-        Connection::startConnection();
-        $stmt = Connection::getCOnnection()->prepare($sql);
-        $stmt->bind_param('ss', $username, $password);
-        $stmt->execute();
-        $result = $stmt->get_result();
+            if ($stmt === false) {
+                throw new Exception("Gagal request ke database");
+            }
 
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-        } else {
-            return null;
-        }
+            $stmt->execute();
 
-        $stmt->close();
-        $jenis = '';
-        if ($row['isadmin'] == '1') {
-            $jenis = 'ADMIN';
-        } else if (isset($row['npk_dosen'])) {
-            $jenis = 'DOSEN';
-        } else if (isset($row['nrp_mahasiswa'])) {
-            $jenis = 'MAHASISWA';
+            $result = $stmt->get_result();
+            if ($result->num_rows > 0) {
+                $row = $result->fetch_assoc();
+            } else {
+                throw new Exception("Username atau password salah");
+            }
+
+            $stmt->close();
+
+            $jenis = '';
+            if ($row['isadmin'] == '1') {
+                $jenis = 'ADMIN';
+            } else if (!empty($row['npk_dosen'])) {
+                $jenis = 'DOSEN';
+            } else if (!empty($row['nrp_mahasiswa'])) {
+                $jenis = 'MAHASISWA';
+            } else {
+                throw new Exception("Akun tidak memiliki data yang sesuai");
+            }
+
+            return new Akun($row['username'], $jenis, $jenis);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage(), $e->getCode());
+        } finally {
+            if (Connection::getConnection() !== null) {
+                Connection::closeConnection();
+            }
         }
-        if (Connection::getConnection() !== null) {
-            Connection::closeConnection();
-        }
-        return new Akun($row['username'], 'no-name', $jenis);
     }
 }
