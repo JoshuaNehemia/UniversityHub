@@ -20,7 +20,7 @@ if (isset($_SESSION['currentAccount'])) {
     <div class="container">
         <h1>Log In</h1>
         <div class="form login">
-            <form action="<?= LOGIN_CONTROLLER_ADDRESS ?>" method="POST">
+            <form action="<?php echo ''. LOGIN_CONTROLLER_ADDRESS; ?>" method="POST">
                 <label for="username">Username</label><br>
                 <input type="text" name="username" placeholder="Fill your username"><br>
 

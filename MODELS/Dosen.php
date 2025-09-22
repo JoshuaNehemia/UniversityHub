@@ -2,8 +2,8 @@
 
 namespace MODELS;
 
-require_once __DIR__ . '/../DATABASE/Connection.php';
-require_once __DIR__ . '/Akun.php';
+require_once('../DATABASE/Connection.php');
+require_once('Akun.php');
 
 use DATABASE\Connection;
 use MODELS\Akun;
@@ -120,84 +120,54 @@ class Dosen extends Akun
             $stmt->close();
             return new Dosen($row['username'], $row['nama'], $row['npk'], $row['foto_extension']);
         } catch (Exception $e) {
-            throw new Exception($e->getMessage(),$e->getCode());
+            throw new Exception($e->getMessage(), $e->getCode());
         } finally {
             if (Connection::getConnection() !== null) {
                 Connection::closeConnection();
             }
         }
     }
-    
-    public function signUp($password)
+
+    public function Create_Dosen($password)
     {
-        $sql_dosen = "INSERT INTO `dosen` (`npk`, `nama`, `foto_extension`) VALUES (?, ?, ?);";
-        $sql_akun = "INSERT INTO `akun`(`username`,`password`,`npk_dosen`) VALUES (?,?,?)";
+        $sql_dosen = "INSERT INTO `dosen` (`npk`, `nama`, `foto_extension`) VALUES (?, ?, ?)";
+        $sql_akun  = "INSERT INTO `akun`(`username`, `password`, `npk_dosen`) VALUES (?, ?, ?)";
 
-        Connection::startConnection();
-        Connection::getConnection()->begin_transaction();
-        $stmtDSN = Connection::getConnection()->prepare($sql_dosen);
+        try {
+            Connection::startConnection();
+            Connection::getConnection()->begin_transaction();
 
-        $stmtDSN->bind_param(
-            'sss',
-            $this->getNPK(),
-            $this->getNama(),
-            $this->getFotoExtention()
-        );
+            $stmtDSN = Connection::getConnection()->prepare($sql_dosen);
+            $stmtDSN->bind_param(
+                'sss',
+                $this->getNPK(),
+                $this->getNama(),
+                $this->getFotoExtention()
+            );
+            $stmtDSN->execute();
+            $stmtDSN->close();
 
-        $stmtDSN->execute();
-        $stmtDSN->close();
-        $stmtAkun = Connection::getConnection()->prepare($sql_akun);
+            // Insert ke tabel akun
+            $stmtAkun = Connection::getConnection()->prepare($sql_akun);
+            $stmtAkun->bind_param(
+                'sss',
+                $this->getUsername(),
+                $password,
+                $this->getNPK()
+            );
+            $stmtAkun->execute();
+            $stmtAkun->close();
 
-        $stmtAkun->bind_param(
-            'sss',
-            $this->getUsername(),
-            $password,
-            $this->getNPK()
-        );
-
-        $stmtAkun->execute();
-        $stmtAkun->close();
-
-        if (Connection::getConnection() !== null) {
-            Connection::getConnection()->rollback();
+            Connection::getConnection()->commit();
+        } catch (Exception $e) {
+            if (isset(Connection::getConnection())) {
+                Connection::getConnection()->rollback();
+            }
+            throw $e;
+        } finally {
+            if (Connection::getConnection() !== null) {
+                Connection::closeConnection();
+            }
         }
-        Connection::getConnection()->commit();
-    }
-
-    
-    public function SignUp_Dosen($password)
-    {
-        $sql_dosen = "INSERT INTO `dosen` (`npk`, `nama`, `foto_extension`) VALUES (?, ?, ?);";
-        $sql_akun = "INSERT INTO `akun`(`username`,`password`,`npk_dosen`) VALUES (?,?,?)";
-
-        Connection::startConnection();
-        Connection::getConnection()->begin_transaction();
-        $stmtDSN = Connection::getConnection()->prepare($sql_dosen);
-
-        $stmtDSN->bind_param(
-            'sss',
-            $this->getNPK(),
-            $this->getNama(),
-            $this->getFotoExtention()
-        );
-
-        $stmtDSN->execute();
-        $stmtDSN->close();
-        $stmtAkun = Connection::getConnection()->prepare($sql_akun);
-
-        $stmtAkun->bind_param(
-            'sss',
-            $this->getUsername(),
-            $password,
-            $this->getNPK()
-        );
-
-        $stmtAkun->execute();
-        $stmtAkun->close();
-
-        if (Connection::getConnection() !== null) {
-            Connection::getConnection()->rollback();
-        }
-        Connection::getConnection()->commit();
     }
 }

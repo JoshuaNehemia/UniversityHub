@@ -2,7 +2,7 @@
 
 namespace MODELS;
 
-require_once __DIR__ . '/../DATABASE/Connection.php';
+require_once('../DATABASE/Connection.php');
 
 use DATABASE\Connection;
 use Exception;
@@ -138,4 +138,5 @@ class Akun
             }
         }
     }
+    
 }

@@ -2,8 +2,8 @@
 
 namespace MODELS;
 
-require_once __DIR__ . '/../DATABASE/Connection.php';
-require_once __DIR__ . '/Akun.php';
+require_once('../DATABASE/Connection.php');
+require_once('Akun.php');
 
 use DATABASE\Connection;
 use MODELS\Akun;
@@ -131,30 +131,6 @@ class Mahasiswa extends Akun
     }
 
     // Function =====================================================================
-    public static function LogIn(string $username, string $password)
-    {
-        $sql = "SELECT `username`,`nrp`,`nama`,`gender`,`tanggal_lahir`,`angkatan`,`foto_extention` FROM `akun` INNER JOIN `mahasiswa` ON `akun`.`nrp_mahasiswa` = `mahasiswa`.`nrp` WHERE `username` = ? AND `password` = ?;";
-
-        Connection::startConnection();
-        $stmt = Connection::getCOnnection()->prepare($sql);
-        $stmt->bind_param('ss', $username, $password);
-
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-        } else {
-            return null;
-        }
-
-        $stmt->close();
-        if (Connection::getConnection() !== null) {
-            Connection::closeConnection();
-        }
-        return new Mahasiswa($row['username'], $row['nama'], $row['nrp'], $row['tanggal_lahir'], $row['gender'], $row['angkatan'], $row['foto_extention']);
-    }
-
     public static function LogIn_Mahasiswa(string $username, string $password)
     {
         $sql = "SELECT `username`,`nrp`,`nama`,`gender`,`tanggal_lahir`,`angkatan`,`foto_extention` FROM `akun` INNER JOIN `mahasiswa` ON `akun`.`nrp_mahasiswa` = `mahasiswa`.`nrp` WHERE `username` = ? AND `password` = ?;";

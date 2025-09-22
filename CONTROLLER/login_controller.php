@@ -1,8 +1,8 @@
 <?php
 
-require_once __DIR__ . '/../MODELS/Akun.php';
-require_once __DIR__ . '/../MODELS/Dosen.php';
-require_once __DIR__ . '/../MODELS/Mahasiswa.php';
+require_once('../MODELS/Akun.php');
+require_once('../MODELS/Dosen.php');
+require_once('../MODELS/Mahasiswa.php');
 
 use MODELS\Akun;
 use MODELS\Dosen;
@@ -26,18 +26,18 @@ function main()
         if (IsLoggedIn()) {
             $currentAccount = $_SESSION['currentAccount'];
             if ($currentAccount->getJenis() === "ADMIN") {
-                header("Location: " . constant("ADMIN_HOME_PAGE_ADDRESS"));
+                header("Location: " . ADMIN_HOME_PAGE_ADDRESS);
             } else {
-                header("Location: " . constant("HOME_PAGE_ADDRESS"));
+                header("Location: " . HOME_PAGE_ADDRESS);
             }
         } else if (IsLoggingIn()) {
             LogIn();
         } else {
-            header("Location: " . constant("LOGIN_PAGE_ADDRESS"));
+            header("Location: " . LOGIN_PAGE_ADDRESS);
         }
     } catch (Exception $e) {
         $_SESSION['error_msg'] = $e->getMessage();
-        header("Location: " . constant("LOGIN_PAGE_ADDRESS"));
+        header("Location: " . LOGIN_PAGE_ADDRESS);
     } finally {
         exit();
     }
@@ -79,19 +79,19 @@ function LogIn()
 function Admin_LogIn_Proses($currentAccount)
 {
     $_SESSION['currentAccount'] = $currentAccount;
-    header("Location: " . constant("ADMIN_HOME_PAGE_ADDRESS"));
+    header("Location: " . ADMIN_HOME_PAGE_ADDRESS);
 }
 
 function Mahasiswa_LogIn_Proses($currentAccount)
 {
     $currentAccount = Mahasiswa::LogIn_Mahasiswa($_POST['username'], $_POST['password']);
     $_SESSION['currentAccount'] = $currentAccount;
-    header("Location: " . constant("HOME_PAGE_ADDRESS"));
+    header("Location: " . HOME_PAGE_ADDRESS);
 }
 
 function Dosen_LogIn_Proses($currentAccount)
 {
     $currentAccount = Dosen::logIn_Dosen($_POST['username'], $_POST['password']);
     $_SESSION['currentAccount'] = $currentAccount;
-    header("Location: " . constant("HOME_PAGE_ADDRESS"));
+    header("Location: " . HOME_PAGE_ADDRESS);
 }

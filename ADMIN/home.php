@@ -1,12 +1,8 @@
 <?php
 
-require_once __DIR__ . '/../MODELS/Akun.php';
-require_once __DIR__ . '/../MODELS/Dosen.php';
-require_once __DIR__ . '/../MODELS/Mahasiswa.php';
+require_once('../MODELS/Akun.php');
 
 use MODELS\Akun;
-use MODELS\Dosen;
-use MODELS\Mahasiswa;
 
 session_start();
 
