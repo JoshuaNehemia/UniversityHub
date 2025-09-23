@@ -8,6 +8,8 @@ use MODELS\Mahasiswa;
 session_start();
 CheckAccountIntegrity();
 $currentAccount = $_SESSION['currentAccount'];
+$imageElementOpen = "<img src='";
+$imageElementClose = "'>"
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,7 +22,7 @@ $currentAccount = $_SESSION['currentAccount'];
 
 <body>
     <h1>Hi, Selamat Datang <?php echo $_SESSION['currentAccount']->getNama(); ?></h1>
-    <img src="<?php echo $currentAccount->getFotoAddress()?>">
+    <?php DisplayPicture() ?>
 </body>
 
 </html>
@@ -30,6 +32,19 @@ function CheckAccountIntegrity()
 {
     if (!isset($_SESSION['currentAccount'])) {
         header("Location: login.php");
+    }
+}
+
+function DisplayPicture()
+{
+    global $currentAccount,$imageElementOpen,$imageElementClose;
+    $file = $currentAccount->getFotoAddress();;
+    if (file_exists($file)) {
+        echo $imageElementOpen.$file.$imageElementClose;
+    } 
+    else{
+        $defaultAddress = "../ASSETS/IMAGES/default_profile_picture.svg";
+        echo $imageElementOpen.$defaultAddress.$imageElementClose;
     }
 }
 ?>

@@ -101,12 +101,12 @@ class Akun
         try {
             Connection::startConnection();
             $stmt = Connection::getCOnnection()->prepare($sql);
-            $stmt->bind_param('ss', $username, $password);
 
             if ($stmt === false) {
                 throw new Exception("Gagal request ke database");
             }
 
+            $stmt->bind_param('ss', $username, $password);
             $stmt->execute();
 
             $result = $stmt->get_result();
@@ -131,7 +131,7 @@ class Akun
 
             return new Akun($row['username'], $jenis, $jenis);
         } catch (Exception $e) {
-            throw new Exception($e->getMessage(), $e->getCode());
+            throw $e;
         } finally {
             if (Connection::getConnection() !== null) {
                 Connection::closeConnection();
@@ -147,7 +147,6 @@ class Akun
             $sql  = "INSERT INTO `akun`(`username`, `password`,`npk_dosen`,`isadmin`) VALUES (?,?,?,?)";
         }
         try {
-
             $stmt = Connection::getConnection()->prepare($sql);
             $username = $this->getUsername();
 
