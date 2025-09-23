@@ -20,7 +20,7 @@ class Connection
         try {
             self::$conn = new mysqli(self::$ADDRESS, self::$USER, self::$PWD, self::$SCHEMA);
             if (self::$conn->connect_errno) {
-            throw new Exception("Tidak dapat terhubung ke database");
+                throw new Exception("Tidak dapat terhubung ke database");
             }
         } catch (Exception $e) {
             throw new Exception("Tidak dapat terhubung ke database");
@@ -37,17 +37,21 @@ class Connection
         return self::$conn;
     }
 
-    public function __construct(){
+    public function __construct()
+    {
         try {
             self::$conn = new mysqli(self::$ADDRESS, self::$USER, self::$PWD, self::$SCHEMA);
             if (self::$conn->connect_errno) {
-            throw new Exception("Tidak dapat terhubung ke database");
+                throw new Exception("Tidak dapat terhubung ke database");
             }
         } catch (Exception $e) {
             throw new Exception("Tidak dapat terhubung ke database");
         }
     }
-    public function __destruct(){
-        self::$conn->close();
+    public function __destruct()
+    {
+        if (self::$conn !== null) {
+            self::$conn->close();
+        }
     }
 }

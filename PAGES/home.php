@@ -6,11 +6,7 @@ use MODELS\Dosen;
 use MODELS\Mahasiswa;
 
 session_start();
-
-// Cek sudah login belum
-if (!isset($_SESSION['currentAccount'])) {
-    header("Location: login.php");
-}
+CheckAccountIntegrity();
 $currentAccount = $_SESSION['currentAccount'];
 ?>
 <!DOCTYPE html>
@@ -24,6 +20,16 @@ $currentAccount = $_SESSION['currentAccount'];
 
 <body>
     <h1>Hi, Selamat Datang <?php echo $_SESSION['currentAccount']->getNama(); ?></h1>
+    <img src="<?php echo $currentAccount->getFotoAddress()?>">
 </body>
 
 </html>
+<?php
+// FUNCTION ==================================================================================================================
+function CheckAccountIntegrity()
+{
+    if (!isset($_SESSION['currentAccount'])) {
+        header("Location: login.php");
+    }
+}
+?>

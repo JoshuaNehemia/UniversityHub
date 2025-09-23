@@ -7,19 +7,19 @@ require_once('../MODELS/Mahasiswa.php');
 use MODELS\Akun;
 use MODELS\Dosen;
 use MODELS\Mahasiswa;
-use Exception;
 
 session_start();
 
-// DEFINE
+// DEFINE ========================================================================================================================
 define("ADMIN_HOME_PAGE_ADDRESS", "../ADMIN/home.php");
 define("HOME_PAGE_ADDRESS", "../PAGES/home.php");
 define("LOGIN_PAGE_ADDRESS", "../PAGES/login.php");
-
-// Main Logic ====================================================================================================================
+define("ENUM_JENIS", array("MAHASISWA", "DOSEN", "ADMIN"));
+define("PICTURE_DATABASE", "../DATABASE/");
+// MAIN LOGIC ====================================================================================================================
 main();
 
-// Function ======================================================================================================================
+// FUNCTION ======================================================================================================================
 function main()
 {
     try {
@@ -61,13 +61,13 @@ function LogIn()
     }
 
     switch ($currentAccount->getJenis()) {
-        case "ADMIN":
+        case ENUM_JENIS[2]:
             Admin_LogIn_Proses($currentAccount);
             break;
-        case "MAHASISWA":
+        case ENUM_JENIS[0]:
             Mahasiswa_LogIn_Proses($currentAccount);
             break;
-        case "DOSEN":
+        case ENUM_JENIS[1]:
             Dosen_LogIn_Proses($currentAccount);
             break;
         default:
@@ -85,6 +85,7 @@ function Admin_LogIn_Proses($currentAccount)
 function Mahasiswa_LogIn_Proses($currentAccount)
 {
     $currentAccount = Mahasiswa::LogIn_Mahasiswa($_POST['username'], $_POST['password']);
+    $currentAccount->setFotoAddress(PICTURE_DATABASE . $currentAccount->getJenis() . "/" . $currentAccount->getUsername() . "." . $currentAccount->getFotoExtention());
     $_SESSION['currentAccount'] = $currentAccount;
     header("Location: " . HOME_PAGE_ADDRESS);
 }
@@ -92,6 +93,7 @@ function Mahasiswa_LogIn_Proses($currentAccount)
 function Dosen_LogIn_Proses($currentAccount)
 {
     $currentAccount = Dosen::logIn_Dosen($_POST['username'], $_POST['password']);
+    $currentAccount->setFotoAddress(PICTURE_DATABASE . $currentAccount->getJenis() . "/" . $currentAccount->getUsername() . "." . $currentAccount->getFotoExtention());
     $_SESSION['currentAccount'] = $currentAccount;
     header("Location: " . HOME_PAGE_ADDRESS);
 }

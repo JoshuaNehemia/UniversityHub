@@ -16,6 +16,7 @@ class Mahasiswa extends Akun
     private $gender;
     private $angkatan;
     private $foto_extention;
+    private $foto_address;
 
     /**
      * Constructor untuk Class Mahasiswa
@@ -84,6 +85,12 @@ class Mahasiswa extends Akun
     }
 
 
+    public function getFotoAddress(){
+        return $this->foto_address;
+    }
+    public function setFotoAddress($address){
+        $this->foto_address = $address;
+    }
     // --- Setters ---
     /**
      * Menyimpan nilai nrp kedalam class
@@ -152,76 +159,72 @@ class Mahasiswa extends Akun
                 throw new Exception("Tidak ditemukan data yang sesuai dengan permintaan");
             }
 
-            if($row['gender']==="Pria"){
-                $nama = "Mahasiswa " .$row['nama'];
-            }
-            else{
-                $nama = "Mahasiswi " .$row['nama'];
+            if ($row['gender'] === "Pria") {
+                $nama = "Mahasiswa " . $row['nama'];
+            } else {
+                $nama = "Mahasiswi " . $row['nama'];
             }
 
             $stmt->close();
             return new Mahasiswa($row['username'], $nama, $row['nrp'], $row['tanggal_lahir'], $row['gender'], $row['angkatan'], $row['foto_extention']);
         } catch (Exception $e) {
-            throw new Exception($e->getMessage(), $e->getCode());
+            throw $e;
         } finally {
             if (Connection::getConnection() !== null) {
                 Connection::closeConnection();
             }
         }
-
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        $row = [];
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-        } else {
-            return null;
-        }
-
-        $stmt->close();
-        if (Connection::getConnection() !== null) {
-            Connection::closeConnection();
-        }
-        return new Mahasiswa($row['username'], $row['nama'], $row['nrp'], $row['tanggal_lahir'], $row['gender'], $row['angkatan'], $row['foto_extention']);
     }
 
-    public function signUp($password)
+    public function CreateMahasiswaInDatabase($password)
     {
-        $sql_mahasiswa = "INSERT INTO `mahasiswa` (`nrp`, `nama`, `gender`, `tanggal_lahir`, `angkatan`, `foto_extention`) VALUES (?, ?, ?, ?, ?, ?);";
-        $sql_akun = "INSERT INTO `akun`(`username`,`password`,`nrp_mahasiswa`) VALUES (?,?,?)";
+        $sql = "INSERT INTO `mahasiswa` (`nrp`, `nama`, `gender`, `tanggal_lahir`, `angkatan`, `foto_extention`) VALUES (?, ?, ?, ?, ?, ?);";
+        try {
+            Connection::startConnection();
+            Connection::getConnection()->begin_transaction();
+            $stmt = Connection::getConnection()->prepare($sql);
 
-        Connection::startConnection();
-        Connection::getConnection()->begin_transaction();
-        $stmtMHS = Connection::getConnection()->prepare($sql_mahasiswa);
+            if ($stmt === false) {
+                throw new Exception("Gagal request ke database");
+            }
 
-        $stmtMHS->bind_param(
-            'ssssis',
-            $this->getNRP(),
-            $this->getNama(),
-            $this->getGender(),
-            $this->getTanggalLahir(),
-            $this->getAngkatan(),
-            $this->getFotoExtention()
-        );
+            $nrp        = $this->getNRP();
+            $nama       = $this->getNama();
+            $gender     = $this->getGender();
+            $tanggal    = $this->getTanggalLahir();
+            $angkatan   = $this->getAngkatan();
+            $fotoExt    = $this->getFotoExtention();
 
-        $stmtMHS->execute();
-        $stmtMHS->close();
+            $stmt->bind_param(
+                'ssssis',
+                $nrp,
+                $nama,
+                $gender,
+                $tanggal,
+                $angkatan,
+                $fotoExt
+            );
 
-        $stmtAkun = Connection::getConnection()->prepare($sql_akun);
+            $stmt->execute();
 
-        $stmtAkun->bind_param(
-            'sss',
-            $this->getUsername(),
-            $password,
-            $this->getNRP()
-        );
+            if (!($stmt->affected_rows == 1)) {
+                throw new Exception("Data mahasiswa gagal dimasukan ke database,Tidak ada data yang disimpan.");
+            }
 
-        $stmtAkun->execute();
-        $stmtAkun->close();
-        Connection::getConnection()->commit();
-        if (Connection::getConnection() !== null) {
-            Connection::closeConnection();
+            parent::CreateInDatabase($this->getNRP(), "",$password, 0);
+            if ($stmt !== null) {
+                $stmt->close();
+            }
+            Connection::getConnection()->commit();
+        } catch (Exception $e) {
+            if (Connection::getConnection() !== null) {
+                Connection::getConnection()->rollback();
+            }
+            throw $e;
+        } finally {
+            if (Connection::getConnection() !== null) {
+                Connection::closeConnection();
+            }
         }
     }
 }

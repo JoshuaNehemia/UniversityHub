@@ -21,7 +21,7 @@ class Akun
      * @param string $password Menyimpan password akun
      * @param string $jenis Menyimpan jenis akun
      */
-    public function __construct($username, $nama, $jenis)
+    public function __construct(string $username, string $nama, string $jenis)
     {
         $this->setUsername($username);
         $this->setNama($nama);
@@ -81,7 +81,7 @@ class Akun
      * Menyimpan nilai jenis kedalam class
      * @param string $jenis
      */
-    public function setJenis($jenis)
+    public function setJenis(string $jenis)
     {
         if ($jenis == "") throw new Exception("Jenis tidak boleh kosong");
         $this->jenis = $jenis;
@@ -95,7 +95,7 @@ class Akun
      * @param string $password password akun
      * @return Akun akun tersebut;
      */
-    public static function LogIn_Akun($username, $password)
+    public static function LogIn_Akun(string $username, string $password)
     {
         $sql = "SELECT `username`,`nrp_mahasiswa`,`npk_dosen`,`isadmin` FROM `akun` WHERE `username` = ? AND `password` = ?;";
         try {
@@ -138,5 +138,48 @@ class Akun
             }
         }
     }
-    
+
+    public function CreateInDatabase(string $nrp = "", string $npk = "",string $password, int $isAdmin = 0)
+    {
+        if (!empty($nrp)) {
+            $sql  = "INSERT INTO `akun`(`username`, `password`,`nrp_mahasiswa`,`isadmin`) VALUES (?,?,?,?)";
+        } else if (!empty($npk)) {
+            $sql  = "INSERT INTO `akun`(`username`, `password`,`npk_dosen`,`isadmin`) VALUES (?,?,?,?)";
+        }
+        try {
+
+            $stmt = Connection::getConnection()->prepare($sql);
+            $username = $this->getUsername();
+
+            if (!empty($nrp)) {
+                $stmt->bind_param(
+                    'sssi',
+                    $username,
+                    $password,
+                    $nrp,
+                    $isAdmin
+                );
+            } else if (!empty($npk)) {
+                $stmt->bind_param(
+                    'sssi',
+                    $username,
+                    $password,
+                    $npk,
+                    $isAdmin
+                );
+            }
+
+            $stmt->execute();
+
+            if (!($stmt->affected_rows == 1)) {
+                throw new Exception("Data mahasiswa gagal dimasukan ke database,Tidak ada data yang disimpan.");
+            }
+
+            if ($stmt !== null) {
+                $stmt->close();
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
 }

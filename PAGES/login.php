@@ -1,9 +1,10 @@
 <?php
 session_start();
 
+// DEFINE ========================================================================================================================
 define("LOGIN_CONTROLLER_ADDRESS", "../CONTROLLER/login_controller.php");
 
-// If already logged in, redirect
+// CHECK ACCOUNT INTEGRITY
 if (isset($_SESSION['currentAccount'])) {
     header("Location: " . LOGIN_CONTROLLER_ADDRESS);
     exit();
@@ -31,7 +32,9 @@ if (isset($_SESSION['currentAccount'])) {
             </form>
         </div>
 
-        <?php if (isset($_SESSION['error_msg'])){
+        <?php 
+        // IF ERROR
+        if (isset($_SESSION['error_msg'])){
             echo '<div class="error block">';
             echo '<p class="error message">' .$_SESSION['error_msg'] .'</p>';
             echo '</div>';

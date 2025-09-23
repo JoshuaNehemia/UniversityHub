@@ -13,6 +13,7 @@ class Dosen extends Akun
 {
     private $npk;
     private $foto_extention;
+    private $foto_address;
 
     /**
      * Constructor untuk Class Dosen
@@ -51,6 +52,13 @@ class Dosen extends Akun
         return $this->foto_extention;
     }
 
+    public function getFotoAddress(){
+        return $this->foto_address;
+    }
+    public function setFotoAddress($address){
+        $this->foto_address = $address;
+    }
+
     // --- Setters ---
     /**
      * Menyimpan nilai npk kedalam class
@@ -70,31 +78,6 @@ class Dosen extends Akun
     }
 
     // Function
-    public static function LogIn(string $username, string $password)
-    {
-        $sql = "SELECT `username`,`npk`,`nama`,`foto_extension` FROM `akun` INNER JOIN `dosen` ON `akun`.`npk_dosen` = `dosen`.`npk` WHERE `username` = ? AND `password` = ?;";
-
-        Connection::startConnection();
-        $stmt = Connection::getCOnnection()->prepare($sql);
-        $stmt->bind_param('ss', $username, $password);
-        if ($stmt === false) {
-            throw new Exception("Gagal mempersiapkan data untuk disimpan ke database");
-        }
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $row = [];
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-        } else {
-            return null;
-        }
-        $stmt->close();
-        if (Connection::getConnection() !== null) {
-            Connection::closeConnection();
-        }
-        return new Dosen($row['username'], $row['nama'], $row['npk'], $row['foto_extension']);
-    }
-
     public static function LogIn_Dosen(string $username, string $password)
     {
         $sql = "SELECT `username`,`npk`,`nama`,`foto_extension` FROM `akun` INNER JOIN `dosen` ON `akun`.`npk_dosen` = `dosen`.`npk` WHERE `username` = ? AND `password` = ?;";
@@ -120,7 +103,7 @@ class Dosen extends Akun
             $stmt->close();
             return new Dosen($row['username'], $row['nama'], $row['npk'], $row['foto_extension']);
         } catch (Exception $e) {
-            throw new Exception($e->getMessage(), $e->getCode());
+            throw $e;
         } finally {
             if (Connection::getConnection() !== null) {
                 Connection::closeConnection();
@@ -128,43 +111,49 @@ class Dosen extends Akun
         }
     }
 
-    public function Create_Dosen($password)
+    public function CreateDosenInDatabase(string $password)
     {
-        $sql_dosen = "INSERT INTO `dosen` (`npk`, `nama`, `foto_extension`) VALUES (?, ?, ?)";
-        $sql_akun  = "INSERT INTO `akun`(`username`, `password`, `npk_dosen`) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO `dosen` (`npk`, `nama`, `foto_extension`) VALUES (?, ?, ?)";
 
         try {
             Connection::startConnection();
             Connection::getConnection()->begin_transaction();
+            $stmt = Connection::getConnection()->prepare($sql);
 
-            $stmtDSN = Connection::getConnection()->prepare($sql_dosen);
-            $stmtDSN->bind_param(
+            if ($stmt === false) {
+                throw new Exception("Gagal request ke database");
+            }
+
+            $npk     = $this->getNPK();
+            $nama    = $this->getNama();
+            $fotoExt = $this->getFotoExtention();
+
+            $stmt->bind_param(
                 'sss',
-                $this->getNPK(),
-                $this->getNama(),
-                $this->getFotoExtention()
+                $npk,
+                $nama,
+                $fotoExt
             );
-            $stmtDSN->execute();
-            $stmtDSN->close();
 
-            // Insert ke tabel akun
-            $stmtAkun = Connection::getConnection()->prepare($sql_akun);
-            $stmtAkun->bind_param(
-                'sss',
-                $this->getUsername(),
-                $password,
-                $this->getNPK()
-            );
-            $stmtAkun->execute();
-            $stmtAkun->close();
+            $stmt->execute();
 
+
+            if (!($stmt->affected_rows == 1)) {
+                throw new Exception("Data mahasiswa gagal dimasukan ke database,Tidak ada data yang disimpan.");
+            }
+
+            parent::CreateInDatabase("", $this->getNPK(), $password,0);
+            if ($stmt !== null) {
+                $stmt->close();
+            }
             Connection::getConnection()->commit();
         } catch (Exception $e) {
-            if (isset(Connection::getConnection())) {
+            if (Connection::getConnection() !== null) {
                 Connection::getConnection()->rollback();
             }
             throw $e;
         } finally {
+
             if (Connection::getConnection() !== null) {
                 Connection::closeConnection();
             }
