@@ -13,7 +13,7 @@ session_start();
 // DEFINE ========================================================================================================================
 define("MAX_IMAGE_SIZE", 10); // dalam MB
 define("CREATE_ACCOUNT_PAGE_ADDRESS", "../ADMIN/buat_akun.php");
-define("ENUM_JENIS", array("MAHASISWA", "DOSEN"));
+define("ENUM_JENIS", array("MAHASISWA", "DOSEN", "ADMIN"));
 
 
 // MAIN LOGIC ====================================================================================================================

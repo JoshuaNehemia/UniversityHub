@@ -8,7 +8,7 @@ session_start();
 // DEFINE ========================================================================================================================
 define("JQUERY_ADDRESS", "../SCRIPTS/jquery-3.7.1.min.js");
 define("CONTROLLER_ADDRESS", "../CONTROLLER/create_account_controller.php");
-define("ENUM_JENIS", array("MAHASISWA", "DOSEN"));
+define("ENUM_JENIS", array("MAHASISWA", "DOSEN", "ADMIN"));
 $label = "";
 $jenis = "";
 CheckAccountIntegrity();
