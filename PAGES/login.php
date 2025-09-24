@@ -16,6 +16,8 @@ if (isset($_SESSION['currentAccount'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>University Hub - Log In</title>
+    <link rel="stylesheet" href="../STYLES/root.css">
+    <link rel="stylesheet" href="../STYLES/form.css">
 </head>
 <body>
     <div class="container">

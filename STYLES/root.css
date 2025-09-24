@@ -1,0 +1,78 @@
+:root {
+    /* ====== COLORS ====== */
+    /* Main */
+    --first-color: #111827;   
+    --second-color: #2563EB;  
+    --third-color: #F3F4F6;   
+    --fourth-color: #9CA3AF;  
+    --fifth-color: #FFFFFF;   
+    --main-bg-color: #FFFFFF; 
+
+    /* Status */
+    --status-success: #16A34A;
+    --status-success-bg: #F0FDF4;
+
+    --status-failed: #DC2626;
+    --status-failed-bg: #FEF2F2;
+
+    --status-warning: #D97706;
+    --status-warning-bg: #FFFBEB;
+
+    --status-info: #0284C7;
+    --status-info-bg: #F0F9FF;
+
+    --status-waiting: #5B21B6;
+    --status-waiting-bg: #F5F3FF;
+
+    /* ====== TYPOGRAPHY ====== */
+    --font-normal: 'Inter', 'Segoe UI', sans-serif;
+    --font-heading: 'Poppins', 'Segoe UI', sans-serif;
+    --font-subheading: 'Roboto', 'Segoe UI', sans-serif;
+    --font-description: 'Nunito', 'Segoe UI', sans-serif;
+
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.25rem;
+    --font-size-xl: 1.5rem;
+    --font-size-2xl: 2rem;
+
+    /* ====== SPACING ====== */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+
+    /* ====== SHADOWS ====== */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.15);
+
+    /* ====== RADIUS ====== */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+
+    /* ====== TRANSITION ====== */
+    --transition-fast: 0.2s ease;
+    --transition-base: 0.3s ease;
+}
+
+/* ====== BASE STYLES ====== */
+body {
+    font-family: var(--font-normal);
+    font-size: var(--font-size-base);
+    background-color: var(--main-bg-color);
+    color: var(--first-color);
+}
+
+/* ====== HEADINGS ====== */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--first-color);
+    margin-bottom: var(--space-md);
+}
+
+h1 { font-size: var(--font-size-2xl); }
+h2 { font-size: var(--font-size-xl); }
+h3 { font-size: var(--font-size-lg); }
