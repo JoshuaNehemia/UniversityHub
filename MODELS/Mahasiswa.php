@@ -227,4 +227,48 @@ class Mahasiswa extends Akun
             }
         }
     }
+
+    /**
+     * Hapus data dari tabel Akun dan tabel Mahasiswa
+     * @param string $username username akun = nrp mahasiswa
+     */
+    public static function DeleteMahasiswaInDatabase(string $username)
+    {
+        $sqlAkun = "DELETE FROM akun WHERE username = ?";
+        $sqlMahasiswa = "DELETE FROM mahasiswa WHERE nrp = ?";
+
+        try {
+            Connection::startConnection();
+            Connection::getConnection()->begin_transaction();
+
+            // Hapus data di tabel akun dulu
+            $stmt = Connection::getConnection()->prepare($sqlAkun);
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            if ($stmt->affected_rows < 1) {
+                throw new Exception("Akun tidak ditemukan.");
+            }
+            $stmt->close();
+
+            // Lalu hapus data di tabel mahasiswa
+            $stmt2 = Connection::getConnection()->prepare($sqlMahasiswa);
+            $stmt2->bind_param("s", $username);
+            $stmt2->execute();
+            if ($stmt2->affected_rows < 1) {
+                throw new Exception("Data mahasiswa tidak ditemukan.");
+            }
+            $stmt2->close();
+
+            Connection::getConnection()->commit();
+        } catch (Exception $e) {
+            if (Connection::getConnection() !== null) {
+                Connection::getConnection()->rollback();
+            }
+            throw $e;
+        } finally {
+            if (Connection::getConnection() !== null) {
+                Connection::closeConnection();
+            }
+        }
+    }
 }

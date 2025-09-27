@@ -159,4 +159,49 @@ class Dosen extends Akun
             }
         }
     }
+
+    /**
+     * Hapus data dari tabel Akun dan tabel Dosen
+     * @param string $username username akun = npk dosen
+     */
+    public static function DeleteAccDosenInDatabase(string $username)
+    {
+        $sqlAkun = "DELETE FROM akun WHERE username = ?";
+        $sqlDosen= "DELETE FROM dosen WHERE npk = ?";
+
+        try {
+            Connection::startConnection();
+            Connection::getConnection()->begin_transaction();
+
+            // Hapus data di tabel akun dulu
+            $stmt = Connection::getConnection()->prepare($sqlAkun);
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            if ($stmt->affected_rows < 1) {
+                throw new Exception("Akun tidak ditemukan.");
+            }
+            $stmt->close();
+
+            // Lalu hapus data di tabel dosen
+            $stmt2 = Connection::getConnection()->prepare($sqlDosen);
+            $stmt2->bind_param("s", $username);
+            $stmt2->execute();
+            if ($stmt2->affected_rows < 1) {
+                throw new Exception("Data dosen tidak ditemukan.");
+            }
+            $stmt2->close();
+
+            Connection::getConnection()->commit();
+        } catch (Exception $e) {
+            if (Connection::getConnection() !== null) {
+                Connection::getConnection()->rollback();
+            }
+            throw $e;
+        } finally {
+            if (Connection::getConnection() !== null) {
+                Connection::closeConnection();
+            }
+        }
+    }
+
 }
