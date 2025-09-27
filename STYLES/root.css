@@ -1,12 +1,13 @@
 :root {
     /* ====== COLORS ====== */
     /* Main */
-    --first-color: #111827;   
-    --second-color: #2563EB;  
-    --third-color: #F3F4F6;   
-    --fourth-color: #9CA3AF;  
-    --fifth-color: #FFFFFF;   
-    --main-bg-color: #FFFFFF; 
+    --first-color: #261C15;       /* Teks utama */
+    --second-color: #4E6E5D;      /* Warna utama */
+    --third-color: #F7F7F2;       /* Background */
+    --fourth-color: #E4E6C3;      /* Border / highlight */
+    --fifth-color: #E08E45;       /* Aksen / tombol hover */
+    --main-bg-color: #F7F7F2;
+
 
     /* Status */
     --status-success: #16A34A;
@@ -59,6 +60,12 @@
 }
 
 /* ====== BASE STYLES ====== */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: var(--font-normal);
     font-size: var(--font-size-base);
@@ -76,3 +83,24 @@ h1, h2, h3, h4, h5, h6 {
 h1 { font-size: var(--font-size-2xl); }
 h2 { font-size: var(--font-size-xl); }
 h3 { font-size: var(--font-size-lg); }
+
+/* ====== ANIMATIONS & DECOR ====== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.admin-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+input[type="radio"] {
+    accent-color: var(--second-color);
+    cursor: pointer;
+}

@@ -17,7 +17,7 @@ define("OFFSET_PAGE", 2);
 // ===============================================================================================================================
 
 // Table
-$tableOpen   = "<table>";
+$tableOpen   = "<table class='styled-table'>";
 $tableClose  = "</table>";
 
 // Table Head
@@ -51,20 +51,22 @@ $tableCaptionClose  = "</caption>";
 // Column Edit
 $editPageAddress = "edit_data_akun.php";
 $editColumnHead = "<th>Edit</th>";
-$editColumnCellOpen = "<td><a href='{$editPageAddress}?username=";
+$editColumnCellOpen = "<td><a class='btn-action edit' href='{$editPageAddress}?username=";
 $editColumnCellClose = "'>Edit</a></td>";
 
 // Column Delete
-$deleteControllerAddress = "../CONTROLLER/delete_akun.php";
+$deleteControllerAddress = "../CONTROLLER/delete_account_controller.php";
 $deleteColumnHead = "<th>Delete</th>";
 $deleteColumnCellOpen = "<td><a href='{$deleteControllerAddress}?username=";
 $deleteColumnCellClose = "'>Delete</a></td>";
+// $deleteColumnCellMid = "&jenis=";
+// $deleteColumnCellClose = "' onclick=\"return confirm('Yakin ingin menghapus akun ini?');\">Delete</a></td>";
 
 // ===============================================================================================================================
 // ELEMENT FOR PAGING
 // (kalau ganti css disini)
 // ===============================================================================================================================
-$pagingHyperLinkOpen = "<a href='?currentPage=";
+$pagingHyperLinkOpen = "<a class='page-link' href='?currentPage=";
 $pagingHyperLinkJenis = "&jenis=";
 $pagingHyperLinkMid = "'>";
 $pagingHyperLinkClose = "</a>";
@@ -95,23 +97,44 @@ $numRows = GetNumRows($jenis, $keyword);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniversityHub - Admin</title>
+    <link rel="stylesheet" href="../STYLES/root.css">
+    <link rel="stylesheet" href="../STYLES/form.css">
+    <link rel="stylesheet" href="../STYLES/table.css">
     <script src="<?php echo JQUERY_ADDRESS; ?>"></script>
 </head>
 
 <body>
-    <br>
-    <h1>Daftar Akun <?php echo $label ?></h1>
-    <form id="selector-jenis">
-        <label for="jenis">Lihat Akun apa?</label><br>
-        <input type="radio" name="jenis" value="MAHASISWA" <?php if ($jenis === ENUM_JENIS[0]) echo "checked"; ?>> Mahasiswa
-        <input type="radio" name="jenis" value="DOSEN" <?php if ($jenis === ENUM_JENIS[1]) echo "checked"; ?>> Dosen
-    </form>
-    <?php
-    echo MakeTable();
-    DisplayInformation();
-    echo MakePaging($numRows, $currentPage);
-    ?>
+    <div class="top-left">
+        <a href="home.php" class="admin-btn small">← Kembali ke Home</a>
+    </div>
+    <div class="admin-wrapper">
+        <div class="admin-card-daftar-akun">
+            <h1 class="admin-header center">Daftar Akun <?php echo ucfirst($label) ?></h1>
+            <div class="admin-divider"></div>
+
+            <form id="selector-jenis" class="selector-box">
+            <label for="jenis">Lihat Akun apa?</label>
+            <div class="radio-group">
+                <label><input type="radio" name="jenis" value="MAHASISWA" <?php if ($jenis === ENUM_JENIS[0]) echo "checked"; ?>> Mahasiswa</label>
+                <label><input type="radio" name="jenis" value="DOSEN" <?php if ($jenis === ENUM_JENIS[1]) echo "checked"; ?>> Dosen</label>
+            </div>
+            </form>
+
+            <div class="table-container">
+                <?php
+                echo MakeTable();
+                ?>
+            </div>
+
+            <p class="info-data">Ditemukan <strong><?php echo $numRows; ?></strong> data</p>
+
+            <div class="pagination">
+                <?php echo MakePaging($numRows, $currentPage); ?>
+            </div>
+        </div>
+    </div>
 </body>
+
 
 </html>
 <script>
@@ -121,7 +144,12 @@ $numRows = GetNumRows($jenis, $keyword);
             window.location.href = "?jenis=" + selected;
         });
     });
+    $(document).on("click", ".btn-edit", function() {
+        let username = $(this).data("username");
+        window.location.href = "edit_data_akun.php?username=" + username;
+    });
 </script>
+
 <?php
 // FUNCTION ======================================================================================================================
 function CheckAccountIntegrity()
@@ -159,11 +187,6 @@ function GetColumn(&$data)
         $column[] = $key;
     }
     return $column;
-}
-function MakeTableCaption()
-{
-    global $tableCaptionOpen, $tableCaptionClose, $label;
-    return $tableCaptionOpen . "Table Data " . ucfirst($label) . $tableCaptionClose;
 }
 
 function MakeTableHead(&$data)
@@ -204,13 +227,12 @@ function MakeTable()
     global $data, $tableOpen, $tableClose;
     if (isset($data) && count($data) > 0) {
         $table = $tableOpen;
-        $table .= MakeTableCaption();
         $table .= MakeTableHead($data);
         $table .= MakeTableBody($data);
         $table .= $tableClose;
         return $table;
     } else {
-        return "<p>Tidak ada data tersedia.</p>";
+        return "<p class='info-data'>Tidak ada data tersedia.</p>";
     }
 }
 function DisplayInformation()
@@ -219,8 +241,7 @@ function DisplayInformation()
     echo "<p>Ditemukan {$numRows} buah data</p>";
 }
 
-function MakePaging($numRows, $currentPage)
-{
+function MakePaging($numRows, $currentPage) {
     global $pagingHyperLinkClose, $pagingHyperLinkMid, $pagingHyperLinkOpen, $pagingHyperLinkJenis, $jenis;
     $paging = "";
     if ($numRows > DISPLAY_PER_PAGE) {
@@ -228,6 +249,7 @@ function MakePaging($numRows, $currentPage)
         $totalPages = ceil($numRows / DISPLAY_PER_PAGE);
         $smallestPage = max($firstPage, ($currentPage - OFFSET_PAGE));
         $largestPage = min($totalPages, ($currentPage + OFFSET_PAGE));
+
         if (($largestPage - $smallestPage) < ((2*OFFSET_PAGE))) {
             if ($smallestPage == $firstPage) {
                 $largestPage = $firstPage + (2*OFFSET_PAGE);
@@ -235,21 +257,24 @@ function MakePaging($numRows, $currentPage)
                 $smallestPage = $totalPages - (2*OFFSET_PAGE);
             }
         }
-        if ($largestPage > $totalPages) {
-            $largestPage = $totalPages;
-        }
-        if ($smallestPage < $firstPage) {
-            $smallestPage = $firstPage;
-        }
+        if ($largestPage > $totalPages) $largestPage = $totalPages;
+        if ($smallestPage < $firstPage) $smallestPage = $firstPage;
+
         $previousPage = max($firstPage, ($currentPage - 1));
         $nextPage = min($totalPages, ($currentPage + 1));
-        $paging .= $pagingHyperLinkOpen . $firstPage . $pagingHyperLinkJenis . $jenis . $pagingHyperLinkMid . "<< First " . $pagingHyperLinkClose;
-        $paging .= $pagingHyperLinkOpen . $previousPage . $pagingHyperLinkJenis . $jenis . $pagingHyperLinkMid . "< Previous " . $pagingHyperLinkClose;
+
+        $paging .= "<div class='page-nav'>";
+        $paging .= $pagingHyperLinkOpen . $firstPage . $pagingHyperLinkJenis . $jenis . $pagingHyperLinkMid . "« First" . $pagingHyperLinkClose;
+        $paging .= $pagingHyperLinkOpen . $previousPage . $pagingHyperLinkJenis . $jenis . $pagingHyperLinkMid . "‹ Prev" . $pagingHyperLinkClose;
+
         for ($i = $smallestPage; $i <= $largestPage; $i++) {
-            $paging .= $pagingHyperLinkOpen . $i . $pagingHyperLinkJenis . $jenis . $pagingHyperLinkMid . "{$i} " . $pagingHyperLinkClose;
+            $activeClass = ($i == $currentPage) ? " active" : "";
+            $paging .= "<a class='page-link{$activeClass}' href='?currentPage={$i}{$pagingHyperLinkJenis}{$jenis}'>{$i}</a>";
         }
-        $paging .= $pagingHyperLinkOpen . $nextPage . $pagingHyperLinkJenis . $jenis . $pagingHyperLinkMid . "Next > " . $pagingHyperLinkClose;
-        $paging .= $pagingHyperLinkOpen . $totalPages . $pagingHyperLinkJenis . $jenis . $pagingHyperLinkMid . "Last >>" . $pagingHyperLinkClose;
+
+        $paging .= $pagingHyperLinkOpen . $nextPage . $pagingHyperLinkJenis . $jenis . $pagingHyperLinkMid . "Next ›" . $pagingHyperLinkClose;
+        $paging .= $pagingHyperLinkOpen . $totalPages . $pagingHyperLinkJenis . $jenis . $pagingHyperLinkMid . "Last »" . $pagingHyperLinkClose;
+        $paging .= "</div>";
     }
     return $paging;
 }

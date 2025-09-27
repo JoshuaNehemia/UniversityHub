@@ -244,3 +244,55 @@ function GetCountDosenByNama($keyword)
         }
     }
 }
+function GetAccountByUsername($username)
+{
+    $sql = "SELECT a.username, 
+                    a.nrp_mahasiswa AS nrp, 
+                    a.npk_dosen AS npk, 
+                    a.isadmin,
+                    m.nama AS nama_mhs, 
+                    m.gender, 
+                    m.tanggal_lahir, 
+                    m.angkatan, 
+                    m.foto_extention AS foto_mhs,
+                    d.nama AS nama_dosen, 
+                    d.foto_extension AS foto_dosen
+            FROM akun a
+            LEFT JOIN mahasiswa m ON a.nrp_mahasiswa = m.nrp
+            LEFT JOIN dosen d ON a.npk_dosen = d.npk
+            WHERE a.username = ?";
+
+    try {
+        Connection::startConnection();
+        $stmt = Connection::getConnection()->prepare($sql);
+
+        if ($stmt === false) {
+            throw new Exception("SQL Error: " . Connection::getConnection()->error);
+        }
+
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows == 0) {
+            return null;
+        }
+
+        $row = $result->fetch_assoc();
+
+        // Tentukan jenis akun
+        if ($row['isadmin'] == 1) {
+            $row['jenis'] = "ADMIN";
+        } elseif (!empty($row['npk'])) {
+            $row['jenis'] = "DOSEN";
+        } else {
+            $row['jenis'] = "MAHASISWA";
+        }
+
+        return $row;
+    } catch (Exception $e) {
+        throw $e;
+    } finally {
+        Connection::closeConnection();
+    }
+}
