@@ -27,7 +27,7 @@ function main()
         $jenis = strtoupper($akun['jenis']);  // "DOSEN" / "MAHASISWA"
         print_r($akun);
         if ($jenis === "DOSEN") {
-            Dosen::DeleteAccDosenInDatabase($username);
+            Dosen::DeleteAccDosenInDatabase($username,$akun['npk']);
         } elseif ($jenis === "MAHASISWA") {
             echo "MASUK SINI";
             Mahasiswa::DeleteMahasiswaInDatabase($username,$akun['nrp']);
@@ -36,12 +36,12 @@ function main()
         }
 
         $_SESSION['success_msg'] = "Akun $username berhasil dihapus.";
-        //header("Location: " . DAFTAR_AKUN_PAGE_ADDRESS);
+        header("Location: " . DAFTAR_AKUN_PAGE_ADDRESS);
         exit();
     } catch (Exception $e) {
         $_SESSION['error_msg'] = $e->getMessage();
         print_r($e);
-        //header("Location: " . DAFTAR_AKUN_PAGE_ADDRESS);
+        header("Location: " . DAFTAR_AKUN_PAGE_ADDRESS);
         exit();
     }
 }

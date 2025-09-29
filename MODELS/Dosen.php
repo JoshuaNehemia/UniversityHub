@@ -164,7 +164,7 @@ class Dosen extends Akun
      * Hapus data dari tabel Akun dan tabel Dosen
      * @param string $username username akun = npk dosen
      */
-    public static function DeleteAccDosenInDatabase(string $username)
+    public static function DeleteAccDosenInDatabase(string $username,string $npk)
     {
         $sqlAkun = "DELETE FROM akun WHERE username = ?";
         $sqlDosen= "DELETE FROM dosen WHERE npk = ?";
@@ -184,7 +184,7 @@ class Dosen extends Akun
 
             // Lalu hapus data di tabel dosen
             $stmt2 = Connection::getConnection()->prepare($sqlDosen);
-            $stmt2->bind_param("s", $username);
+            $stmt2->bind_param("s", $npk);
             $stmt2->execute();
             if ($stmt2->affected_rows < 1) {
                 throw new Exception("Data dosen tidak ditemukan.");
