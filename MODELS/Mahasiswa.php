@@ -232,7 +232,7 @@ class Mahasiswa extends Akun
      * Hapus data dari tabel Akun dan tabel Mahasiswa
      * @param string $username username akun = nrp mahasiswa
      */
-    public static function DeleteMahasiswaInDatabase(string $username)
+    public static function DeleteMahasiswaInDatabase(string $username, string $nrp)
     {
         $sqlAkun = "DELETE FROM akun WHERE username = ?";
         $sqlMahasiswa = "DELETE FROM mahasiswa WHERE nrp = ?";
@@ -252,7 +252,7 @@ class Mahasiswa extends Akun
 
             // Lalu hapus data di tabel mahasiswa
             $stmt2 = Connection::getConnection()->prepare($sqlMahasiswa);
-            $stmt2->bind_param("s", $username);
+            $stmt2->bind_param("s", $nrp);
             $stmt2->execute();
             if ($stmt2->affected_rows < 1) {
                 throw new Exception("Data mahasiswa tidak ditemukan.");

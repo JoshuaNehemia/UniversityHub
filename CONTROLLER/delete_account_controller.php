@@ -1,8 +1,8 @@
 <?php
-require_once(__DIR__ . '/../MODELS/Akun.php');
-require_once(__DIR__ . '/../MODELS/Dosen.php');
-require_once(__DIR__ . '/../MODELS/Mahasiswa.php');
-
+require_once('../MODELS/Akun.php');
+require_once('../MODELS/Dosen.php');
+require_once('../MODELS/Mahasiswa.php');
+require_once("../CONTROLLER/account_list_controller.php");
 use MODELS\Akun;
 use MODELS\Dosen;
 use MODELS\Mahasiswa;
@@ -23,22 +23,25 @@ function main()
         CheckAccountIntegrity();
 
         $username = $_GET['username'];
-        $jenis = strtoupper($_GET['jenis']);  // "DOSEN" / "MAHASISWA"
-
+        $akun = GetAccountByUsername($username);
+        $jenis = strtoupper($akun['jenis']);  // "DOSEN" / "MAHASISWA"
+        print_r($akun);
         if ($jenis === "DOSEN") {
-            Dosen::DeleteDosenInDatabase($username);
+            Dosen::DeleteAccDosenInDatabase($username);
         } elseif ($jenis === "MAHASISWA") {
-            Mahasiswa::DeleteMahasiswaInDatabase($username);
+            echo "MASUK SINI";
+            Mahasiswa::DeleteMahasiswaInDatabase($username,$akun['nrp']);
         } else {
             throw new Exception("Jenis akun tidak valid.");
         }
 
         $_SESSION['success_msg'] = "Akun $username berhasil dihapus.";
-        header("Location: " . DAFTAR_AKUN_PAGE_ADDRESS);
+        //header("Location: " . DAFTAR_AKUN_PAGE_ADDRESS);
         exit();
     } catch (Exception $e) {
         $_SESSION['error_msg'] = $e->getMessage();
-        header("Location: " . DAFTAR_AKUN_PAGE_ADDRESS);
+        print_r($e);
+        //header("Location: " . DAFTAR_AKUN_PAGE_ADDRESS);
         exit();
     }
 }

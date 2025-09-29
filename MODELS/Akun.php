@@ -139,7 +139,7 @@ class Akun
         }
     }
 
-    public function CreateInDatabase(string $nrp = "", string $npk = "",string $password, int $isAdmin = 0)
+    public function CreateInDatabase(string $nrp = "", string $npk = "", string $password, int $isAdmin = 0)
     {
         if (!empty($nrp)) {
             $sql  = "INSERT INTO `akun`(`username`, `password`,`nrp_mahasiswa`,`isadmin`) VALUES (?,?,?,?)";
@@ -182,7 +182,7 @@ class Akun
         }
     }
 
-    public function UpdateInDatabase(string $usernameBaru, string $password, string $nrp = "", string $npk = "", string $nama = "", string $gender = "", string $tanggal_lahir = "", string $angkatan = "", string $foto_extention = "") 
+    public function UpdateInDatabase(string $usernameBaru, string $password, string $nrp = "", string $npk = "", string $nama = "", string $gender = "", string $tanggal_lahir = "", string $angkatan = "", string $foto_extention = "")
     {
         try {
             Connection::startConnection();
@@ -211,7 +211,6 @@ class Akun
                 $stmtMhs->bind_param("ssssss", $nama, $gender, $tanggal_lahir, $angkatan, $foto_extention, $nrp);
                 $stmtMhs->execute();
                 $stmtMhs->close();
-
             } else if (!empty($npk)) {
                 $sqlAkun = "UPDATE akun SET `username` = ?, `password` = ?, `npk_dosen` = ? WHERE `username` = ?";
                 $stmtAkun = $conn->prepare($sqlAkun);
@@ -238,7 +237,6 @@ class Akun
             } else {
                 throw new Exception("NRP atau NPK harus diisi untuk update");
             }
-
         } catch (Exception $e) {
             throw $e;
         }
@@ -250,8 +248,7 @@ class Akun
      * @param string $oldPassword password lama yang diketikkan user
      * @return bool true jika password cocok
      */
-
-        public static function VerifyPassword(string $username, string $oldPassword)
+    public static function VerifyPassword(string $username, string $oldPassword)
     {
         $sql = "SELECT `password` FROM `akun` WHERE `username` = ?;";
         try {
@@ -290,7 +287,6 @@ class Akun
      * @param string $newPassword password baru akun
      * @return bool true jika berhasil update
      */
-
     public static function UpdatePasswordInDatabase(string $username, string $newPassword)
     {
         $sql = "UPDATE `akun` SET `password` = ? WHERE `username` = ?;";
@@ -304,8 +300,7 @@ class Akun
 
             $stmt->bind_param('ss', $newPassword, $username);
             $stmt->execute();
-            if (!($stmt->affected_rows == 1)) 
-            {
+            if (!($stmt->affected_rows == 1)) {
                 $stmt->close();
                 throw new Exception("Password gagal diperbarui. Tidak ada perubahan yang disimpan.");
             }
@@ -321,5 +316,4 @@ class Akun
             }
         }
     }
-
 }

@@ -1,19 +1,61 @@
 <?php
+// IMPORT
 require_once('../MODELS/Akun.php');
+require_once('../MODELS/Mahasiswa.php');
+require_once('../MODELS/Dosen.php');
 require_once('../DATABASE/Connection.php');
 session_start();
 
 use DATABASE\Connection;
+use MODELS\Akun;
+use MODELS\Dosen;
+use MODELS\Mahasiswa;
 
-if (!isset($_SESSION['currentAccount']) || $_SESSION['currentAccount']->getJenis() !== 'ADMIN') {
-    $_SESSION['error_msg'] = "Anda tidak memiliki akses.";
-    header("Location: ../ADMIN/daftar_akun.php");
-    exit();
+//DEFINE
+define("BACK_PAGE_ADDRESS", "../ADMIN/daftar_akun.php");
+
+// MAIN LOGIC
+main();
+
+// FUNCTIONS
+function main()
+{
+    try {
+        //VALIDATION
+        CheckAccountIntegrity();
+        CheckDataIntegrity();
+    } catch (Exception $e) {
+        ThrowErrorBackToPage($e,BACK_PAGE_ADDRESS);
+    }
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: ../ADMIN/daftar_akun.php");
+function ThrowErrorBackToPage(Exception $e,$address){
+    $_SESSION['error_msg'] = $e->getMessage();
+    header("Location: " . $address);
     exit();
+
+}
+
+function CheckAccountIntegrity()
+{
+    if (!isset($_SESSION['currentAccount'])) {
+        header("Location: ../PAGES/login.php");
+    }
+
+    $currentAccount = $_SESSION['currentAccount'];
+
+    if (!($currentAccount->getJenis() == 'ADMIN')) {
+        header("Location: ../ERROR/error.php?code=403&msg=Anda tidak memiliki akses terhadap halaman ini!");
+    }
+}
+
+
+function CheckDataIntegrity()
+{
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception("Metode request invalid");
+        exit();
+    }
 }
 
 $oldUsername = $_POST['old_username'] ?? '';
@@ -37,7 +79,7 @@ try {
     $conn->begin_transaction();
 
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
-        $allowed = ['jpg','jpeg','png','gif'];
+        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
         $name = $_FILES['foto']['name'];
         $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
         if (!in_array($ext, $allowed)) {
@@ -45,7 +87,12 @@ try {
         }
         $uploadExt = '.' . $ext;
         $targetName = ($newUsername !== '' ? $newUsername : $oldUsername) . $uploadExt;
-        $targetDir = __DIR__ . '/../UPLOADS/';
+        if($jenis === 'MAHASISWA'){
+            $targetName = $nrp . $uploadExt;
+        } elseif ($jenis === 'DOSEN'){
+            $targetName = $npk . $uploadExt;
+        }
+        $targetDir = __DIR__ . '/../DATABASE/';
         if (!is_dir($targetDir)) mkdir($targetDir, 0755, true);
         $targetPath = $targetDir . $targetName;
         if (!move_uploaded_file($_FILES['foto']['tmp_name'], $targetPath)) {
@@ -84,7 +131,7 @@ try {
         $sql = "UPDATE mahasiswa SET nrp = ?, nama = ?, gender = ?, tanggal_lahir = ?, angkatan = ?, foto_extention = ? WHERE nrp = ?";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new Exception("Prepare error: " . $conn->error);
-        $stmt->bind_param('sssssss', $nrp, $nama, $gender, $tanggalToSave, $angkatan, $fotoToSave, $oldNrp);
+        $stmt->bind_param('sssssss', $nrp, $nama, $gender, $tanggal, $angkatan, $fotoToSave, $oldNrp);
         $stmt->execute();
         if ($stmt->affected_rows < 0) throw new Exception("Gagal update mahasiswa");
         $stmt->close();
@@ -103,7 +150,6 @@ try {
         $stmt->execute();
         if ($stmt->affected_rows < 0) throw new Exception("Gagal update akun (mahasiswa)");
         $stmt->close();
-
     } elseif ($jenis === 'DOSEN') {
         $sql = "SELECT npk_dosen FROM akun WHERE username = ?";
         $stmt = $conn->prepare($sql);
@@ -172,9 +218,9 @@ try {
     $conn->commit();
 
     $_SESSION['success_msg'] = "Data akun berhasil diperbarui.";
-    header("Location: ../ADMIN/daftar_akun.php");
+    // DISINI WOY ========================================================================================
+    //header("Location: ../ADMIN/daftar_akun.php");
     exit();
-
 } catch (Exception $e) {
     if (isset($conn) && $conn->connect_errno === 0) {
         $conn->rollback();

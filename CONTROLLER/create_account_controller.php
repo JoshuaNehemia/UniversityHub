@@ -135,24 +135,36 @@ function CheckUploaddedImage()
     }
 }
 
-function SaveUploadedImage($jenis, $username)
+function SaveUploadedImage($jenis, $username, $nrp = "", $npk = "")
 {
     try {
         $address = "../DATABASE/{$jenis}/";
 
-        if (!is_dir($address)) {
-            if (!mkdir($address, 0777, true)) {
-                throw new Exception("Gagal membuat folder upload.");
+        if ($jenis == ENUM_JENIS[0]) {
+            if (!is_dir($address)) {
+                if (!mkdir($address, 0777, true)) {
+                    throw new Exception("Gagal membuat folder upload.");
+                }
             }
+            $fileTmp  = $_FILES['foto']['tmp_name'];
+            $fileName = $_FILES['foto']['name'];
+            $extention = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            $address = $address . $nrp . "." . $extention;
+        } else if ($jenis == ENUM_JENIS[1]) {
+            $address = $address . $npk . "/";
+            if (!is_dir($address)) {
+                if (!mkdir($address, 0777, true)) {
+                    throw new Exception("Gagal membuat folder upload.");
+                }
+            }
+            $fileTmp  = $_FILES['foto']['tmp_name'];
+            $fileName = $_FILES['foto']['name'];
+            $extention = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            $address = $address . $npk . "." . $extention;
         }
-
-        $fileTmp  = $_FILES['foto']['tmp_name'];
-        $fileName = $_FILES['foto']['name'];
-        $extention = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-        $address = $address . $username . "." . $extention;
 
         move_uploaded_file($fileTmp, $address);
     } catch (Exception $e) {
-        throw new Exception("Failed to save file: " + $e->getMessage());
+        throw new Exception("Gagal menyimpan file: " + $e->getMessage());
     }
 }
