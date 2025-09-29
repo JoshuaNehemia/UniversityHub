@@ -66,11 +66,10 @@ $nama        = trim($_POST['nama'] ?? '');
 $nrp         = trim($_POST['nrp'] ?? '');
 $npk         = trim($_POST['npk'] ?? '');
 $gender      = $_POST['gender'] ?? '';
-$tanggal     = $_POST['tanggal_lahir'] ?? '';
+$tanggal     = $_POST['tanggal'] ?? '';
 $angkatan    = $_POST['angkatan'] ?? '';
 
 $uploadExt = null;
-
 try {
     Connection::startConnection();
     $conn = Connection::getConnection();
@@ -219,7 +218,7 @@ try {
 
     $_SESSION['success_msg'] = "Data akun berhasil diperbarui.";
     // DISINI WOY ========================================================================================
-    //header("Location: ../ADMIN/daftar_akun.php");
+    header("Location: ../ADMIN/daftar_akun.php");
     exit();
 } catch (Exception $e) {
     if (isset($conn) && $conn->connect_errno === 0) {
