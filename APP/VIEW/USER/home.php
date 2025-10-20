@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../MODELS/Dosen.php';
-require_once __DIR__ . '/../MODELS/Mahasiswa.php';
+require_once(__DIR__ . '/../../MODELS/Dosen.php');
+require_once(__DIR__ . '/../../MODELS/Mahasiswa.php');
 
 use MODELS\Dosen;
 use MODELS\Mahasiswa;
@@ -78,7 +78,7 @@ $imageElementClose = "' alt='Foto Profil' class='profile-picture'>";
 function CheckAccountIntegrity()
 {
     if (!isset($_SESSION['currentAccount'])) {
-        header("Location: login.php");
+        header("Location: ../login.php");
         exit();
     }
 }

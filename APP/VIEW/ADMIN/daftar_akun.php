@@ -1,13 +1,13 @@
 <?php
-require_once("../MODELS/Akun.php");
-require_once("../CONTROLLER/account_list_controller.php");
+require_once(__DIR__ ."/../../MODELS/Akun.php");
+require_once(__DIR__ ."/../../CONTROLLER/account_list_controller.php");
 
 use MODELS\Akun;
 
 session_start();
 
 // DEFINE ========================================================================================================================
-define("JQUERY_ADDRESS", "../SCRIPTS/jquery-3.7.1.min.js");
+define("JQUERY_ADDRESS", "../../SCRIPTS/jquery-3.7.1.min.js");
 define("DISPLAY_PER_PAGE", 5);
 define("OFFSET_PAGE", 2);
 
@@ -55,7 +55,7 @@ $editColumnCellOpen = "<td><a class='btn-action edit' href='{$editPageAddress}?u
 $editColumnCellClose = "'>Edit</a></td>";
 
 // Column Delete
-$deleteControllerAddress = "../CONTROLLER/delete_account_controller.php";
+$deleteControllerAddress = "../../CONTROLLER/delete_account_controller.php";
 $deleteColumnHead = "<th>Delete</th>";
 $deleteColumnCellOpen = "<td><a href='{$deleteControllerAddress}?username=";
 $deleteColumnCellClose = "'>Delete</a></td>";
@@ -143,10 +143,6 @@ $numRows = GetNumRows($jenis, $keyword);
             let selected = $(this).val();
             window.location.href = "?jenis=" + selected;
         });
-    });
-    $(document).on("click", ".btn-edit", function() {
-        let username = $(this).data("username");
-        window.location.href = "edit_data_akun.php?username=" + username;
     });
 </script>
 

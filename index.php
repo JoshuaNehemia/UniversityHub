@@ -1,6 +1,6 @@
 <?php
 session_start();
-header('Location: PAGES/login.php');
+header('Location: APP/login.php');
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -1,8 +1,8 @@
 <?php
 
-require_once('../MODELS/Akun.php');
-require_once('../MODELS/Dosen.php');
-require_once('../MODELS/Mahasiswa.php');
+require_once(__DIR__ .'/../MODELS/Akun.php');
+require_once(__DIR__ .'/../MODELS/Dosen.php');
+require_once(__DIR__ .'/../MODELS/Mahasiswa.php');
 
 use MODELS\Akun;
 use MODELS\Dosen;

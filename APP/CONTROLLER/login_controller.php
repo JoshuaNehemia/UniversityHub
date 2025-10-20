@@ -11,11 +11,11 @@ use MODELS\Mahasiswa;
 session_start();
 
 // DEFINE ========================================================================================================================
-define("ADMIN_HOME_PAGE_ADDRESS", "../ADMIN/home.php");
-define("HOME_PAGE_ADDRESS", "../PAGES/home.php");
+define("ADMIN_PAGE_ADDRESS", "../PAGES/ADMIN/");
+define("USER_PAGE_ADDRESS", "../PAGES/USER/");
 define("LOGIN_PAGE_ADDRESS", "../PAGES/login.php");
-define("ENUM_JENIS", array("MAHASISWA", "DOSEN", "ADMIN"));
-define("PICTURE_DATABASE", "../DATABASE/");
+define("ENUM_JENIS", array("ADMIN", "MAHASISWA", "DOSEN"));
+define("PICTURE_DATABASE", "../../DATABASE/");
 // MAIN LOGIC ====================================================================================================================
 main();
 
@@ -25,10 +25,10 @@ function main()
     try {
         if (IsLoggedIn()) {
             $currentAccount = $_SESSION['currentAccount'];
-            if ($currentAccount->getJenis() === "ADMIN") {
-                header("Location: " . ADMIN_HOME_PAGE_ADDRESS);
+            if ($currentAccount->getJenis() === ENUM_JENIS[0]) {
+                header("Location: " . ADMIN_PAGE_ADDRESS);
             } else {
-                header("Location: " . HOME_PAGE_ADDRESS);
+                header("Location: " . USER_PAGE_ADDRESS);
             }
         } else if (IsLoggingIn()) {
             LogIn();
@@ -55,20 +55,17 @@ function IsLoggingIn()
 
 function LogIn()
 {
-    $currentAccount = Akun::LogIn_Akun($_POST['username'], $_POST['password']);
-    if (!$currentAccount) {
-        throw new Exception("Username atau password salah");
-    }
+    $jenis = Akun::getAccountRole($_POST['username']);
 
-    switch ($currentAccount->getJenis()) {
-        case ENUM_JENIS[2]:
-            Admin_LogIn_Proses($currentAccount);
-            break;
+    switch ($jenis) {
         case ENUM_JENIS[0]:
-            Mahasiswa_LogIn_Proses($currentAccount);
+            Admin_LogIn_Proses();
             break;
         case ENUM_JENIS[1]:
-            Dosen_LogIn_Proses($currentAccount);
+            Mahasiswa_LogIn_Proses();
+            break;
+        case ENUM_JENIS[2]:
+            Dosen_LogIn_Proses();
             break;
         default:
             throw new Exception("Data akun anda mengalami kesalahan");
@@ -76,24 +73,25 @@ function LogIn()
 }
 
 
-function Admin_LogIn_Proses($currentAccount)
+function Admin_LogIn_Proses()
 {
+    $currentAccount = Akun::logIn($_POST['username'], $_POST['password']);
     $_SESSION['currentAccount'] = $currentAccount;
-    header("Location: " . ADMIN_HOME_PAGE_ADDRESS);
+    header("Location: " . ADMIN_PAGE_ADDRESS . $_POST['from']);
 }
 
-function Mahasiswa_LogIn_Proses($currentAccount)
+function Mahasiswa_LogIn_Proses()
 {
     $currentAccount = Mahasiswa::LogIn_Mahasiswa($_POST['username'], $_POST['password']);
     $currentAccount->setFotoAddress(PICTURE_DATABASE . $currentAccount->getJenis() . "/" . $currentAccount->getUsername() . "." . $currentAccount->getFotoExtention());
     $_SESSION['currentAccount'] = $currentAccount;
-    header("Location: " . HOME_PAGE_ADDRESS);
+    header("Location: " . USER_PAGE_ADDRESS . $_POST['from']);
 }
 
-function Dosen_LogIn_Proses($currentAccount)
+function Dosen_LogIn_Proses()
 {
     $currentAccount = Dosen::logIn_Dosen($_POST['username'], $_POST['password']);
     $currentAccount->setFotoAddress(PICTURE_DATABASE . $currentAccount->getJenis() . "/" . $currentAccount->getUsername() . "." . $currentAccount->getFotoExtention());
     $_SESSION['currentAccount'] = $currentAccount;
-    header("Location: " . HOME_PAGE_ADDRESS);
+    header("Location: " . USER_PAGE_ADDRESS . $_POST['from']);
 }

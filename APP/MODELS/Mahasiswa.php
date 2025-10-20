@@ -2,8 +2,8 @@
 
 namespace MODELS;
 
-require_once('../DATABASE/Connection.php');
-require_once('Akun.php');
+require_once(__DIR__ .'/../DATABASE/Connection.php');
+require_once(__DIR__ .'/Akun.php');
 
 use DATABASE\Connection;
 use MODELS\Akun;

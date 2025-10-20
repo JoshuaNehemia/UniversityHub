@@ -5,14 +5,18 @@ session_start();
 define("LOGIN_CONTROLLER_ADDRESS", "../CONTROLLER/login_controller.php");
 define("JQUERY_ADDRESS", "../SCRIPTS/jquery-3.7.1.min.js");
 
-// CHECK ACCOUNT INTEGRITY
-if (isset($_SESSION['currentAccount'])) {
-    header("Location: " . LOGIN_CONTROLLER_ADDRESS);
-    exit();
+// MAIN
+main();
+if (isset($_GET['from'])) {
+    $from = $_GET['from'];
+}
+else{
+    $from = "home.php";
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,6 +25,7 @@ if (isset($_SESSION['currentAccount'])) {
     <link rel="stylesheet" href="../STYLES/form.css">
     <script src="<?php echo JQUERY_ADDRESS; ?>"></script>
 </head>
+
 <body>
     <div class="login-container">
         <div class="login-left">
@@ -39,20 +44,34 @@ if (isset($_SESSION['currentAccount'])) {
 
                     <label for="password">Password</label>
                     <input type="password" name="password" placeholder="Fill your password" required>
-
+                    <input type="hidden" name="from" value="<?php echo $from; ?>">
                     <input type="submit" value="Log In" class="btn-submit">
                 </form>
 
-                <?php 
+                <?php
                 // IF ERROR
-                if (isset($_SESSION['error_msg'])){
+                if (isset($_SESSION['error_msg'])) {
                     echo '<div class="error block">';
-                    echo '<p class="error message">' .$_SESSION['error_msg'] .'</p>';
+                    echo '<p class="error message">' . $_SESSION['error_msg'] . '</p>';
                     echo '</div>';
                     unset($_SESSION['error_msg']);
-                }?>
+                } ?>
             </div>
         </div>
     </div>
 </body>
+
 </html>
+<?php
+function main()
+{
+    checkAccountIntegrity();
+}
+function checkAccountIntegrity()
+{
+    if (isset($_SESSION['currentAccount'])) {
+        header("Location: " . LOGIN_CONTROLLER_ADDRESS);
+        exit();
+    }
+}
+?>

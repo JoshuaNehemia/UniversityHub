@@ -1,5 +1,5 @@
 <?php
-require_once('../MODELS/Akun.php');
+require_once(__DIR__ .'/../../MODELS/Akun.php');
 use MODELS\Akun;
 
 session_start();

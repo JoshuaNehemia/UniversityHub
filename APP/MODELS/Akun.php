@@ -2,7 +2,7 @@
 
 namespace MODELS;
 
-require_once('../DATABASE/Connection.php');
+require_once(__DIR__ .'/../DATABASE/Connection.php');
 
 use DATABASE\Connection;
 use Exception;
@@ -89,12 +89,7 @@ class Akun
 
 
     // FUNCTION =======================================================================================================
-    /**
-     * Melakukan log in dengan mengecek username dan password ke Database
-     * @param string $username username akun
-     * @param string $password password akun
-     * @return Akun akun tersebut;
-     */
+    // Ini lama 
     public static function LogIn_Akun(string $username, string $password)
     {
         $sql = "SELECT `username`,`nrp_mahasiswa`,`npk_dosen`,`isadmin` FROM `akun` WHERE `username` = ? AND `password` = ?;";
@@ -137,6 +132,95 @@ class Akun
                 Connection::closeConnection();
             }
         }
+    }
+
+    //baru
+    public static function logIn(string $username, string $password)
+    {
+        $sql = "SELECT `username`,`nrp_mahasiswa`,`npk_dosen`,`isadmin` FROM `akun` WHERE `username` = ? AND `password` = ?;";
+        try {
+            Connection::startConnection();
+            $stmt = Connection::getCOnnection()->prepare($sql);
+
+            if ($stmt === false) {
+                throw new Exception("Gagal request ke database");
+            }
+
+            $stmt->bind_param('ss', $username, $password);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            if ($result->num_rows > 0) {
+                $row = $result->fetch_assoc();
+            } else {
+                throw new Exception("Username atau password salah");
+            }
+
+            $stmt->close();
+
+            $jenis = '';
+            if ($row['isadmin'] == '1') {
+                $jenis = 'ADMIN';
+            } else {
+                throw new Exception("Akun tidak memiliki data yang sesuai");
+            }
+
+            return new Akun($row['username'], $jenis, $jenis);
+        } catch (Exception $e) {
+            throw $e;
+        } finally {
+            if (Connection::getConnection() !== null) {
+                Connection::closeConnection();
+            }
+        }
+    }
+
+    public static function getAccountRole($username)
+    {
+        $sql = "SELECT `nrp_mahasiswa`,`npk_dosen`,`isadmin` FROM `akun` WHERE `username` = ?;";
+        try {
+            Connection::startConnection();
+            $stmt = Connection::getCOnnection()->prepare($sql);
+
+            if ($stmt === false) {
+                throw new Exception("Gagal request ke database");
+            }
+
+            $stmt->bind_param('s', $username);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            if ($result->num_rows > 0) {
+                $row = $result->fetch_assoc();
+            } else {
+                throw new Exception("Username atau password salah");
+            }
+
+            $stmt->close();
+
+            $jenis = '';
+            if ($row['isadmin'] == '1') {
+                $jenis = 'ADMIN';
+            } else if (!empty($row['npk_dosen'])) {
+                $jenis = 'DOSEN';
+            } else if (!empty($row['nrp_mahasiswa'])) {
+                $jenis = 'MAHASISWA';
+            } else {
+                throw new Exception("Akun tidak memiliki data yang sesuai");
+            }
+
+            return $jenis;
+        } catch (Exception $e) {
+            throw $e;
+        } finally {
+            if (Connection::getConnection() !== null) {
+                Connection::closeConnection();
+            }
+        }
+    }
+
+    public static function getData($username){
+        return;
     }
 
     public function CreateInDatabase(string $nrp = "", string $npk = "", string $password, int $isAdmin = 0)

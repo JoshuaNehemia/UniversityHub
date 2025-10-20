@@ -2,7 +2,7 @@
 
 namespace DATABASE;
 
-require_once("../.ENV/database.php");
+require_once(__DIR__ ."/../.ENV/database.php");
 
 use mysqli;
 use Exception;
