@@ -1,8 +1,8 @@
 <?php
 
-require_once(__DIR__ .'/../MODELS/Akun.php');
-require_once(__DIR__ .'/../MODELS/Dosen.php');
-require_once(__DIR__ .'/../MODELS/Mahasiswa.php');
+require_once(__DIR__ .'/../../MODELS/Akun.php');
+require_once(__DIR__ .'/../../MODELS/Dosen.php');
+require_once(__DIR__ .'/../../MODELS/Mahasiswa.php');
 
 use MODELS\Akun;
 use MODELS\Dosen;
@@ -12,7 +12,8 @@ session_start();
 
 // DEFINE ========================================================================================================================
 define("MAX_IMAGE_SIZE", 10); // dalam MB
-define("CREATE_ACCOUNT_PAGE_ADDRESS", "../ADMIN/buat_akun.php");
+define("CREATE_ACCOUNT_PAGE_ADDRESS", "../../VIEW/ADMIN/buat_akun.php");
+define("PICTURE_DATABASE","../../../DATABASE/");
 define("ENUM_JENIS", array("MAHASISWA", "DOSEN", "ADMIN"));
 
 
@@ -82,7 +83,6 @@ function CreateMahasiswa()
         SaveUploadedImage(ENUM_JENIS[0], $username);
         return $mahasiswa;
     } else {
-        echo "DISINI WOY";
         throw new Exception("Data tidak lengkap, mohon lengkapi pengisian data");
     }
 }
@@ -138,7 +138,7 @@ function CheckUploaddedImage()
 function SaveUploadedImage($jenis, $username, $nrp = "", $npk = "")
 {
     try {
-        $address = "../DATABASE/{$jenis}/";
+        $address = PICTURE_DATABASE ."{$jenis}/";
 
         if ($jenis == ENUM_JENIS[0]) {
             if (!is_dir($address)) {

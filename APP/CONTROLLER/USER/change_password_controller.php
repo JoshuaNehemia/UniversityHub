@@ -10,7 +10,7 @@ use MODELS\Mahasiswa;
 session_start();
 
 // DEFINE ========================================================================================================================
-define("LOGIN_PAGE_ADDRESS", "../PAGES/login.php");
+define("LOGIN_PAGE_ADDRESS", "../VIEW/USER/login.php");
 define("UBAH_PAGE_ADDRESS", "../PAGES/ubah_password.php");
 
 // MAIN LOGIC ====================================================================================================================

@@ -11,11 +11,11 @@ use MODELS\Mahasiswa;
 session_start();
 
 // DEFINE ========================================================================================================================
-define("ADMIN_PAGE_ADDRESS", "../PAGES/ADMIN/");
-define("USER_PAGE_ADDRESS", "../PAGES/USER/");
+define("ADMIN_PAGE_ADDRESS", "../VIEW/ADMIN/");
+define("USER_PAGE_ADDRESS", "../VIEW/USER/");
 define("LOGIN_PAGE_ADDRESS", "../PAGES/login.php");
 define("ENUM_JENIS", array("ADMIN", "MAHASISWA", "DOSEN"));
-define("PICTURE_DATABASE", "../../DATABASE/");
+define("PICTURE_DATABASE", "../../../DATABASE/");
 // MAIN LOGIC ====================================================================================================================
 main();
 
@@ -83,7 +83,7 @@ function Admin_LogIn_Proses()
 function Mahasiswa_LogIn_Proses()
 {
     $currentAccount = Mahasiswa::LogIn_Mahasiswa($_POST['username'], $_POST['password']);
-    $currentAccount->setFotoAddress(PICTURE_DATABASE . $currentAccount->getJenis() . "/" . $currentAccount->getUsername() . "." . $currentAccount->getFotoExtention());
+    $currentAccount->setFotoAddress(PICTURE_DATABASE . $currentAccount->getJenis() . "/" . $currentAccount->getNRP() . "." . $currentAccount->getFotoExtention());
     $_SESSION['currentAccount'] = $currentAccount;
     header("Location: " . USER_PAGE_ADDRESS . $_POST['from']);
 }
@@ -91,7 +91,7 @@ function Mahasiswa_LogIn_Proses()
 function Dosen_LogIn_Proses()
 {
     $currentAccount = Dosen::logIn_Dosen($_POST['username'], $_POST['password']);
-    $currentAccount->setFotoAddress(PICTURE_DATABASE . $currentAccount->getJenis() . "/" . $currentAccount->getUsername() . "." . $currentAccount->getFotoExtention());
+    $currentAccount->setFotoAddress(PICTURE_DATABASE . $currentAccount->getJenis() . "/" . $currentAccount->getNPK() . "." . $currentAccount->getFotoExtention());
     $_SESSION['currentAccount'] = $currentAccount;
     header("Location: " . USER_PAGE_ADDRESS . $_POST['from']);
 }

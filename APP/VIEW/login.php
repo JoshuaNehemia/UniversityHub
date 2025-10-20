@@ -3,7 +3,6 @@ session_start();
 
 // DEFINE ========================================================================================================================
 define("LOGIN_CONTROLLER_ADDRESS", "../CONTROLLER/login_controller.php");
-define("JQUERY_ADDRESS", "../SCRIPTS/jquery-3.7.1.min.js");
 
 // MAIN
 main();
@@ -23,7 +22,6 @@ else{
     <title>University Hub - Log In</title>
     <link rel="stylesheet" href="../STYLES/root.css">
     <link rel="stylesheet" href="../STYLES/form.css">
-    <script src="<?php echo JQUERY_ADDRESS; ?>"></script>
 </head>
 
 <body>

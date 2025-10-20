@@ -50,7 +50,7 @@ CheckAccountIntegrity();
 function CheckAccountIntegrity()
 {
     if (!isset($_SESSION['currentAccount'])) {
-        header("Location: ../PAGES/login.php");
+        header("Location: ../login.php");
     }
 
     $currentAccount = $_SESSION['currentAccount'];
