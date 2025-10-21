@@ -14,23 +14,22 @@ session_start();
 define("BACK_PAGE_ADDRESS", "../../VIEW/ADMIN/daftar_akun.php");
 define("LOGIN_PAGE_ADDRESS", "../../VIEW/login.php");
 define("PICTURE_DATABASE", "../../../DATABASE/");
+define("MAX_IMAGE_SIZE", 2); // in MB
 define("ENUM_JENIS", array("ADMIN", "MAHASISWA", "DOSEN"));
 
 // MAIN LOGIC
 main();
 
-// FUNCTIONS
+// =========================================================
+// MAIN FUNCTION
+// =========================================================
 function main()
 {
     try {
-        // VALIDATION
         checkAccountIntegrity();
         $jenis = checkDataIntegrity();
-
-        // UPDATE DATA
         updateData($jenis);
 
-        // SUCCESS
         $_SESSION['success_msg'] = "Data berhasil diperbarui.";
         header("Location: " . BACK_PAGE_ADDRESS);
         exit();
@@ -38,6 +37,10 @@ function main()
         throwErrorBackToPage($e, BACK_PAGE_ADDRESS);
     }
 }
+
+// =========================================================
+// HELPER FUNCTIONS
+// =========================================================
 
 function throwErrorBackToPage(Exception $e, $address)
 {
@@ -89,7 +92,7 @@ function checkDataIntegrity()
 
 function checkMahasiswaDataIntegrity()
 {
-    $requiredFields = ['nrp', 'oldnrp', 'nama', 'gender', 'tanggal_lahir', 'angkatan'];
+    $requiredFields = ['nrp', 'oldnrp', 'nama', 'gender', 'tanggal', 'angkatan'];
 
     foreach ($requiredFields as $field) {
         if (!isset($_POST[$field]) || trim($_POST[$field]) === '') {
@@ -109,11 +112,14 @@ function checkDosenDataIntegrity()
     }
 }
 
+// =========================================================
+// UPDATE DATA LOGIC
+// =========================================================
 function updateData($jenis)
 {
     switch ($jenis) {
         case ENUM_JENIS[1]: // MAHASISWA
-            $foto_extension = manageImage($jenis,$_POST['nrp'],"");
+            $foto_extension = manageImage($jenis, $_POST['nrp'], "");
             $mhs = new Mahasiswa(
                 $_POST['username'],
                 $_POST['nama'],
@@ -127,7 +133,7 @@ function updateData($jenis)
             break;
 
         case ENUM_JENIS[2]: // DOSEN
-            $foto_extension = manageImage($jenis,"",$_POST['npk']);
+            $foto_extension = manageImage($jenis, "", $_POST['npk']);
             $dsn = new Dosen(
                 $_POST['username'],
                 $_POST['nama'],
@@ -139,70 +145,73 @@ function updateData($jenis)
     }
 }
 
-function manageImage($jenis, $nrp, $npk)
+// =========================================================
+// IMAGE MANAGEMENT
+// =========================================================
+
+function manageImage($jenis, $nrp = "", $npk = "")
 {
-    if (isset($_FILES['foto'])) {
-        CheckUploaddedImage();
-        $extension = SaveUploadedImage($jenis, $nrp, $npk);
-        return $extension;
-    } else {
-        return $_POST['oldext'];
+    // If no file uploaded at all
+    if (!isset($_FILES['foto']) || $_FILES['foto']['error'] === UPLOAD_ERR_NO_FILE) {
+        return $_POST['oldext'] ?? null;
     }
+
+    // Validate file
+    CheckUploaddedImage();
+
+    // Save & return extension
+    return SaveUploadedImage($jenis, $nrp, $npk);
 }
 
 function CheckUploaddedImage()
 {
     $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
-    if (isset($_FILES['foto'])) {
-        if (empty($_FILES['foto']) || $_FILES['foto']['error'] !== UPLOAD_ERR_OK) {
-            throw new Exception("File foto tidak dapat diupload, mohon gunakan foto lain.");
-        }
 
-        $extension = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
+    if (empty($_FILES['foto']) || $_FILES['foto']['error'] !== UPLOAD_ERR_OK) {
+        throw new Exception("File foto tidak dapat diupload, mohon gunakan foto lain.");
+    }
 
-        if (!in_array($extension, $allowedExtensions, true)) {
-            throw new Exception("File foto tidak dalam format yang diizinkan " . implode(", ", $allowedExtensions));
-        }
+    $extension = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
 
-        if ($_FILES['foto']['size'] > (MAX_IMAGE_SIZE * 1024 * 1024)) {
-            throw new Exception("File foto terlalu besar melebihi " . MAX_IMAGE_SIZE . " MB");
-        }
-    } else {
-        throw new Exception("Mohon upload foto terlebih dahulu.");
+    if (!in_array($extension, $allowedExtensions, true)) {
+        throw new Exception("Format foto tidak diizinkan. Gunakan: " . implode(", ", $allowedExtensions));
+    }
+
+    if ($_FILES['foto']['size'] > (MAX_IMAGE_SIZE * 1024 * 1024)) {
+        throw new Exception("Ukuran file foto melebihi batas " . MAX_IMAGE_SIZE . " MB");
     }
 }
 
 function SaveUploadedImage($jenis, $nrp = "", $npk = "")
 {
     try {
-        $address = PICTURE_DATABASE . "{$jenis}/";
+        $basePath = PICTURE_DATABASE . "{$jenis}/";
 
-        if ($jenis == ENUM_JENIS[0]) {
-            if (!is_dir($address)) {
-                if (!mkdir($address, 0777, true)) {
-                    throw new Exception("Gagal membuat folder upload.");
-                }
+        if (!is_dir($basePath)) {
+            if (!mkdir($basePath, 0777, true)) {
+                throw new Exception("Gagal membuat folder upload.");
             }
-            $fileTmp  = $_FILES['foto']['tmp_name'];
-            $fileName = $_FILES['foto']['name'];
-            $extention = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-            $address = $address . $nrp . "." . $extention;
-        } else if ($jenis == ENUM_JENIS[1]) {
-            $address = $address . $npk . "/";
-            if (!is_dir($address)) {
-                if (!mkdir($address, 0777, true)) {
-                    throw new Exception("Gagal membuat folder upload.");
-                }
-            }
-            $fileTmp  = $_FILES['foto']['tmp_name'];
-            $fileName = $_FILES['foto']['name'];
-            $extention = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-            $address = $address . $npk . "." . $extention;
         }
 
-        move_uploaded_file($fileTmp, $address);
-        return $extention;
+        $fileTmp  = $_FILES['foto']['tmp_name'];
+        $fileName = $_FILES['foto']['name'];
+        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+        // Determine file path
+        if ($jenis === ENUM_JENIS[1]) { // MAHASISWA
+            $targetPath = $basePath . $nrp . "." . $extension;
+        } elseif ($jenis === ENUM_JENIS[2]) { // DOSEN
+            $targetPath = $basePath . $npk . "." . $extension;
+        } else {
+            throw new Exception("Jenis akun tidak valid saat menyimpan gambar.");
+        }
+
+        if (!move_uploaded_file($fileTmp, $targetPath)) {
+            throw new Exception("Gagal memindahkan file upload.");
+        }
+
+        return $extension;
     } catch (Exception $e) {
-        throw new Exception("Gagal menyimpan file: " + $e->getMessage());
+        throw new Exception("Gagal menyimpan file: " . $e->getMessage());
     }
 }
