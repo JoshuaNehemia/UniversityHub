@@ -1,5 +1,5 @@
 <?php
-require_once(__DIR__ .'/../../DATABASE/Connection.php');
+require_once(__DIR__ .'/../../../DATABASE/Connection.php');
 
 use DATABASE\Connection;
 // DEFINE ========================================================================================================================

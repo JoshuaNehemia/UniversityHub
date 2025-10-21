@@ -2,8 +2,8 @@
 
 namespace MODELS;
 
-require_once(__DIR__ .'/../../DATABASE/Connection.php');
-require_once(__DIR__ .'/Akun.php');
+require_once(__DIR__ . '/../../DATABASE/Connection.php');
+require_once(__DIR__ . '/Akun.php');
 
 use DATABASE\Connection;
 use MODELS\Akun;
@@ -52,10 +52,12 @@ class Dosen extends Akun
         return $this->foto_extention;
     }
 
-    public function getFotoAddress(){
+    public function getFotoAddress()
+    {
         return $this->foto_address;
     }
-    public function setFotoAddress($address){
+    public function setFotoAddress($address)
+    {
         $this->foto_address = $address;
     }
 
@@ -110,6 +112,53 @@ class Dosen extends Akun
             }
         }
     }
+    public static function getData($username)
+    {
+        $sql = "SELECT 
+                d.npk,
+                d.nama,
+                d.foto_extension
+            FROM dosen AS d
+            INNER JOIN akun AS a ON d.npk = a.npk_dosen
+            WHERE a.username = ?;";
+
+        try {
+            Connection::startConnection();
+            $stmt = Connection::getConnection()->prepare($sql);
+
+            if ($stmt === false) {
+                throw new Exception("Gagal mempersiapkan query ke database");
+            }
+
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+
+            if ($result->num_rows === 0) {
+                throw new Exception("Tidak ditemukan data dosen dengan username tersebut.");
+            }
+
+            $row = $result->fetch_assoc();
+
+            $dsn = new Dosen(
+                $username,
+                $row['nama'],
+                $row['npk'],
+                $row['foto_extension']
+            );
+
+            $stmt->close();
+
+            return $dsn;
+        } catch (Exception $e) {
+            throw $e;
+        } finally {
+            if (Connection::getConnection() !== null) {
+                Connection::closeConnection();
+            }
+        }
+    }
 
     public function CreateDosenInDatabase(string $password)
     {
@@ -142,7 +191,7 @@ class Dosen extends Akun
                 throw new Exception("Data mahasiswa gagal dimasukan ke database,Tidak ada data yang disimpan.");
             }
 
-            parent::CreateInDatabase("", $this->getNPK(), $password,0);
+            parent::CreateInDatabase("", $this->getNPK(), $password, 0);
             if ($stmt !== null) {
                 $stmt->close();
             }
@@ -159,15 +208,53 @@ class Dosen extends Akun
             }
         }
     }
+    public function UpdateDosenInDatabase(string $oldNPK)
+    {
+        $sql = "UPDATE `dosen`
+            SET `npk` = ?, 
+                `nama` = ?, 
+                `foto_extension` = ?
+            WHERE `npk` = ?";
+
+        try {
+            Connection::startConnection();
+            $stmt = Connection::getConnection()->prepare($sql);
+
+            if ($stmt === false) {
+                throw new Exception("Gagal mempersiapkan query update ke database");
+            }
+
+            $newNPK   = $this->getNPK();
+            $nama     = $this->getNama();
+            $fotoExt  = $this->getFotoExtention();
+
+            $stmt->bind_param('ssss', $newNPK, $nama, $fotoExt, $oldNPK);
+            $stmt->execute();
+
+            if ($stmt->affected_rows === 0) {
+                throw new Exception("Tidak ada data dosen yang diperbarui. Pastikan NPK lama benar.");
+            }
+
+            if ($stmt !== null) {
+                $stmt->close();
+            }
+        } catch (Exception $e) {
+            throw $e;
+        } finally {
+            if (Connection::getConnection() !== null) {
+                Connection::closeConnection();
+            }
+        }
+    }
 
     /**
      * Hapus data dari tabel Akun dan tabel Dosen
      * @param string $username username akun = npk dosen
      */
-    public static function DeleteAccDosenInDatabase(string $username,string $npk)
+    public static function DeleteAccDosenInDatabase(string $username, string $npk)
     {
         $sqlAkun = "DELETE FROM akun WHERE username = ?";
-        $sqlDosen= "DELETE FROM dosen WHERE npk = ?";
+        $sqlDosen = "DELETE FROM dosen WHERE npk = ?";
 
         try {
             Connection::startConnection();
@@ -203,5 +290,4 @@ class Dosen extends Akun
             }
         }
     }
-
 }

@@ -2,8 +2,8 @@
 
 namespace MODELS;
 
-require_once(__DIR__ .'/../../DATABASE/Connection.php');
-require_once(__DIR__ .'/Akun.php');
+require_once(__DIR__ . '/../../DATABASE/Connection.php');
+require_once(__DIR__ . '/Akun.php');
 
 use DATABASE\Connection;
 use MODELS\Akun;
@@ -85,10 +85,13 @@ class Mahasiswa extends Akun
     }
 
 
-    public function getFotoAddress(){
+    public function getFotoAddress()
+    {
         return $this->foto_address;
     }
-    public function setFotoAddress($address){
+    
+    public function setFotoAddress($address)
+    {
         $this->foto_address = $address;
     }
     // --- Setters ---
@@ -176,6 +179,53 @@ class Mahasiswa extends Akun
         }
     }
 
+    public static function getData($username)
+    {
+        $sql = "SELECT 
+                m.nrp,
+                m.nama,
+                m.gender,
+                m.tanggal_lahir,
+                m.angkatan,
+                m.foto_extention
+            FROM mahasiswa AS m
+            INNER JOIN akun AS a ON m.nrp = a.nrp_mahasiswa
+            WHERE a.username = ?;";
+
+        try {
+            Connection::startConnection();
+            $stmt = Connection::getConnection()->prepare($sql);
+
+            if ($stmt === false) {
+                throw new Exception("Gagal mempersiapkan query ke database");
+            }
+
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+
+            if ($result->num_rows === 0) {
+                throw new Exception("Tidak ditemukan data mahasiswa");
+            }
+
+            $row = $result->fetch_assoc();
+
+            // Buat object Mahasiswa baru dan isi data dari DB
+            $mhs = new Mahasiswa($username, $row['nama'], $row['nrp'], $row['tanggal_lahir'], $row['gender'], $row['angkatan'], $row['foto_extention']);
+            $stmt->close();
+
+            return $mhs;
+        } catch (Exception $e) {
+            throw $e;
+        } finally {
+            if (Connection::getConnection() !== null) {
+                Connection::closeConnection();
+            }
+        }
+    }
+
+
     public function CreateMahasiswaInDatabase($password)
     {
         $sql = "INSERT INTO `mahasiswa` (`nrp`, `nama`, `gender`, `tanggal_lahir`, `angkatan`, `foto_extention`) VALUES (?, ?, ?, ?, ?, ?);";
@@ -211,7 +261,7 @@ class Mahasiswa extends Akun
                 throw new Exception("Data mahasiswa gagal dimasukan ke database,Tidak ada data yang disimpan.");
             }
 
-            parent::CreateInDatabase($this->getNRP(), "",$password, 0);
+            parent::CreateInDatabase($this->getNRP(), "", $password, 0);
             if ($stmt !== null) {
                 $stmt->close();
             }
@@ -220,6 +270,62 @@ class Mahasiswa extends Akun
             if (Connection::getConnection() !== null) {
                 Connection::getConnection()->rollback();
             }
+            throw $e;
+        } finally {
+            if (Connection::getConnection() !== null) {
+                Connection::closeConnection();
+            }
+        }
+    }
+
+    public function UpdateMahasiswaInDatabase(string $oldNRP)
+    {
+        $sql = "UPDATE `mahasiswa`
+            SET `nrp` = ?, 
+                `nama` = ?, 
+                `gender` = ?, 
+                `tanggal_lahir` = ?, 
+                `angkatan` = ?, 
+                `foto_extention` = ?
+            WHERE `nrp` = ?;";
+
+        try {
+            Connection::startConnection();
+
+            $stmt = Connection::getConnection()->prepare($sql);
+
+            if ($stmt === false) {
+                throw new Exception("Gagal mempersiapkan query update ke database");
+            }
+
+            $newNRP     = $this->getNRP();
+            $nama       = $this->getNama();
+            $gender     = $this->getGender();
+            $tanggal    = $this->getTanggalLahir();
+            $angkatan   = $this->getAngkatan();
+            $fotoExt    = $this->getFotoExtention();
+
+            $stmt->bind_param(
+                'sssisss',
+                $newNRP,
+                $nama,
+                $gender,
+                $tanggal,
+                $angkatan,
+                $fotoExt,
+                $oldNRP
+            );
+
+            $stmt->execute();
+
+            if ($stmt->affected_rows === 0) {
+                throw new Exception("Tidak ada data mahasiswa yang diperbarui. Pastikan NRP lama benar.");
+            }
+
+            if ($stmt !== null) {
+                $stmt->close();
+            }
+        } catch (Exception $e) {
             throw $e;
         } finally {
             if (Connection::getConnection() !== null) {

@@ -1,18 +1,20 @@
 <?php
 // IMPORT
-require_once('../MODELS/Akun.php');
-require_once('../MODELS/Mahasiswa.php');
-require_once('../MODELS/Dosen.php');
-require_once('../DATABASE/Connection.php');
-session_start();
+require_once(__DIR__ . '/../../MODELS/Akun.php');
+require_once(__DIR__ . '/../../MODELS/Dosen.php');
+require_once(__DIR__ . '/../../MODELS/Mahasiswa.php');
 
-use DATABASE\Connection;
 use MODELS\Akun;
 use MODELS\Dosen;
 use MODELS\Mahasiswa;
 
-//DEFINE
-define("BACK_PAGE_ADDRESS", "../ADMIN/daftar_akun.php");
+session_start();
+
+// DEFINE
+define("BACK_PAGE_ADDRESS", "../../VIEW/ADMIN/daftar_akun.php");
+define("LOGIN_PAGE_ADDRESS", "../../VIEW/login.php");
+define("PICTURE_DATABASE", "../../../DATABASE/");
+define("ENUM_JENIS", array("ADMIN", "MAHASISWA", "DOSEN"));
 
 // MAIN LOGIC
 main();
@@ -21,212 +23,186 @@ main();
 function main()
 {
     try {
-        //VALIDATION
-        CheckAccountIntegrity();
-        CheckDataIntegrity();
+        // VALIDATION
+        checkAccountIntegrity();
+        $jenis = checkDataIntegrity();
+
+        // UPDATE DATA
+        updateData($jenis);
+
+        // SUCCESS
+        $_SESSION['success_msg'] = "Data berhasil diperbarui.";
+        header("Location: " . BACK_PAGE_ADDRESS);
+        exit();
     } catch (Exception $e) {
-        ThrowErrorBackToPage($e,BACK_PAGE_ADDRESS);
+        throwErrorBackToPage($e, BACK_PAGE_ADDRESS);
     }
 }
 
-function ThrowErrorBackToPage(Exception $e,$address){
+function throwErrorBackToPage(Exception $e, $address)
+{
     $_SESSION['error_msg'] = $e->getMessage();
     header("Location: " . $address);
     exit();
-
 }
 
-function CheckAccountIntegrity()
+function checkAccountIntegrity()
 {
     if (!isset($_SESSION['currentAccount'])) {
-        header("Location: ../PAGES/login.php");
+        header("Location: " . LOGIN_PAGE_ADDRESS);
+        exit();
     }
 
     $currentAccount = $_SESSION['currentAccount'];
 
-    if (!($currentAccount->getJenis() == 'ADMIN')) {
+    if ($currentAccount->getJenis() !== 'ADMIN') {
         header("Location: ../ERROR/error.php?code=403&msg=Anda tidak memiliki akses terhadap halaman ini!");
-    }
-}
-
-
-function CheckDataIntegrity()
-{
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception("Metode request invalid");
         exit();
     }
 }
 
-$oldUsername = $_POST['old_username'] ?? '';
-$newUsername = trim($_POST['username'] ?? '');
-$password    = $_POST['password'] ?? '';
-$jenis       = $_POST['jenis'] ?? '';
-$nama        = trim($_POST['nama'] ?? '');
-$nrp         = trim($_POST['nrp'] ?? '');
-$npk         = trim($_POST['npk'] ?? '');
-$gender      = $_POST['gender'] ?? '';
-$tanggal     = $_POST['tanggal'] ?? '';
-$angkatan    = $_POST['angkatan'] ?? '';
-
-$uploadExt = null;
-try {
-    Connection::startConnection();
-    $conn = Connection::getConnection();
-    if ($conn === null) throw new Exception("Gagal koneksi database");
-
-    $conn->begin_transaction();
-
-    if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
-        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
-        $name = $_FILES['foto']['name'];
-        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-        if (!in_array($ext, $allowed)) {
-            throw new Exception("Ekstensi file tidak diizinkan");
-        }
-        $uploadExt = '.' . $ext;
-        $targetName = ($newUsername !== '' ? $newUsername : $oldUsername) . $uploadExt;
-        if($jenis === 'MAHASISWA'){
-            $targetName = $nrp . $uploadExt;
-        } elseif ($jenis === 'DOSEN'){
-            $targetName = $npk . $uploadExt;
-        }
-        $targetDir = __DIR__ . '/../DATABASE/';
-        if (!is_dir($targetDir)) mkdir($targetDir, 0755, true);
-        $targetPath = $targetDir . $targetName;
-        if (!move_uploaded_file($_FILES['foto']['tmp_name'], $targetPath)) {
-            throw new Exception("Gagal menyimpan file foto");
-        }
+function checkDataIntegrity()
+{
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception("Metode request tidak valid.");
     }
 
-    if ($jenis === 'MAHASISWA') {
-        $sql = "SELECT nrp_mahasiswa FROM akun WHERE username = ?";
-        $stmt = $conn->prepare($sql);
-        if (!$stmt) throw new Exception("Prepare error: " . $conn->error);
-        $stmt->bind_param('s', $oldUsername);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        $row = $res->fetch_assoc();
-        $oldNrp = $row['nrp_mahasiswa'];
-        $stmt->close();
+    if (!isset($_POST['jenis'])) {
+        throw new Exception("Jenis akun tidak ditemukan.");
+    }
 
-        if ($oldNrp === null) throw new Exception("Data mahasiswa tidak ditemukan di akun");
+    $jenis = strtoupper(trim($_POST['jenis']));
 
-        $sql = "SELECT tanggal_lahir, foto_extention FROM mahasiswa WHERE nrp = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param('s', $oldNrp);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        $dataLama = $res->fetch_assoc();
-        $stmt->close();
+    switch ($jenis) {
+        case ENUM_JENIS[1]: // MAHASISWA
+            checkMahasiswaDataIntegrity();
+            break;
+        case ENUM_JENIS[2]: // DOSEN
+            checkDosenDataIntegrity();
+            break;
+        default:
+            throw new Exception("Jenis akun tidak valid.");
+    }
 
-        if ($tanggal !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal)) {
-            throw new Exception("Format tanggal lahir tidak valid (harus YYYY-MM-DD)");
+    return $jenis;
+}
+
+function checkMahasiswaDataIntegrity()
+{
+    $requiredFields = ['nrp', 'oldnrp', 'nama', 'gender', 'tanggal_lahir', 'angkatan'];
+
+    foreach ($requiredFields as $field) {
+        if (!isset($_POST[$field]) || trim($_POST[$field]) === '') {
+            throw new Exception("Data mahasiswa tidak lengkap: $field kosong.");
         }
+    }
+}
 
-        $tanggalToSave = ($tanggal !== '') ? $tanggal : $dataLama['tanggal_lahir'];
-        $fotoToSave    = ($uploadExt !== null) ? $uploadExt : $dataLama['foto_extention'];
+function checkDosenDataIntegrity()
+{
+    $requiredFields = ['npk', 'oldnpk', 'nama'];
 
-        $sql = "UPDATE mahasiswa SET nrp = ?, nama = ?, gender = ?, tanggal_lahir = ?, angkatan = ?, foto_extention = ? WHERE nrp = ?";
-        $stmt = $conn->prepare($sql);
-        if (!$stmt) throw new Exception("Prepare error: " . $conn->error);
-        $stmt->bind_param('sssssss', $nrp, $nama, $gender, $tanggal, $angkatan, $fotoToSave, $oldNrp);
-        $stmt->execute();
-        if ($stmt->affected_rows < 0) throw new Exception("Gagal update mahasiswa");
-        $stmt->close();
-
-        if ($password !== '') {
-            $sql = "UPDATE akun SET username = ?, password = ?, nrp_mahasiswa = ? WHERE username = ?";
-            $stmt = $conn->prepare($sql);
-            if (!$stmt) throw new Exception("Prepare error: " . $conn->error);
-            $stmt->bind_param('ssss', $newUsername, $password, $nrp, $oldUsername);
-        } else {
-            $sql = "UPDATE akun SET username = ?, nrp_mahasiswa = ? WHERE username = ?";
-            $stmt = $conn->prepare($sql);
-            if (!$stmt) throw new Exception("Prepare error: " . $conn->error);
-            $stmt->bind_param('sss', $newUsername, $nrp, $oldUsername);
+    foreach ($requiredFields as $field) {
+        if (!isset($_POST[$field]) || trim($_POST[$field]) === '') {
+            throw new Exception("Data dosen tidak lengkap: $field kosong.");
         }
-        $stmt->execute();
-        if ($stmt->affected_rows < 0) throw new Exception("Gagal update akun (mahasiswa)");
-        $stmt->close();
-    } elseif ($jenis === 'DOSEN') {
-        $sql = "SELECT npk_dosen FROM akun WHERE username = ?";
-        $stmt = $conn->prepare($sql);
-        if (!$stmt) throw new Exception("Prepare error: " . $conn->error);
-        $stmt->bind_param('s', $oldUsername);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        $row = $res->fetch_assoc();
-        $oldNpk = $row['npk_dosen'];
-        $stmt->close();
+    }
+}
 
-        if ($oldNpk === null) throw new Exception("Data dosen tidak ditemukan di akun");
+function updateData($jenis)
+{
+    switch ($jenis) {
+        case ENUM_JENIS[1]: // MAHASISWA
+            $foto_extension = manageImage($jenis,$_POST['nrp'],"");
+            $mhs = new Mahasiswa(
+                $_POST['username'],
+                $_POST['nama'],
+                $_POST['nrp'],
+                $_POST['tanggal'],
+                $_POST['gender'],
+                $_POST['angkatan'],
+                $foto_extension
+            );
+            $mhs->UpdateMahasiswaInDatabase($_POST['oldnrp']);
+            break;
 
-        $sql = "SELECT foto_extention FROM dosen WHERE npk = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param('s', $oldNpk);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        $dataLama = $res->fetch_assoc();
-        $stmt->close();
+        case ENUM_JENIS[2]: // DOSEN
+            $foto_extension = manageImage($jenis,"",$_POST['npk']);
+            $dsn = new Dosen(
+                $_POST['username'],
+                $_POST['nama'],
+                $_POST['npk'],
+                $foto_extension
+            );
+            $dsn->UpdateDosenInDatabase($_POST['oldnpk']);
+            break;
+    }
+}
 
-        $fotoToSave = ($uploadExt !== null) ? $uploadExt : $dataLama['foto_extention'];
-
-        $sql = "UPDATE dosen SET npk = ?, nama = ?, foto_extention = ? WHERE npk = ?";
-        $stmt = $conn->prepare($sql);
-        if (!$stmt) throw new Exception("Prepare error: " . $conn->error);
-        $stmt->bind_param('ssss', $npk, $nama, $fotoToSave, $oldNpk);
-        $stmt->execute();
-        if ($stmt->affected_rows < 0) throw new Exception("Gagal update dosen");
-        $stmt->close();
-
-        if ($password !== '') {
-            $sql = "UPDATE akun SET username = ?, password = ?, npk_dosen = ? WHERE username = ?";
-            $stmt = $conn->prepare($sql);
-            if (!$stmt) throw new Exception("Prepare error: " . $conn->error);
-            $stmt->bind_param('ssss', $newUsername, $password, $npk, $oldUsername);
-        } else {
-            $sql = "UPDATE akun SET username = ?, npk_dosen = ? WHERE username = ?";
-            $stmt = $conn->prepare($sql);
-            if (!$stmt) throw new Exception("Prepare error: " . $conn->error);
-            $stmt->bind_param('sss', $newUsername, $npk, $oldUsername);
-        }
-        $stmt->execute();
-        if ($stmt->affected_rows < 0) throw new Exception("Gagal update akun (dosen)");
-        $stmt->close();
+function manageImage($jenis, $nrp, $npk)
+{
+    if (isset($_FILES['foto'])) {
+        CheckUploaddedImage();
+        $extension = SaveUploadedImage($jenis, $nrp, $npk);
+        return $extension;
     } else {
-        throw new Exception("Jenis akun tidak valid");
+        return $_POST['oldext'];
     }
+}
 
-    if ($oldUsername !== $newUsername) {
-        $updates = [
-            "UPDATE grup SET username_pembuat = ? WHERE username_pembuat = ?",
-            "UPDATE thread SET username_pembuat = ? WHERE username_pembuat = ?",
-            "UPDATE chat SET username_pembuat = ? WHERE username_pembuat = ?",
-            "UPDATE member_grup SET username = ? WHERE username = ?"
-        ];
-        foreach ($updates as $sql) {
-            $stmt = $conn->prepare($sql);
-            if (!$stmt) throw new Exception("Prepare error (cascade): " . $conn->error);
-            $stmt->bind_param('ss', $newUsername, $oldUsername);
-            $stmt->execute();
-            $stmt->close();
+function CheckUploaddedImage()
+{
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    if (isset($_FILES['foto'])) {
+        if (empty($_FILES['foto']) || $_FILES['foto']['error'] !== UPLOAD_ERR_OK) {
+            throw new Exception("File foto tidak dapat diupload, mohon gunakan foto lain.");
         }
-    }
 
-    $conn->commit();
+        $extension = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
 
-    $_SESSION['success_msg'] = "Data akun berhasil diperbarui.";
-    // DISINI WOY ========================================================================================
-    header("Location: ../ADMIN/daftar_akun.php");
-    exit();
-} catch (Exception $e) {
-    if (isset($conn) && $conn->connect_errno === 0) {
-        $conn->rollback();
+        if (!in_array($extension, $allowedExtensions, true)) {
+            throw new Exception("File foto tidak dalam format yang diizinkan " . implode(", ", $allowedExtensions));
+        }
+
+        if ($_FILES['foto']['size'] > (MAX_IMAGE_SIZE * 1024 * 1024)) {
+            throw new Exception("File foto terlalu besar melebihi " . MAX_IMAGE_SIZE . " MB");
+        }
+    } else {
+        throw new Exception("Mohon upload foto terlebih dahulu.");
     }
-    $_SESSION['error_msg'] = "Terjadi error: " . $e->getMessage();
-    header("Location: ../ADMIN/edit_data_akun.php?username=" . urlencode($oldUsername));
-    exit();
-} finally {
-    Connection::closeConnection();
+}
+
+function SaveUploadedImage($jenis, $nrp = "", $npk = "")
+{
+    try {
+        $address = PICTURE_DATABASE . "{$jenis}/";
+
+        if ($jenis == ENUM_JENIS[0]) {
+            if (!is_dir($address)) {
+                if (!mkdir($address, 0777, true)) {
+                    throw new Exception("Gagal membuat folder upload.");
+                }
+            }
+            $fileTmp  = $_FILES['foto']['tmp_name'];
+            $fileName = $_FILES['foto']['name'];
+            $extention = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            $address = $address . $nrp . "." . $extention;
+        } else if ($jenis == ENUM_JENIS[1]) {
+            $address = $address . $npk . "/";
+            if (!is_dir($address)) {
+                if (!mkdir($address, 0777, true)) {
+                    throw new Exception("Gagal membuat folder upload.");
+                }
+            }
+            $fileTmp  = $_FILES['foto']['tmp_name'];
+            $fileName = $_FILES['foto']['name'];
+            $extention = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            $address = $address . $npk . "." . $extention;
+        }
+
+        move_uploaded_file($fileTmp, $address);
+        return $extention;
+    } catch (Exception $e) {
+        throw new Exception("Gagal menyimpan file: " + $e->getMessage());
+    }
 }
