@@ -80,7 +80,7 @@ function CreateMahasiswa()
 
         $mahasiswa = new Mahasiswa($username, $nama, $nrp, $tanggal_lahir, $gender, $angkatan, $extention);
         $mahasiswa->CreateMahasiswaInDatabase($password);
-        SaveUploadedImage(ENUM_JENIS[0], $username);
+        SaveUploadedImage(ENUM_JENIS[0], $nrp);
         return $mahasiswa;
     } else {
         throw new Exception("Data tidak lengkap, mohon lengkapi pengisian data");
@@ -106,7 +106,7 @@ function CreateDosen()
 
         $dosen = new Dosen($username, $nama, $npk, $extention);
         $dosen->CreateDosenInDatabase($password);
-        SaveUploadedImage(ENUM_JENIS[1], $npk);
+        SaveUploadedImage(ENUM_JENIS[1], "",$npk);
         return $dosen;
     } else {
         throw new Exception("Data tidak lengkap, mohon lengkapi pengisian data");
@@ -151,7 +151,6 @@ function SaveUploadedImage($jenis, $nrp = "", $npk = "")
             $extention = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             $address = $address . $nrp . "." . $extention;
         } else if ($jenis == ENUM_JENIS[1]) {
-            $address = $address . $npk . "/";
             if (!is_dir($address)) {
                 if (!mkdir($address, 0777, true)) {
                     throw new Exception("Gagal membuat folder upload.");

@@ -84,12 +84,11 @@ class Mahasiswa extends Akun
         return $this->gender;
     }
 
-
     public function getFotoAddress()
     {
         return $this->foto_address;
     }
-    
+
     public function setFotoAddress($address)
     {
         $this->foto_address = $address;
@@ -143,11 +142,11 @@ class Mahasiswa extends Akun
     // Function =====================================================================
     public static function LogIn_Mahasiswa(string $username, string $password)
     {
-        $sql = "SELECT `username`,`nrp`,`nama`,`gender`,`tanggal_lahir`,`angkatan`,`foto_extention` FROM `akun` INNER JOIN `mahasiswa` ON `akun`.`nrp_mahasiswa` = `mahasiswa`.`nrp` WHERE `username` = ? AND `password` = ?;";
+        $sql = "SELECT `username`,`password`,`nrp`,`nama`,`gender`,`tanggal_lahir`,`angkatan`,`foto_extention` FROM `akun` INNER JOIN `mahasiswa` ON `akun`.`nrp_mahasiswa` = `mahasiswa`.`nrp` WHERE `username` = ?;";
         try {
             Connection::startConnection();
             $stmt = Connection::getCOnnection()->prepare($sql);
-            $stmt->bind_param('ss', $username, $password);
+            $stmt->bind_param('s', $username);
 
             if ($stmt === false) {
                 throw new Exception("Gagal request ke database");
@@ -159,9 +158,11 @@ class Mahasiswa extends Akun
             if ($result->num_rows > 0) {
                 $row = $result->fetch_assoc();
             } else {
-                throw new Exception("Tidak ditemukan data yang sesuai dengan permintaan");
+                throw new Exception("Username tidak ditemukan");
             }
-
+            if (!password_verify($password,$row['password'])) {
+                throw new Exception("Password salah");
+            }
             if ($row['gender'] === "Pria") {
                 $nama = "Mahasiswa " . $row['nama'];
             } else {
@@ -278,7 +279,7 @@ class Mahasiswa extends Akun
         }
     }
 
-    public function UpdateMahasiswaInDatabase(string $oldNRP)
+    public function UpdateMahasiswaInDatabase() //string $oldNRP)
     {
         $sql = "UPDATE `mahasiswa`
             SET `nrp` = ?, 
@@ -287,45 +288,47 @@ class Mahasiswa extends Akun
                 `tanggal_lahir` = ?, 
                 `angkatan` = ?, 
                 `foto_extention` = ?
-            WHERE `nrp` = ?;";
-
+            WHERE `nrp` = (SELECT `nrp_mahasiswa` FROM `akun` WHERE `username`= ?);";
         try {
             Connection::startConnection();
-
             $stmt = Connection::getConnection()->prepare($sql);
 
             if ($stmt === false) {
                 throw new Exception("Gagal mempersiapkan query update ke database");
             }
-
+            //print_r($this);
+            $username   = $this->getUsername();
             $newNRP     = $this->getNRP();
             $nama       = $this->getNama();
             $gender     = $this->getGender();
-            $tanggal    = $this->getTanggalLahir();
+            $tanggal    = htmlspecialchars($this->getTanggalLahir());
+            //print_r($tanggal);
             $angkatan   = $this->getAngkatan();
             $fotoExt    = $this->getFotoExtention();
 
             $stmt->bind_param(
-                'sssisss',
+                'ssssiss',
                 $newNRP,
                 $nama,
                 $gender,
                 $tanggal,
                 $angkatan,
                 $fotoExt,
-                $oldNRP
+                $username
             );
+            print_r($stmt);
 
             $stmt->execute();
 
             if ($stmt->affected_rows === 0) {
-                throw new Exception("Tidak ada data mahasiswa yang diperbarui. Pastikan NRP lama benar.");
+                throw new Exception("Tidak ada data mahasiswa yang diperbarui. Pastikan data yang dimasukan benar.");
             }
 
             if ($stmt !== null) {
                 $stmt->close();
             }
         } catch (Exception $e) {
+            //update on cascade ga perlu transaction 
             throw $e;
         } finally {
             if (Connection::getConnection() !== null) {
@@ -334,36 +337,25 @@ class Mahasiswa extends Akun
         }
     }
 
-    /**
-     * Hapus data dari tabel Akun dan tabel Mahasiswa
-     * @param string $username username akun = nrp mahasiswa
-     */
     public static function DeleteMahasiswaInDatabase(string $username, string $nrp)
     {
-        $sqlAkun = "DELETE FROM akun WHERE username = ?";
-        $sqlMahasiswa = "DELETE FROM mahasiswa WHERE nrp = ?";
+        $sql = "DELETE FROM `mahasiswa` WHERE `nrp` = ?;";
 
         try {
             Connection::startConnection();
             Connection::getConnection()->begin_transaction();
 
-            // Hapus data di tabel akun dulu
-            $stmt = Connection::getConnection()->prepare($sqlAkun);
-            $stmt->bind_param("s", $username);
+            //hps di akun 
+            parent::deleteAccountInDatabase($username);
+
+            //hps di mhs
+            $stmt = Connection::getConnection()->prepare($sql);
+            $stmt->bind_param("s", $nrp);
             $stmt->execute();
             if ($stmt->affected_rows < 1) {
-                throw new Exception("Akun tidak ditemukan.");
-            }
-            $stmt->close();
-
-            // Lalu hapus data di tabel mahasiswa
-            $stmt2 = Connection::getConnection()->prepare($sqlMahasiswa);
-            $stmt2->bind_param("s", $nrp);
-            $stmt2->execute();
-            if ($stmt2->affected_rows < 1) {
                 throw new Exception("Data mahasiswa tidak ditemukan.");
             }
-            $stmt2->close();
+            $stmt->close();
 
             Connection::getConnection()->commit();
         } catch (Exception $e) {

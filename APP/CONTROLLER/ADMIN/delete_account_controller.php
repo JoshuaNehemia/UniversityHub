@@ -1,8 +1,9 @@
 <?php
-require_once('../MODELS/Akun.php');
-require_once('../MODELS/Dosen.php');
-require_once('../MODELS/Mahasiswa.php');
-require_once("../CONTROLLER/account_list_controller.php");
+
+require_once(__DIR__ .'/../../MODELS/Akun.php');
+require_once(__DIR__ .'/../../MODELS/Dosen.php');
+require_once(__DIR__ .'/../../MODELS/Mahasiswa.php');
+
 use MODELS\Akun;
 use MODELS\Dosen;
 use MODELS\Mahasiswa;
@@ -10,8 +11,8 @@ use MODELS\Mahasiswa;
 session_start();
 
 // DEFINE ========================================================================================================================
-define("LOGIN_PAGE_ADDRESS", "../PAGES/login.php");
-define("DAFTAR_AKUN_PAGE_ADDRESS", "../ADMIN/daftar_akun.php");
+define("LOGIN_PAGE_ADDRESS", "../../VIEW/login.php");
+define("DAFTAR_AKUN_PAGE_ADDRESS", "../../VIEW/ADMIN/daftar_akun.php");
 
 // MAIN LOGIC ====================================================================================================================
 main();
@@ -22,20 +23,18 @@ function main()
     try {
         CheckAccountIntegrity();
 
+        $code = $_GET['code'];
         $username = $_GET['username'];
-        $akun = GetAccountByUsername($username);
-        $jenis = strtoupper($akun['jenis']);  // "DOSEN" / "MAHASISWA"
-        print_r($akun);
+        $jenis = $_GET['jenis'];  // "DOSEN" / "MAHASISWA"
         if ($jenis === "DOSEN") {
-            Dosen::DeleteAccDosenInDatabase($username,$akun['npk']);
+            Dosen::DeleteDosenInDatabase($username,$code);
         } elseif ($jenis === "MAHASISWA") {
-            echo "MASUK SINI";
-            Mahasiswa::DeleteMahasiswaInDatabase($username,$akun['nrp']);
+            Mahasiswa::DeleteMahasiswaInDatabase($username,$code);
         } else {
             throw new Exception("Jenis akun tidak valid.");
         }
 
-        $_SESSION['success_msg'] = "Akun $username berhasil dihapus.";
+        $_SESSION['success_msg'] = "Akun berhasil dihapus.";
         header("Location: " . DAFTAR_AKUN_PAGE_ADDRESS);
         exit();
     } catch (Exception $e) {

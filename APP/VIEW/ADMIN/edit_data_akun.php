@@ -22,75 +22,183 @@ main();
 
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Akun - <?php echo htmlspecialchars($akun->getUsername()); ?></title>
-    <link rel="stylesheet" href="../STYLES/root.css">
-    <link rel="stylesheet" href="../STYLES/form.css">
+    <link rel="stylesheet" href="../../ASSETS/STYLES/root.css">
+    <link rel="stylesheet" href="../../ASSETS/STYLES/main.css">
+    <link rel="stylesheet" href="../../ASSETS/STYLES/form.css">
     <script src="<?php echo JQUERY_ADDRESS; ?>"></script>
 </head>
+<style>
+    body {
+        background-color: var(--main-bg-color);
+        font-family: var(--font-sans);
+        padding: var(--space-8);
+    }
+
+    .admin-wrapper {
+        max-width: 800px;
+        margin: var(--space-8) auto;
+    }
+
+    .top-left {
+        position: absolute;
+        top: var(--space-6);
+        left: var(--space-6);
+    }
+
+    .admin-card-create {
+        background-color: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: var(--space-8);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .admin-header.center {
+        text-align: center;
+        margin-bottom: var(--space-6);
+        font-size: var(--fs-2xl);
+        color: var(--fifth-color);
+        word-break: break-all;
+    }
+
+    .admin-divider {
+        border-top: 1px solid var(--border-color);
+        margin-bottom: var(--space-6);
+    }
+
+    #form-edit .form-group {
+        margin-bottom: var(--space-5);
+    }
+
+    #form-edit label {
+        display: block;
+        font-weight: var(--fw-semibold);
+        color: var(--text-primary);
+        margin-bottom: var(--space-2);
+    }
+
+    #form-edit .radio-group {
+        display: flex;
+        gap: var(--space-6);
+        align-items: center;
+        margin-top: var(--space-2);
+        margin-bottom: var(--space-4);
+    }
+
+    #form-edit .radio-group label {
+        font-weight: var(--fw-normal);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-bottom: 0;
+    }
+
+    .current-file-info {
+        font-size: var(--fs-sm);
+        color: var(--text-secondary);
+        background-color: var(--main-bg-color);
+        padding: var(--space-2) var(--space-3);
+        border-radius: var(--radius-sm);
+        display: inline-block;
+        margin-bottom: var(--space-2);
+    }
+
+    .error.block,
+    .success.block {
+        margin-top: var(--space-6);
+        padding: var(--space-4);
+        border-radius: var(--radius-md);
+        text-align: center;
+    }
+
+    .error.block {
+        background-color: var(--status-failed-bg);
+        color: var(--status-failed);
+    }
+
+    .success.block {
+        background-color: var(--status-success-bg);
+        color: var(--status-success);
+    }
+</style>
 
 <body>
     <div class="top-left">
-        <a href="daftar_akun.php" class="admin-btn small">← Kembali ke Daftar Akun</a>
+        <a href="daftar_akun.php" class="btn btn-secondary-outline small">Kembali ke Daftar</a>
     </div>
 
     <div class="admin-wrapper">
         <div class="admin-card-create">
-            <h1 class="admin-header center">Edit Data Akun <?php echo ucfirst($label) . " " . htmlspecialchars($akun->getUsername()); ?></h1>
+            <h1 class="admin-header center">Edit Data Akun: <?php echo htmlspecialchars($akun->getUsername()); ?></h1>
+            <p class="subtitle" style="text-align: center; margin-top: -20px; margin-bottom: 20px;">(<?php echo ucfirst($label); ?>)</p>
             <div class="admin-divider"></div>
 
             <form id="form-edit" action="<?php echo CONTROLLER_ADDRESS; ?>" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="jenis" value="<?php echo htmlspecialchars($jenis); ?>">
                 <input type="hidden" name="username" value="<?php echo htmlspecialchars($_GET['username']); ?>">
-                <input type="hidden" name="oldext" value="<?php echo htmlspecialchars($akun->getFotoExtention()); ?>"><br>
+                <input type="hidden" name="oldext" value="<?php echo htmlspecialchars($akun->getFotoExtention()); ?>">
 
-                <?php if ($jenis === "MAHASISWA") { ?>
-                    <input type="hidden" name="oldnrp" value="<?php echo htmlspecialchars($akun->getNRP()); ?>"><br>
-                    <label for="nama">Nama <?php echo $label; ?></label><br>
-                    <input type="text" name="nama" id="nama" value="<?php echo htmlspecialchars($akun->getNama()); ?>"><br>
+                <?php if ($jenis === "MAHASISWA") : ?>
+                    <input type="hidden" name="oldnrp" value="<?php echo htmlspecialchars($akun->getNRP()); ?>">
 
-                    <label for="nrp">NRP</label><br>
-                    <input type="text" name="nrp" id="nrp" value="<?php echo htmlspecialchars($akun->getNRP()); ?>"><br>
-
-                    <label for="gender">Gender</label><br>
-                    <div class="radio-group">
-                        <input type="radio" name="gender" value="Pria" <?php if ($akun->getGender() === "Pria") echo "checked"; ?>> Pria
-                        <input type="radio" name="gender" value="Wanita" <?php if ($akun->getGender() === "Wanita") echo "checked"; ?>> Wanita<br>
+                    <div class="form-group">
+                        <label for="nama">Nama Mahasiswa</label>
+                        <input type="text" name="nama" id="nama" class="form-control" value="<?php echo htmlspecialchars($akun->getNama()); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label for="nrp">NRP</label>
+                        <input type="text" name="nrp" id="nrp" class="form-control" value="<?php echo htmlspecialchars($akun->getNRP()); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="gender" value="Pria" <?php if ($akun->getGender() === "Pria") echo "checked"; ?>> Pria</label>
+                            <label><input type="radio" name="gender" value="Wanita" <?php if ($akun->getGender() === "Wanita") echo "checked"; ?>> Wanita</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="tanggal">Tanggal Lahir</label>
+                        <input type="date" name="tanggal" id="tanggal" class="form-control" value="<?php echo htmlspecialchars($akun->getTanggalLahir()); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label for="angkatan">Tahun Angkatan</label>
+                        <input type="number" name="angkatan" id="angkatan" class="form-control" value="<?php echo htmlspecialchars($akun->getAngkatan()); ?>">
                     </div>
 
-                    <label for="tanggal">Tanggal Lahir</label><br>
-                    <input type="date" name="tanggal" id="tanggal" value="<?php echo htmlspecialchars($akun->getTanggalLahir()); ?>"><br>
+                <?php elseif ($jenis === "DOSEN") : ?>
+                    <input type="hidden" name="oldnpk" value="<?php echo htmlspecialchars($akun->getNPK()); ?>">
 
-                    <label for="angkatan">Tahun Angkatan</label><br>
-                    <input type="number" name="angkatan" id="angkatan" value="<?php echo htmlspecialchars($akun->getAngkatan()); ?>"><br>
+                    <div class="form-group">
+                        <label for="nama">Nama Dosen</label>
+                        <input type="text" name="nama" id="nama" class="form-control" value="<?php echo htmlspecialchars($akun->getNama()); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label for="npk">NPK</label>
+                        <input type="text" name="npk" id="npk" class="form-control" value="<?php echo htmlspecialchars($akun->getNPK()); ?>">
+                    </div>
+                <?php endif; ?>
 
-                    <label for="foto">Foto (kosong = tidak diubah)</label><br>
-                    <?php if (!empty($akun->getFotoExtention())): ?>
-                        <div>File sekarang: <?php echo htmlspecialchars($akun->getFotoExtention()); ?></div>
-                    <?php endif; ?>
-                    <input type="file" name="foto" id="foto" accept="image/*"><br>
+                <div class="form-group">
+                    <label for="foto">Ubah Foto Profil (opsional)</label>
+                    <?php if ($jenis == "MAHASISWA") {
+                        $code = $akun->getNRP();
+                    } else {
+                        $code = $akun->getNPK();
+                    }
+                    if (!empty($akun->getFotoExtention())) {
+                        echo "<div class='current-file-info'>File saat ini: " . htmlspecialchars($code) . '.' . htmlspecialchars($akun->getFotoExtention()) . "</div>";
+                    }
+                    ?>
+                    <input type="file" name="foto" id="foto" class="form-control" accept="image/*">
+                </div>
 
-                <?php } elseif ($jenis === "DOSEN") { ?>
-                    <input type="hidden" name="oldnpk" value="<?php echo htmlspecialchars($akun->getNPK()); ?>"><br>
-                    <label for="nama">Nama <?php echo $label; ?></label><br>
-                    <input type="text" name="nama" id="nama" value="<?php echo htmlspecialchars($akun->getNama()); ?>"><br>
-
-                    <label for="npk">NPK</label><br>
-                    <input type="text" name="npk" id="npk" value="<?php echo htmlspecialchars($akun->getNPK()); ?>"><br>
-
-                    <label for="foto">Foto</label><br>
-                    <?php if (!empty($akun->getFotoExtention())): ?>
-                        <div>File sekarang: <?php echo htmlspecialchars($akun->getFotoExtention()); ?></div>
-                    <?php endif; ?>
-                    <input type="file" name="foto" id="foto" accept="image/*"><br>
-                <?php } ?>
-
-                <br>
-                <input type="submit" class="btn-submit" value="Simpan Perubahan">
+                <input type="submit" class="btn btn-primary w-full mt-6" value="Simpan Perubahan">
             </form>
 
             <?php
@@ -127,7 +235,6 @@ main();
 <?php
 
 // FUNCTIONS
-
 function main()
 {
     global $akun, $jenis, $label;
@@ -168,11 +275,7 @@ function checkAccountIntegrity()
 
 function checkDataIntegrity()
 {
-    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-        throw new Exception("Metode request tidak sesuai");
-    }
-
-    if (!isset($_GET['username'])) {
+    if (!isset($_GET['username']) && !isset($_POST['username'])) {
         throw new Exception("Tidak ada data yang anda kirimkan");
     }
 }
@@ -183,14 +286,14 @@ function getAccountData($username)
 
     $jenis = Akun::getAccountRole($username);
     switch ($jenis) {
-        case ENUM_JENIS[1]:
+        case ENUM_JENIS[1]: // MAHASISWA
             return Mahasiswa::getData($username);
             break;
-        case ENUM_JENIS[2]:
+        case ENUM_JENIS[2]: // DOSEN
             return Dosen::getData($username);
             break;
         default:
-            throw new Exception("Jenis akun tidak valid");
+            throw new Exception("Jenis akun tidak valid untuk diedit");
     }
 }
 ?>

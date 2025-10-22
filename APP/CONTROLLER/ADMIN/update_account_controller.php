@@ -26,15 +26,15 @@ main();
 function main()
 {
     try {
+        //print_r($_POST);
         checkAccountIntegrity();
         $jenis = checkDataIntegrity();
         updateData($jenis);
-
         $_SESSION['success_msg'] = "Data berhasil diperbarui.";
-        header("Location: " . BACK_PAGE_ADDRESS);
+        header("Location: " . BACK_PAGE_ADDRESS ."?jenis=" .$_POST['jenis']);
         exit();
     } catch (Exception $e) {
-        throwErrorBackToPage($e, BACK_PAGE_ADDRESS);
+        throwErrorBackToPage($e,  BACK_PAGE_ADDRESS ."?jenis=" .$_POST['jenis']);
     }
 }
 
@@ -119,7 +119,7 @@ function updateData($jenis)
 {
     switch ($jenis) {
         case ENUM_JENIS[1]: // MAHASISWA
-            $foto_extension = manageImage($jenis, $_POST['nrp'], "");
+            $foto_extension = manageImage($jenis, $_POST['nrp'], $_POST['oldnrp']);
             $mhs = new Mahasiswa(
                 $_POST['username'],
                 $_POST['nama'],
@@ -129,18 +129,18 @@ function updateData($jenis)
                 $_POST['angkatan'],
                 $foto_extension
             );
-            $mhs->UpdateMahasiswaInDatabase($_POST['oldnrp']);
+            $mhs->UpdateMahasiswaInDatabase();
             break;
 
         case ENUM_JENIS[2]: // DOSEN
-            $foto_extension = manageImage($jenis, "", $_POST['npk']);
+            $foto_extension = manageImage($jenis,$_POST['npk'],$_POST['oldnpk']);
             $dsn = new Dosen(
                 $_POST['username'],
                 $_POST['nama'],
                 $_POST['npk'],
                 $foto_extension
             );
-            $dsn->UpdateDosenInDatabase($_POST['oldnpk']);
+            $dsn->UpdateDosenInDatabase();
             break;
     }
 }
@@ -149,18 +149,14 @@ function updateData($jenis)
 // IMAGE MANAGEMENT
 // =========================================================
 
-function manageImage($jenis, $nrp = "", $npk = "")
+function manageImage($jenis, $new = "", $old = "")
 {
-    // If no file uploaded at all
     if (!isset($_FILES['foto']) || $_FILES['foto']['error'] === UPLOAD_ERR_NO_FILE) {
-        return $_POST['oldext'] ?? null;
+        renamePhotoFile($_POST['jenis'],$old,$new,$_POST['oldext']);
+        return $_POST['oldext'];
     }
-
-    // Validate file
     CheckUploaddedImage();
-
-    // Save & return extension
-    return SaveUploadedImage($jenis, $nrp, $npk);
+    return SaveUploadedImage($jenis, $new);
 }
 
 function CheckUploaddedImage()
@@ -182,7 +178,7 @@ function CheckUploaddedImage()
     }
 }
 
-function SaveUploadedImage($jenis, $nrp = "", $npk = "")
+function SaveUploadedImage($jenis, $code="")
 {
     try {
         $basePath = PICTURE_DATABASE . "{$jenis}/";
@@ -197,11 +193,10 @@ function SaveUploadedImage($jenis, $nrp = "", $npk = "")
         $fileName = $_FILES['foto']['name'];
         $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-        // Determine file path
         if ($jenis === ENUM_JENIS[1]) { // MAHASISWA
-            $targetPath = $basePath . $nrp . "." . $extension;
+            $targetPath = $basePath . $code . "." . $extension;
         } elseif ($jenis === ENUM_JENIS[2]) { // DOSEN
-            $targetPath = $basePath . $npk . "." . $extension;
+            $targetPath = $basePath . $code . "." . $extension;
         } else {
             throw new Exception("Jenis akun tidak valid saat menyimpan gambar.");
         }
@@ -213,5 +208,33 @@ function SaveUploadedImage($jenis, $nrp = "", $npk = "")
         return $extension;
     } catch (Exception $e) {
         throw new Exception("Gagal menyimpan file: " . $e->getMessage());
+    }
+}
+
+function renamePhotoFile($jenis, $old, $new, $extension)
+{
+    try {
+        $basePath = PICTURE_DATABASE . "{$jenis}/";
+
+        if (!is_dir($basePath)) {
+            if (!mkdir($basePath, 0777, true)) {
+                throw new Exception("Gagal membuat folder foto.");
+            }
+        }
+
+        $oldFile = $basePath . $old . "." . strtolower($extension);
+        $newFile = $basePath . $new . "." . strtolower($extension);
+
+        if (!file_exists($oldFile)) {
+            throw new Exception("File foto lama tidak ditemukan: " . basename($oldFile));
+        }
+
+        if (!rename($oldFile, $newFile)) {
+            throw new Exception("Gagal mengganti nama file foto.");
+        }
+
+        return strtolower($extension); // return same extension (for DB update)
+    } catch (Exception $e) {
+        throw new Exception("Gagal mengganti nama file: " . $e->getMessage());
     }
 }

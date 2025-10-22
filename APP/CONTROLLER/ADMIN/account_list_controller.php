@@ -2,9 +2,6 @@
 require_once(__DIR__ .'/../../../DATABASE/Connection.php');
 
 use DATABASE\Connection;
-// DEFINE ========================================================================================================================
-define("ENUM_JENIS", array("MAHASISWA", "DOSEN", "ADMIN"));
-
 // FUNCTION ======================================================================================================================
 function GetAccountList($jenis, $offset, $limit, $keyword)
 {
@@ -120,14 +117,14 @@ function GetListMahasiswaByNama($offset, $limit, $keyword)
 
 function GetCountMahasiswaByNama($keyword)
 {
-    $sql = "SELECT COUNT(*) AS 'total' FROM `akun` AS ak INNER JOIN `dosen` AS ds ON ak.`npk_dosen` = ds.`npk`";
+    $sql = "SELECT COUNT(*) AS 'total' FROM `akun` AS ak INNER JOIN `mahasiswa` AS ma ON ak.`nrp_mahasiswa` = ma.`nrp` WHERE ma.`nama` LIKE ?";
     try {
         Connection::startConnection();
         $stmt = Connection::getConnection()->prepare($sql);
         if ($stmt === false) {
             throw new Exception("Gagal request ke database");
         }
-        $stmt->bind_param('sii', $keyword);
+        $stmt->bind_param('s', $keyword);
         $stmt->execute();
         $result = $stmt->get_result();
         if ($row = $result->fetch_assoc()) {

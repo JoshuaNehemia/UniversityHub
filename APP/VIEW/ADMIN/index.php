@@ -4,6 +4,7 @@ use MODELS\Akun;
 
 session_start();
 CheckAccountIntegrity();
+header("Location: daftar_akun.php");
 ?>
 <!DOCTYPE html>
 <html lang="id">

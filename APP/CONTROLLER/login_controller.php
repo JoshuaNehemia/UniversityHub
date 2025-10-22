@@ -13,7 +13,7 @@ session_start();
 // DEFINE ========================================================================================================================
 define("ADMIN_PAGE_ADDRESS", "../VIEW/ADMIN/");
 define("USER_PAGE_ADDRESS", "../VIEW/USER/");
-define("LOGIN_PAGE_ADDRESS", "../PAGES/login.php");
+define("LOGIN_PAGE_ADDRESS", "../VIEW/login.php");
 define("ENUM_JENIS", array("ADMIN", "MAHASISWA", "DOSEN"));
 define("PICTURE_DATABASE", "../../../DATABASE/");
 // MAIN LOGIC ====================================================================================================================

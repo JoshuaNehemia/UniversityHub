@@ -82,12 +82,12 @@ class Dosen extends Akun
     // Function
     public static function LogIn_Dosen(string $username, string $password)
     {
-        $sql = "SELECT `username`,`npk`,`nama`,`foto_extension` FROM `akun` INNER JOIN `dosen` ON `akun`.`npk_dosen` = `dosen`.`npk` WHERE `username` = ? AND `password` = ?;";
+        $sql = "SELECT `username`,`password`,`npk`,`nama`,`foto_extension` FROM `akun` INNER JOIN `dosen` ON `akun`.`npk_dosen` = `dosen`.`npk` WHERE `username` = ?";
 
         try {
             Connection::startConnection();
             $stmt = Connection::getCOnnection()->prepare($sql);
-            $stmt->bind_param('ss', $username, $password);
+            $stmt->bind_param('s', $username);
 
             if ($stmt === false) {
                 throw new Exception("Gagal request ke database");
@@ -99,9 +99,12 @@ class Dosen extends Akun
             if ($result->num_rows > 0) {
                 $row = $result->fetch_assoc();
             } else {
-                throw new Exception("Tidak ditemukan data yang sesuai dengan permintaan");
+                throw new Exception("Tidak ditemukan username yang sesuai dengan permintaan");
             }
 
+            if (!password_verify($password,$row['password'])) {
+                throw new Exception("Password salah");
+            }
             $stmt->close();
             return new Dosen($row['username'], $row['nama'], $row['npk'], $row['foto_extension']);
         } catch (Exception $e) {
@@ -208,13 +211,14 @@ class Dosen extends Akun
             }
         }
     }
-    public function UpdateDosenInDatabase(string $oldNPK)
+
+    public function UpdateDosenInDatabase()
     {
         $sql = "UPDATE `dosen`
             SET `npk` = ?, 
                 `nama` = ?, 
                 `foto_extension` = ?
-            WHERE `npk` = ?";
+            WHERE `npk` = (SELECT `npk_dosen` FROM `akun` WHERE `username`= ?);";
 
         try {
             Connection::startConnection();
@@ -227,12 +231,13 @@ class Dosen extends Akun
             $newNPK   = $this->getNPK();
             $nama     = $this->getNama();
             $fotoExt  = $this->getFotoExtention();
+            $username = $this->getUsername();
 
-            $stmt->bind_param('ssss', $newNPK, $nama, $fotoExt, $oldNPK);
+            $stmt->bind_param('ssss', $newNPK, $nama, $fotoExt, $username);
             $stmt->execute();
 
             if ($stmt->affected_rows === 0) {
-                throw new Exception("Tidak ada data dosen yang diperbarui. Pastikan NPK lama benar.");
+                throw new Exception("Tidak ada data mahasiswa yang diperbarui. Pastikan data yang dimasukan benar.");
             }
 
             if ($stmt !== null) {
@@ -247,36 +252,26 @@ class Dosen extends Akun
         }
     }
 
-    /**
-     * Hapus data dari tabel Akun dan tabel Dosen
-     * @param string $username username akun = npk dosen
-     */
-    public static function DeleteAccDosenInDatabase(string $username, string $npk)
+    
+    public static function deleteDosenInDatabase(string $username, string $npk)
     {
-        $sqlAkun = "DELETE FROM akun WHERE username = ?";
-        $sqlDosen = "DELETE FROM dosen WHERE npk = ?";
+        $sql = "DELETE FROM `dosen` WHERE `npk` = ?;";
 
         try {
             Connection::startConnection();
             Connection::getConnection()->begin_transaction();
 
-            // Hapus data di tabel akun dulu
-            $stmt = Connection::getConnection()->prepare($sqlAkun);
-            $stmt->bind_param("s", $username);
+            //hps di akun 
+            parent::deleteAccountInDatabase($username);
+
+            //hps di mhs
+            $stmt = Connection::getConnection()->prepare($sql);
+            $stmt->bind_param("s", $npk);
             $stmt->execute();
             if ($stmt->affected_rows < 1) {
-                throw new Exception("Akun tidak ditemukan.");
-            }
-            $stmt->close();
-
-            // Lalu hapus data di tabel dosen
-            $stmt2 = Connection::getConnection()->prepare($sqlDosen);
-            $stmt2->bind_param("s", $npk);
-            $stmt2->execute();
-            if ($stmt2->affected_rows < 1) {
                 throw new Exception("Data dosen tidak ditemukan.");
             }
-            $stmt2->close();
+            $stmt->close();
 
             Connection::getConnection()->commit();
         } catch (Exception $e) {
