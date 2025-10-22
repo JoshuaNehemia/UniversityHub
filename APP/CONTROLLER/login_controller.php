@@ -9,6 +9,9 @@ use MODELS\Dosen;
 use MODELS\Mahasiswa;
 
 session_start();
+if (isset($_SESSION['currentAccount'])) {
+    unset($_SESSION['currentAccount']);
+}
 
 // DEFINE ========================================================================================================================
 define("ADMIN_PAGE_ADDRESS", "../VIEW/ADMIN/");
