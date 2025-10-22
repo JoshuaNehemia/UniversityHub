@@ -1,3 +1,6 @@
+path: localhost/UniversityHub/index.php 
+nanti otomatis reroute ke localhost/UniversityHub/APP/VIEW/login.php 
+
 username, password
 admin, password
 darren123, darren123
