@@ -1,9 +1,5 @@
-/* ==========================
-   TABLE STYLES
-========================== */
-
 .table-container {
-  overflow-x: auto; /* Ensures table is responsive */
+  overflow-x: auto; 
   background-color: var(--surface-color);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
@@ -23,17 +19,15 @@
   vertical-align: middle;
 }
 
-/* Table Header */
 .table thead th {
   font-family: var(--font-heading);
   font-size: var(--fs-sm);
   font-weight: var(--fw-bold);
   color: var(--text-primary);
-  background-color: #f9fafb; /* A very light grey for the header */
+  background-color: #f9fafb; 
   border-bottom: 2px solid var(--border-color);
 }
 
-/* Table Body */
 .table tbody tr {
   border-bottom: var(--border-width) solid var(--border-color);
   transition: background-color var(--transition-fast);
@@ -44,10 +38,9 @@
 }
 
 .table tbody tr:hover {
-  background-color: rgba(0, 83, 119, 0.05); /* fourth-color with low alpha */
+  background-color: rgba(0, 83, 119, 0.05); 
 }
 
-/* Table Cell Content */
 .table td .user-info {
   display: flex;
   align-items: center;
@@ -64,7 +57,6 @@
   color: var(--text-secondary);
 }
 
-/* Status Badges */
 .status-badge {
   display: inline-block;
   padding: var(--space-1) var(--space-2);
