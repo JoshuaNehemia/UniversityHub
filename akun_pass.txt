@@ -1,0 +1,17 @@
+username, password
+admin, password
+darren123, darren123
+evan123, evan123
+feby123, feby123
+felix123, felix123
+hendra123, hendra123
+heru123, heru123
+jessica123, jessica123
+joko123, joko123
+joshua123, joshua123
+kevin123, kevin123
+marco123, marco123
+monica123, monica123
+susana123, susana123
+tyrza123, tyrza123 
+vivian123, vivian123
