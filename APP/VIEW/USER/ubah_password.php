@@ -1,7 +1,8 @@
 <?php
-require_once(__DIR__ . '/../../MODELS/Akun.php');
+
 require_once(__DIR__ . '/../../MODELS/Dosen.php');
 require_once(__DIR__ . '/../../MODELS/Mahasiswa.php');
+require_once(__DIR__ . '/../../CONTROLLER/TOOLS/dependencies.php');
 
 use MODELS\Akun;
 use MODELS\Dosen;
@@ -17,7 +18,10 @@ main();
 
 function main()
 {
-    checkAccountIntegrity();
+    //print_r($_SESSION['currentAccount']);
+    if(!checkAccess(['MAHASISWA','DOSEN'])){
+        die("Tidak dapat mengakses halaman ini");
+    }
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         handlePasswordChange();
     }
@@ -182,4 +186,3 @@ function checkAccountIntegrity()
 </body>
 
 </html>
-

@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-define("LOGIN_CONTROLLER_ADDRESS", "../CONTROLLER/login_controller.php");
+define("LOGIN_CONTROLLER_ADDRESS", "../CONTROLLER/TOOLS/login_controller.php");
 define("ASSET_ADDRESS", "../ASSETS/");
 
 $from = $_GET['from'] ?? "index.php";

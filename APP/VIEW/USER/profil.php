@@ -1,6 +1,7 @@
 <?php
 require_once(__DIR__ . '/../../MODELS/Dosen.php');
 require_once(__DIR__ . '/../../MODELS/Mahasiswa.php');
+require_once(__DIR__ . '/../../CONTROLLER/TOOLS/dependencies.php');
 
 use MODELS\Dosen;
 use MODELS\Mahasiswa;
@@ -8,8 +9,9 @@ use MODELS\Mahasiswa;
 session_start();
 define("JQUERY_ADDRESS", "../SCRIPTS/jquery-3.7.1.min.js");
 
-// This function call should be at the top to protect the page
-CheckAccountIntegrity();
+if (!checkAccess(['MAHASISWA', 'DOSEN'])) {
+    die("Tidak dapat mengakses halaman ini");
+}
 
 $currentAccount = $_SESSION['currentAccount'];
 $imageElementOpen = "<img src='";
@@ -165,4 +167,3 @@ function DisplayPicture()
     }
 }
 ?>
-
