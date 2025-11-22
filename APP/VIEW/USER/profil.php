@@ -162,7 +162,7 @@ function DisplayPicture()
     if (file_exists($file)) {
         echo $imageElementOpen . $file . $imageElementClose;
     } else {
-        $defaultAddress = "../ASSETS/IMAGES/default_profile_picture.svg";
+        $defaultAddress = "../../ASSETS/IMAGES/default_profile_picture.svg";
         echo $imageElementOpen . $defaultAddress . $imageElementClose;
     }
 }

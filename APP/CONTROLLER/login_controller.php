@@ -17,8 +17,8 @@ if (isset($_SESSION['currentAccount'])) {
 define("ADMIN_PAGE_ADDRESS", "../VIEW/ADMIN/");
 define("USER_PAGE_ADDRESS", "../VIEW/USER/");
 define("LOGIN_PAGE_ADDRESS", "../VIEW/login.php");
-define("ENUM_JENIS", array("ADMIN", "MAHASISWA", "DOSEN"));
 define("PICTURE_DATABASE", "../../../DATABASE/");
+define("ENUM_JENIS", array("ADMIN", "MAHASISWA", "DOSEN"));
 // MAIN LOGIC ====================================================================================================================
 main();
 

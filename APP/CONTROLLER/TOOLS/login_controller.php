@@ -1,8 +1,8 @@
 <?php
 
-require_once('../MODELS/Akun.php');
-require_once('../MODELS/Dosen.php');
-require_once('../MODELS/Mahasiswa.php');
+require_once('../../MODELS/Akun.php');
+require_once('../../MODELS/Dosen.php');
+require_once('../../MODELS/Mahasiswa.php');
 
 use MODELS\Akun;
 use MODELS\Dosen;
@@ -17,7 +17,7 @@ if (isset($_SESSION['currentAccount'])) {
 define("ADMIN_PAGE_ADDRESS", "../../VIEW/ADMIN/");
 define("USER_PAGE_ADDRESS", "../../VIEW/USER/");
 define("LOGIN_PAGE_ADDRESS", "../../VIEW/login.php");
-define("PICTURE_DATABASE", "../../../../DATABASE/");
+define("PICTURE_DATABASE", "../../../DATABASE/");
 define("ENUM_JENIS", array("ADMIN", "MAHASISWA", "DOSEN"));
 
 // MAIN LOGIC ====================================================================================================================
