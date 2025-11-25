@@ -80,7 +80,7 @@ class Dosen extends Akun
     }
 
     // Function
-    public static function LogIn_Dosen(string $username, string $password)
+    public static function login(string $username, string $password)
     {
         $sql = "SELECT `username`,`password`,`npk`,`nama`,`foto_extension` FROM `akun` INNER JOIN `dosen` ON `akun`.`npk_dosen` = `dosen`.`npk` WHERE `username` = ?";
 
@@ -115,7 +115,7 @@ class Dosen extends Akun
             }
         }
     }
-    public static function getData($username)
+    public static function get_data($username)
     {
         $sql = "SELECT 
                 d.npk,
@@ -163,7 +163,7 @@ class Dosen extends Akun
         }
     }
 
-    public function CreateDosenInDatabase(string $password)
+    public function create_dosen_in_database(string $password)
     {
         $sql = "INSERT INTO `dosen` (`npk`, `nama`, `foto_extension`) VALUES (?, ?, ?)";
 
@@ -194,7 +194,7 @@ class Dosen extends Akun
                 throw new Exception("Data mahasiswa gagal dimasukan ke database,Tidak ada data yang disimpan.");
             }
 
-            parent::CreateInDatabase("", $this->getNPK(), $password, 0);
+            parent::create_in_database("", $this->getNPK(), $password, 0);
             if ($stmt !== null) {
                 $stmt->close();
             }
@@ -212,7 +212,7 @@ class Dosen extends Akun
         }
     }
 
-    public function UpdateDosenInDatabase()
+    public function update_database()
     {
         $sql = "UPDATE `dosen`
             SET `npk` = ?, 
@@ -253,7 +253,7 @@ class Dosen extends Akun
     }
 
     
-    public static function deleteDosenInDatabase(string $username, string $npk)
+    public static function delete_dosen_from_database(string $username, string $npk)
     {
         $sql = "DELETE FROM `dosen` WHERE `npk` = ?;";
 
@@ -262,7 +262,7 @@ class Dosen extends Akun
             Connection::getConnection()->begin_transaction();
 
             //hps di akun 
-            parent::deleteAccountInDatabase($username);
+            parent::delete_from_database($username);
 
             //hps di mhs
             $stmt = Connection::getConnection()->prepare($sql);

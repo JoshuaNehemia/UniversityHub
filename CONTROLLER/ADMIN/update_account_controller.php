@@ -129,7 +129,7 @@ function updateData($jenis)
                 $_POST['angkatan'],
                 $foto_extension
             );
-            $mhs->UpdateMahasiswaInDatabase();
+            $mhs->update_database();
             break;
 
         case ENUM_JENIS[2]: // DOSEN
@@ -140,7 +140,7 @@ function updateData($jenis)
                 $_POST['npk'],
                 $foto_extension
             );
-            $dsn->UpdateDosenInDatabase();
+            $dsn->update_database();
             break;
     }
 }

@@ -140,7 +140,7 @@ class Mahasiswa extends Akun
     }
 
     // Function =====================================================================
-    public static function LogIn_Mahasiswa(string $username, string $password)
+    public static function login(string $username, string $password)
     {
         $sql = "SELECT `username`,`password`,`nrp`,`nama`,`gender`,`tanggal_lahir`,`angkatan`,`foto_extention` FROM `akun` INNER JOIN `mahasiswa` ON `akun`.`nrp_mahasiswa` = `mahasiswa`.`nrp` WHERE `username` = ?;";
         try {
@@ -180,7 +180,7 @@ class Mahasiswa extends Akun
         }
     }
 
-    public static function getData($username)
+    public static function get_data($username)
     {
         $sql = "SELECT 
                 m.nrp,
@@ -211,8 +211,6 @@ class Mahasiswa extends Akun
             }
 
             $row = $result->fetch_assoc();
-
-            // Buat object Mahasiswa baru dan isi data dari DB
             $mhs = new Mahasiswa($username, $row['nama'], $row['nrp'], $row['tanggal_lahir'], $row['gender'], $row['angkatan'], $row['foto_extention']);
             $stmt->close();
 
@@ -227,7 +225,7 @@ class Mahasiswa extends Akun
     }
 
 
-    public function CreateMahasiswaInDatabase($password)
+    public function create_mahasiswa_in_database($password)
     {
         $sql = "INSERT INTO `mahasiswa` (`nrp`, `nama`, `gender`, `tanggal_lahir`, `angkatan`, `foto_extention`) VALUES (?, ?, ?, ?, ?, ?);";
         try {
@@ -262,7 +260,7 @@ class Mahasiswa extends Akun
                 throw new Exception("Data mahasiswa gagal dimasukan ke database,Tidak ada data yang disimpan.");
             }
 
-            parent::CreateInDatabase($this->getNRP(), "", $password, 0);
+            parent::create_in_database($this->getNRP(), "", $password, 0);
             if ($stmt !== null) {
                 $stmt->close();
             }
@@ -279,7 +277,7 @@ class Mahasiswa extends Akun
         }
     }
 
-    public function UpdateMahasiswaInDatabase() //string $oldNRP)
+    public function update_database() //string $oldNRP)
     {
         $sql = "UPDATE `mahasiswa`
             SET `nrp` = ?, 
@@ -337,7 +335,7 @@ class Mahasiswa extends Akun
         }
     }
 
-    public static function DeleteMahasiswaInDatabase(string $username, string $nrp)
+    public static function delete_mahasiswa_from_database(string $username, string $nrp)
     {
         $sql = "DELETE FROM `mahasiswa` WHERE `nrp` = ?;";
 
@@ -346,7 +344,7 @@ class Mahasiswa extends Akun
             Connection::getConnection()->begin_transaction();
 
             //hps di akun 
-            parent::deleteAccountInDatabase($username);
+            parent::delete_from_database($username);
 
             //hps di mhs
             $stmt = Connection::getConnection()->prepare($sql);

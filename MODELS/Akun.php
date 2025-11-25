@@ -90,7 +90,7 @@ class Akun
 
     // FUNCTION =======================================================================================================
 
-    public static function logIn(string $username, string $password)
+    public static function login(string $username, string $password)
     {
         $sql = "SELECT `username`,`password`,`nrp_mahasiswa`,`npk_dosen`,`isadmin` FROM `akun` WHERE `username` = ?;";
         try {
@@ -132,7 +132,7 @@ class Akun
         }
     }
 
-    public static function getAccountRole($username)
+    public static function get_account_role($username)
     {
         $sql = "SELECT `nrp_mahasiswa`,`npk_dosen`,`isadmin` FROM `akun` WHERE `username` = ?;";
         try {
@@ -176,7 +176,7 @@ class Akun
         }
     }
 
-    public function updateAccountInDatabase(string $code, string $oldcode, string $jenis, bool $override = true)
+    public function update_account_code_in_database(string $code, string $oldcode, string $jenis, bool $override = true)
     {
         if (strtoupper($jenis) === "MAHASISWA") {
             $sql = "UPDATE akun SET nrp_mahasiswa = ? WHERE nrp_mahasiswa = ?;";
@@ -214,7 +214,7 @@ class Akun
         }
     }
 
-    public function CreateInDatabase(string $nrp = "", string $npk = "", string $password, int $isAdmin = 0, bool $override = true)
+    public function create_in_database(string $nrp = "", string $npk = "", string $password, int $isAdmin = 0, bool $override = true)
     {
         if (!empty($nrp)) {
             $sql  = "INSERT INTO `akun`(`username`, `password`,`nrp_mahasiswa`,`isadmin`) VALUES (?,?,?,?)";
@@ -265,7 +265,7 @@ class Akun
             }
         }
     }
-    public function updatePassword($password)
+    public function update_password_in_database($password)
     {
         $sql = "UPDATE akun SET password = ? WHERE username = ?";
 
@@ -300,7 +300,7 @@ class Akun
     }
 
 
-    public static function deleteAccountInDatabase(string $username, bool $override = true)
+    public static function delete_from_database(string $username, bool $override = true)
     {
         $sqlAkun = "DELETE FROM akun WHERE username = ?";
 
