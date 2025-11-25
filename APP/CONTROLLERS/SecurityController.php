@@ -3,5 +3,5 @@
 namespace CONTROLLERS;
 
 class SecurityController{
-
+    public
 }
