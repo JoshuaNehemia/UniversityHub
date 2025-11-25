@@ -2,8 +2,8 @@
 
 namespace MODELS;
 
-require_once(__DIR__ . '/../CORE/config.php');
-require_once(__DIR__ . '/../CORE/upload.php');
+require_once(__DIR__ . '/../config.php');
+require_once(__DIR__ . '/../upload.php');
 use Exception;
 
 class Event

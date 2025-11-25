@@ -1,5 +1,4 @@
 <?php
-
 define("CURRENT_ACCOUNT","currentAccount");
 define("ACCOUNT_ROLE",array("MAHASISWA","DOSEN","ADMIN"));
 define("GENDER",array("PRIA","WANITA"));

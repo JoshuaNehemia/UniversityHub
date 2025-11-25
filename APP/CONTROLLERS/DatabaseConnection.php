@@ -2,7 +2,7 @@
 
 namespace CONTROLLERS;
 
-require_once(__DIR__ . "/../CONFIG/database.php");
+require_once(__DIR__ . "/../database.php");
 
 use mysqli;
 use Exception;

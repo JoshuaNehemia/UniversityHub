@@ -2,6 +2,8 @@
 
 namespace MODELS;
 
+require_once(__DIR__ . '/../config.php');
+
 use Exception;
 
 class Group
@@ -20,13 +22,13 @@ class Group
     // ================================================================================================
     public function __construct($id, $pembuat, $nama, $deskripsi, $tanggalDibuat, $jenis, $kode)
     {
-        $this->id = $id;
-        $this->pembuat = $pembuat;
-        $this->nama = $nama;
-        $this->deskripsi = $deskripsi;
-        $this->tanggalDibuat = $tanggalDibuat;
-        $this->jenis = $jenis;
-        $this->kode = $kode;
+        $this->setId($id);
+        $this->setPembuat($pembuat);
+        $this->setNama($nama);
+        $this->setDeskripsi($deskripsi);
+        $this->setTanggalDibuat($tanggalDibuat);
+        $this->setJenis($jenis);
+        $this->setkode($kode);
     }
 
 
@@ -128,11 +130,11 @@ class Group
 
     public function setJenis($jenis)
     {
-        $validTypes = ['Privat', 'Publik'];
-        if (!in_array($jenis, $validTypes)) {
+        $normalized = ucfirst(strtolower($jenis));
+        if (!in_array($normalized, GROUP_TYPES)) {
             throw new Exception("Invalid Group Type. Must be 'Privat' or 'Publik'.");
         }
-        $this->jenis = $jenis;
+        $this->jenis = $normalized;
     }
 
     public function setKode($kode)

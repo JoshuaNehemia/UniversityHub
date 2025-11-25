@@ -3,7 +3,7 @@
 namespace MODELS;
 
 require_once(__DIR__ . '/Akun.php');
-require_once(__DIR__ . '/../CORE/upload.php');
+require_once(__DIR__ . '/../upload.php');
 
 use MODELS\Akun;
 use Exception;
