@@ -1,20 +1,20 @@
 <?php
 
-namespace CONTROLLERS;
+namespace CORE;
 
 require_once(__DIR__ . "/../database.php");
 
 use mysqli;
 use Exception;
 
-class DatabaseController
+class DatabaseConnection
 {
 
     private $database_address = DATABASE_ADDRESS;
     private $database_name = DATABASE_NAME;
     private $database_username = DATABASE_USERNAME;
     private $database_password = DATABASE_PASSWORD;
-    private $conn;
+    protected $conn;
 
     public function __construct()
     {
@@ -23,12 +23,10 @@ class DatabaseController
 
     public function __destruct()
     {
-        if (self::$conn !== null) {
-            self::$conn->close();
-        }
+        $this->closeConnection();
     }
 
-    private function startConnection()
+    protected function startConnection()
     {
         if (self::$conn == null) {
             $this->conn = new mysqli($this->database_address, $this->database_username, $this->database_password, $this->database_name);
@@ -38,9 +36,10 @@ class DatabaseController
         }
     }
 
-    public function getConnection()
+    protected function closeConnection()
     {
-        return $this->conn;
+        if (self::$conn !== null) {
+            self::$conn->close();
+        }
     }
-
 }
