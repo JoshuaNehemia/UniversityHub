@@ -4,7 +4,7 @@ namespace MODELS;
 
 require_once(__DIR__ . '/Akun.php');
 require_once(__DIR__ . '/../upload.php');
-require_once(__DIR__ .'/../CORE/DatabaseConnection.php');
+require_once(__DIR__ . '/../CORE/DatabaseConnection.php');
 
 use CORE\DatabaseConnection;
 use MODELS\Akun;
@@ -16,10 +16,9 @@ class Dosen extends Akun
     private $foto_extention;
     private $foto_address;
 
-    
-    // ================================================================================================
+    // ================================================================================
     // CONSTRUCTOR
-    // ================================================================================================
+    // ================================================================================
     public function __construct($username, $nama, $npk, $foto_extention)
     {
         parent::__construct($username, $nama, "DOSEN");
@@ -27,39 +26,32 @@ class Dosen extends Akun
         $this->setFotoExtention($foto_extention);
     }
 
+    // ================================================================================
+    // GETTERS
+    // ================================================================================
+    public function getNPK() { return $this->npk; }
+    public function getFotoExtention() { return $this->foto_extention; }
+    public function getFotoAddress() { return $this->foto_address; }
 
-    // ================================================================================================
-    // GETTER
-    // ================================================================================================
-    public function getNPK()
-    {
-        return $this->npk;
-    }
-
-    public function getFotoExtention()
-    {
-        return $this->foto_extention;
-    }
-
-    public function getFotoAddress()
-    {
-        return $this->foto_address;
-    }
-
-    // ================================================================================================
-    // SETTER
-    // ================================================================================================
+    // ================================================================================
+    // SETTERS
+    // ================================================================================
     public function setNPK(string $npk)
     {
-        if(empty($npk)) throw new Exception("NPK tidak dapat kosong");
+        if (empty($npk)) throw new Exception("NPK tidak dapat kosong");
         $this->npk = $npk;
     }
 
     public function setFotoExtention(string $foto_extention)
     {
         $foto_extention = strtolower($foto_extention);
-        if(empty($foto_extention)) throw new Exception("Extention tidak dapat kosong");
-        if(!in_array($foto_extention,ALLOWED_PICTURE_EXTENSION))  throw new Exception("Extention illegal, Upload file berupa: " . implode(', ', ALLOWED_PICTURE_EXTENSION));
+
+        if (empty($foto_extention))
+            throw new Exception("Extention tidak dapat kosong");
+
+        if (!in_array($foto_extention, ALLOWED_PICTURE_EXTENSION))
+            throw new Exception("Extention illegal: " . implode(', ', ALLOWED_PICTURE_EXTENSION));
+
         $this->foto_extention = $foto_extention;
     }
 
@@ -68,15 +60,14 @@ class Dosen extends Akun
         $this->foto_address = $address;
     }
 
-    
-
-    // ================================================================================================
-    // CRUD (RETRIEVE)
-    // ================================================================================================
+    // ================================================================================
+    // LOGIN
+    // ================================================================================
     public static function login(string $username, string $password): Dosen
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
+        $stmt = null;
 
         $sql = "
             SELECT a.username, a.password, d.npk, d.nama, d.foto_extension
@@ -87,7 +78,7 @@ class Dosen extends Akun
 
         try {
             $stmt = $conn->prepare($sql);
-            if (!$stmt) throw new Exception("Failed to prepare login query.");
+            if (!$stmt) throw new Exception("Prepare login gagal.");
 
             $stmt->bind_param("s", $username);
             $stmt->execute();
@@ -101,8 +92,6 @@ class Dosen extends Akun
             if (!password_verify($password, $row['password']))
                 throw new Exception("Password salah.");
 
-            $stmt->close();
-
             return new Dosen(
                 $row['username'],
                 $row['nama'],
@@ -112,60 +101,108 @@ class Dosen extends Akun
 
         } finally {
             if ($stmt) $stmt->close();
+            $conn->close();
             $db->__destruct();
         }
     }
 
-    // ============================
-    // GET DATA BY USERNAME
-    // ============================
-
-    public static function get_data(string $username): Dosen
+    // ================================================================================
+    // GET SINGLE DOSEN BY USERNAME (JOIN)
+    // ================================================================================
+    public static function getDosenByUsername(string $username): ?Dosen
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
-
-        $sql = "
-            SELECT d.npk, d.nama, d.foto_extension
-            FROM dosen AS d
-            INNER JOIN akun AS a ON d.npk = a.npk_dosen
-            WHERE a.username = ?
-        ";
+        $stmt = null;
 
         try {
+            $sql = "
+                SELECT a.username, d.npk, d.nama, d.foto_extension
+                FROM akun AS a
+                INNER JOIN dosen AS d ON a.npk_dosen = d.npk
+                WHERE a.username = ?
+            ";
+
             $stmt = $conn->prepare($sql);
-            if (!$stmt) throw new Exception("Failed to prepare select query.");
+            if (!$stmt) throw new Exception("Prepare gagal: " . $conn->error);
 
             $stmt->bind_param("s", $username);
             $stmt->execute();
-
             $result = $stmt->get_result();
+
             if ($result->num_rows === 0)
-                throw new Exception("Data dosen tidak ditemukan.");
+                return null;
 
             $row = $result->fetch_assoc();
-            $stmt->close();
 
             return new Dosen(
-                $username,
-                $row['nama'],
-                $row['npk'],
-                $row['foto_extension']
+                $row["username"],
+                $row["nama"],
+                $row["npk"],
+                $row["foto_extension"]
             );
 
+        } catch (Exception $e) {
+            throw new Exception("Gagal mengambil dosen: " . $e->getMessage());
         } finally {
-            $db->close();
+            if ($stmt) $stmt->close();
+            $conn->close();
+            $db->__destruct();
         }
     }
 
-    // ============================
-    // CREATE
-    // ============================
+    // ================================================================================
+    // GET ALL DOSEN (ADMIN)
+    // ================================================================================
+    public static function getAllDosen(): array
+    {
+        $db = new DatabaseConnection();
+        $conn = $db->conn;
+        $stmt = null;
 
+        try {
+            $sql = "
+                SELECT d.npk, d.nama, d.foto_extension, a.username
+                FROM dosen AS d
+                LEFT JOIN akun AS a ON a.npk_dosen = d.npk
+            ";
+
+            $stmt = $conn->prepare($sql);
+            if (!$stmt) throw new Exception("Prepare gagal: " . $conn->error);
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $list = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $list[] = new Dosen(
+                    $row["username"] ?? "-",   // dosen without akun yet
+                    $row["nama"],
+                    $row["npk"],
+                    $row["foto_extension"]
+                );
+            }
+
+            return $list;
+
+        } catch (Exception $e) {
+            throw new Exception("Gagal mengambil semua dosen: " . $e->getMessage());
+        } finally {
+            if ($stmt) $stmt->close();
+            $conn->close();
+            $db->__destruct();
+        }
+    }
+
+    // ================================================================================
+    // CREATE DOSEN
+    // ================================================================================
     public function create_dosen_in_database(string $password): void
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
+        $stmt = null;
 
         $sql = "INSERT INTO dosen (npk, nama, foto_extension) VALUES (?, ?, ?)";
 
@@ -173,13 +210,13 @@ class Dosen extends Akun
             $conn->begin_transaction();
 
             $stmt = $conn->prepare($sql);
-            if (!$stmt) throw new Exception("Failed to prepare insert query.");
+            if (!$stmt) throw new Exception("Prepare insert gagal.");
 
             $stmt->bind_param(
                 "sss",
                 $this->npk,
                 $this->nama,
-                $this->foto_extension
+                $this->foto_extention
             );
 
             $stmt->execute();
@@ -197,18 +234,19 @@ class Dosen extends Akun
             throw $e;
 
         } finally {
-            $db->close();
+            $conn->close();
+            $db->__destruct();
         }
     }
 
-    // ============================
+    // ================================================================================
     // UPDATE
-    // ============================
-
+    // ================================================================================
     public function update_database(): void
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
+        $stmt = null;
 
         $sql = "
             UPDATE dosen
@@ -218,13 +256,13 @@ class Dosen extends Akun
 
         try {
             $stmt = $conn->prepare($sql);
-            if (!$stmt) throw new Exception("Failed to prepare update query.");
+            if (!$stmt) throw new Exception("Prepare gagal.");
 
             $stmt->bind_param(
                 "ssss",
                 $this->npk,
                 $this->nama,
-                $this->foto_extension,
+                $this->foto_extention,
                 $this->username
             );
 
@@ -233,21 +271,21 @@ class Dosen extends Akun
             if ($stmt->affected_rows === 0)
                 throw new Exception("Tidak ada data dosen yang diperbarui.");
 
-            $stmt->close();
-
         } finally {
-            $db->close();
+            if ($stmt) $stmt->close();
+            $conn->close();
+            $db->__destruct();
         }
     }
 
-    // ============================
+    // ================================================================================
     // DELETE
-    // ============================
-
+    // ================================================================================
     public static function delete_dosen_from_database(string $username, string $npk): void
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
+        $stmt = null;
 
         $sql = "DELETE FROM dosen WHERE npk = ?";
 
@@ -263,7 +301,6 @@ class Dosen extends Akun
             if ($stmt->affected_rows < 1)
                 throw new Exception("Data dosen tidak ditemukan.");
 
-            $stmt->close();
             $conn->commit();
 
         } catch (Exception $e) {
@@ -271,7 +308,9 @@ class Dosen extends Akun
             throw $e;
 
         } finally {
-            $db->close();
+            if ($stmt) $stmt->close();
+            $conn->close();
+            $db->__destruct();
         }
     }
 }
