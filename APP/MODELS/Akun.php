@@ -109,14 +109,14 @@ class Akun extends DatabaseConnection
             throw $e;
         } finally {
             if (isset($stmt)) $stmt->close();
-            $this->conn->close();
+            //$this->conn->close();
         }
     }
 
     // ================================================================================================
     // CRUD: READ
     // ================================================================================================
-    public static function login(string $username, string $password)
+    public static function akunLogin(string $username, string $password)
     {
         $instance = new DatabaseConnection();
         $conn = $instance->conn;
