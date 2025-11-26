@@ -162,7 +162,7 @@ class Dosen extends Akun
     // ================================================================================
     // CRUD: READ (Single Dosen)
     // ================================================================================
-    public static function dosenGetByUsername(string $username): ?Dosen
+    public static function dosenGetByUsername(string $username): Dosen
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -183,8 +183,9 @@ class Dosen extends Akun
             $stmt->execute();
             $result = $stmt->get_result();
 
-            if ($result->num_rows === 0)
-                return null;
+            if ($result->num_rows === 0){
+                throw new Exception("Tidak ditemukan data dosen yang sesuai");
+            }
 
             $row = $result->fetch_assoc();
 
@@ -206,7 +207,7 @@ class Dosen extends Akun
     // CRUD: READ ALL 
     // Pakai cursor boleh ndak ya?
     // ================================================================================
-    public static function dosenGetAll($limit, $offset)
+    public static function dosenGetAll($limit, $offset):array
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -245,7 +246,7 @@ class Dosen extends Akun
         }
     }
 
-    public static function dosenGetAllByName($limit, $offset, $keyword)
+    public static function dosenGetAllByName($limit, $offset, $keyword):array
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -289,18 +290,16 @@ class Dosen extends Akun
     // ================================================================================
     // CREATE DOSEN
     // ================================================================================
-    public function dosenCreate(string $password): void
+    public function dosenCreate(string $password): Dosen
     {
-        $db = new DatabaseConnection();
-        $conn = $db->conn;
+        $this->startConnection();
         $stmt = null;
 
         $sql = "INSERT INTO dosen (npk, nama, foto_extension) VALUES (?, ?, ?)";
-
         try {
-            $conn->begin_transaction();
+            $this->conn->begin_transaction();
 
-            $stmt = $conn->prepare($sql);
+            $stmt = $this->conn->prepare($sql);
             if (!$stmt) throw new Exception("Prepare insert gagal.");
 
             $stmt->bind_param(
@@ -311,20 +310,21 @@ class Dosen extends Akun
             );
 
             $stmt->execute();
-            if ($stmt->affected_rows !== 1)
+            if ($stmt->affected_rows !== 1){
                 throw new Exception("Gagal menyimpan data dosen.");
+            }
 
             $stmt->close();
 
             parent::akunCreate("", $this->getNPK(), $password, 0);
 
-            $conn->commit();
+            $this->conn->commit();
+            return $this;
         } catch (Exception $e) {
-            $conn->rollback();
+            $this->conn->rollback();
             throw $e;
         } finally {
-            $conn->close();
-            $db->__destruct();
+            if ($stmt) $stmt->close();
         }
     }
 

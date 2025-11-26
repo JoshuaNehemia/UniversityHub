@@ -37,7 +37,7 @@ function main()
         }
         $response = [
             "status" => "success",
-            "data"   => $data->getArray()
+            "data"   => $data
         ];
     } catch (Exception $e) {
         $response = [

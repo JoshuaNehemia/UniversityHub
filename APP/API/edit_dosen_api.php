@@ -50,7 +50,7 @@ function main()
         // Response structure matches mahasiswa API
         $response = [
             "status" => "success",
-            "data"   => $data->getArray()
+            "data"   => $data
         ];
 
     } catch (Exception $e) {

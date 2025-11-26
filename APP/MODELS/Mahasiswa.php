@@ -162,7 +162,7 @@ class Mahasiswa extends Akun
     // ================================================================================
     // CRUD: CREATE
     // ================================================================================
-    public function mahasiswaCreate($password)
+    public function mahasiswaCreate($password):Mahasiswa
     {
         $stmt = null;
         $this->conn->begin_transaction();
@@ -190,20 +190,19 @@ class Mahasiswa extends Akun
             parent::akunCreate($password, $this->nrp, null);
 
             $this->conn->commit();
-            return true;
+            return $this;
         } catch (Exception $e) {
             $this->conn->rollback();
             throw $e;
         } finally {
             if ($stmt) $stmt->close();
-            $this->conn->close();
         }
     }
 
     // ================================================================================
     // CRUD: LOGIN
     // ================================================================================
-    public static function mahasiswaLogin($username, $password)
+    public static function mahasiswaLogin($username, $password):Mahasiswa
     {
         $sql = "
             SELECT a.username, a.password, a.nrp_mahasiswa,
@@ -252,7 +251,7 @@ class Mahasiswa extends Akun
     // CRUD: READ ALL 
     // Pakai cursor boleh ndak ya?
     // ================================================================================
-    public static function mahasiswaGetAll($limit, $offset)
+    public static function mahasiswaGetAll($limit, $offset):array
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -297,7 +296,7 @@ class Mahasiswa extends Akun
         }
     }
 
-    public static function mahasiswaGetAllByName($limit, $offset, $keyword)
+    public static function mahasiswaGetAllByName($limit, $offset, $keyword):array
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -454,7 +453,7 @@ class Mahasiswa extends Akun
     // ================================================================================
     // CRUD: DELETE
     // ================================================================================
-    public function mahasiswaDelete()
+    public function mahasiswaDelete():bool
     {
         $stmt = null;
 
