@@ -198,7 +198,6 @@ class Dosen extends Akun
             throw new Exception("Gagal mengambil dosen: " . $e->getMessage());
         } finally {
             if ($stmt) $stmt->close();
-            $conn->close();
             $db->__destruct();
         }
     }

@@ -51,4 +51,8 @@ class AccountController
         }
         return $list;
     }
+
+    public function getSingleDosenByUsername($username):array{
+        return Dosen::dosenGetByUsername($username)->getArray();
+    }
 }

@@ -398,7 +398,6 @@ class Mahasiswa extends Akun
             throw new Exception("Gagal mengambil mahasiswa by username: " . $e->getMessage());
         } finally {
             if ($stmt) $stmt->close();
-            $conn->close();
             $db->__destruct();
         }
     }
