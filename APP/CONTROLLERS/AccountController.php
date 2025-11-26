@@ -35,6 +35,13 @@ class AccountController
         return Mahasiswa::mahasiswaGetByUsername($username)->getArray();
     }
 
+    public function updateMahasiswa(array $mahasiswa)
+    {
+        $mahasiswa = Mahasiswa::readArray($mahasiswa);
+        return $mahasiswa->mahasiswaUpdate();
+    }
+
+
     public function getDosenList($limit, $offset): array
     {
         $list = Dosen::dosenGetAll($limit, $offset);
@@ -52,7 +59,14 @@ class AccountController
         return $list;
     }
 
-    public function getSingleDosenByUsername($username):array{
+    public function getSingleDosenByUsername($username): array
+    {
         return Dosen::dosenGetByUsername($username)->getArray();
+    }
+
+    public function updateDosen(array $dosen)
+    {
+        $dosen = Dosen::readArray($dosen);
+        return $dosen->dosenUpdate();
     }
 }

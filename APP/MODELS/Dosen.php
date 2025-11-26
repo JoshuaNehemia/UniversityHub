@@ -331,12 +331,11 @@ class Dosen extends Akun
     // ================================================================================
     // UPDATE
     // ================================================================================
-    public function dosenUpdate(): void
+    public function dosenUpdate(): Dosen
     {
-        $db = new DatabaseConnection();
-        $conn = $db->conn;
+        $this->startConnection();
+        $this->conn->begin_transaction();
         $stmt = null;
-
         $sql = "
             UPDATE dosen
             SET npk = ?, nama = ?, foto_extension = ?
@@ -344,25 +343,34 @@ class Dosen extends Akun
         ";
 
         try {
-            $stmt = $conn->prepare($sql);
+            $stmt = $this->conn->prepare($sql);
             if (!$stmt) throw new Exception("Prepare gagal.");
+
+            $npk = $this->getNPK();
+            $nama = $this->getNama();
+            $ext = $this->getFotoExtention();
+            $usn = $this->getUsername();
 
             $stmt->bind_param(
                 "ssss",
-                $this->getNPK(),
-                $this->getNama(),
-                $this->getFotoExtention(),
-                $this->getUsername()
+                $npk,
+                $nama,
+                $ext,
+                $usn
             );
 
             $stmt->execute();
 
-            if ($stmt->affected_rows === 0)
+            if ($stmt->affected_rows != 1) {
                 throw new Exception("Tidak ada data dosen yang diperbarui.");
+            }
+            $this->conn->commit();
+            return $this;
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            throw new Exception("Gagal update dosen: " . $e->getMessage());
         } finally {
             if ($stmt) $stmt->close();
-            $conn->close();
-            $db->__destruct();
         }
     }
 

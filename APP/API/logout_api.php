@@ -33,7 +33,7 @@ function main()
 function logging_out()
 {
     if (!isset($_SESSION[CURRENT_ACCOUNT])) {
-        throw new Exception("Lupa kali kau login, udah mau logout aja");
+        throw new Exception("Belum login, udah mau logout aja");
     }
     session_destroy();
 }

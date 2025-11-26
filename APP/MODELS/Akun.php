@@ -356,38 +356,6 @@ class Akun extends DatabaseConnection
     // ================================================================================================
     // CRUD: UPDATE
     // ================================================================================================
-
-    /**
-     * Mengupdate data profil (Nama) ke database berdasarkan Username saat ini.
-     * * @return bool
-     * @throws Exception
-     */
-    public function akunUpdate()
-    {
-        $sql = "UPDATE `akun` SET `nama` = ? WHERE `username` = ?";
-        $stmt = null;
-
-        try {
-            $stmt = $this->conn->prepare($sql);
-            if (!$stmt) throw new Exception("Gagal mempersiapkan statement.");
-
-            $stmt->bind_param('ss', $this->nama, $this->username);
-            $stmt->execute();
-
-            if ($stmt->affected_rows === 0) {
-                // Opsional: throw error atau return false jika tidak ada yang berubah
-                // throw new Exception("Tidak ada perubahan atau username tidak ditemukan.");
-            }
-
-            return true;
-        } catch (Exception $e) {
-            throw new Exception("Gagal update profile: " . $e->getMessage());
-        } finally {
-            if ($stmt) $stmt->close();
-            // Hapus $this->conn->close() agar object masih bisa dipakai
-        }
-    }
-
     /**
      * Mengganti password akun.
      * * @param string $newPassword Password baru (belum di-hash).

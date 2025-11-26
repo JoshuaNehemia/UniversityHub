@@ -405,39 +405,49 @@ class Mahasiswa extends Akun
     // ================================================================================
     // CRUD: UPDATE
     // ================================================================================
-    public function mahasiswaUpdate()
+    public function mahasiswaUpdate() : Mahasiswa
     {
         $stmt = null;
+        $this->startConnection();
         $this->conn->begin_transaction();
-
         try {
             $sql = "UPDATE mahasiswa
-                    SET nama = ?, gender = ?, tanggal_lahir = ?, angkatan = ?, foto_extention = ?
-                    WHERE nrp = ?";
+        SET nrp = ?, nama=?, gender = ?, tanggal_lahir = ?, angkatan = ?, foto_extention = ?
+        WHERE nrp = (SELECT `nrp_mahasiswa` FROM `akun` WHERE `username` = ?)";
 
             $stmt = $this->conn->prepare($sql);
+
+            $nrp = $this->getNRP();
+            $nama = $this->getNama();
+            $gender = $this->getGender();
+            $tglLahir = $this->getTanggalLahir();
+            $angkatan = $this->getAngkatan();
+            $foto_ext = $this->getFotoExtention();
+            $usn = $this->getUsername();
+
             $stmt->bind_param(
-                "ssssss",
-                $this->getNama(),
-                $this->gender,
-                $this->tanggal_lahir,
-                $this->angkatan,
-                $this->foto_extention,
-                $this->nrp
+                "ssssiss",
+                $nrp,
+                $nama,
+                $gender,
+                $tglLahir,
+                $angkatan,
+                $foto_ext,
+                $usn
             );
 
             $stmt->execute();
-
-            parent::akunUpdate();
-
+            $rows = $stmt->affected_rows;
+            if ($rows != 1) {
+                throw new Exception("Gagal merubah data mahasiswa, tidak ada yang ter-update.");
+            }
             $this->conn->commit();
-            return true;
+            return $this;
         } catch (Exception $e) {
             $this->conn->rollback();
             throw new Exception("Gagal update mahasiswa: " . $e->getMessage());
         } finally {
             if ($stmt) $stmt->close();
-            $this->conn->close();
         }
     }
 

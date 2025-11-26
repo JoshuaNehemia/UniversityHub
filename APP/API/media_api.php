@@ -65,3 +65,7 @@ function retrieveProfilePicture(): string
     $ext = $_GET['foto_extention'];
     return API_ADDRESS ."DATABASE/PROFILE/{$jenis}/{$code}.{$ext}";
 }
+
+function fileExist($address){
+
+}
