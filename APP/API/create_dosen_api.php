@@ -24,10 +24,10 @@ function main()
         $accController = new AccountController();
         $upController  = new UploadController();
         
-        $ext = $upController->saveMahasiswaProfilePicture($_FILES['foto'], $_POST['nrp']);
+        $ext = $upController->saveDosenProfilePicture($_FILES['foto'], $_POST['npk']);
         $_POST['foto_extention'] = $ext;
 
-        $data = $accController->createMahasiswa($_POST);
+        $data = $accController->createDosen($_POST);
         if (!$data) {
             throw new Exception("Gagal update data");
         }
@@ -47,7 +47,7 @@ function main()
 
 function checkDataIntegrity()
 {
-    $required = ['username', 'nama', 'nrp', 'tanggal_lahir', 'gender', 'angkatan'];
+    $required = ['username', 'nama', 'npk'];
 
     foreach ($required as $field) {
         if (!isset($_POST[$field])) {
