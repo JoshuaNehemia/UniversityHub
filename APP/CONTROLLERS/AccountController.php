@@ -14,7 +14,7 @@ class AccountController
 {
     public function __construct() {}
 
-    public function getMahasiswaList($limit, $offset)
+    public function getMahasiswaList($limit, $offset): array
     {
         $list = Mahasiswa::mahasiswaGetAll($limit, $offset);
         foreach ($list as $key => $mhs) {
@@ -22,7 +22,7 @@ class AccountController
         }
         return $list;
     }
-    public function getMahasiswaListByName($limit, $offset, $keyword)
+    public function getMahasiswaListByName($limit, $offset, $keyword): array
     {
         $list = Mahasiswa::mahasiswaGetAllByName($limit, $offset, $keyword);
         foreach ($list as $key => $mhs) {
@@ -30,12 +30,12 @@ class AccountController
         }
         return $list;
     }
-    public function getSingleMahasiswaByUsername($username)
+    public function getSingleMahasiswaByUsername($username): array
     {
         return Mahasiswa::mahasiswaGetByUsername($username)->getArray();
     }
 
-        public function getDosenList($limit, $offset)
+    public function getDosenList($limit, $offset): array
     {
         $list = Dosen::dosenGetAll($limit, $offset);
         foreach ($list as $key => $mhs) {
@@ -43,7 +43,7 @@ class AccountController
         }
         return $list;
     }
-    public function getDosenListByName($limit, $offset, $keyword)
+    public function getDosenListByName($limit, $offset, $keyword): array
     {
         $list = Dosen::dosenGetAllByName($limit, $offset, $keyword);
         foreach ($list as $key => $mhs) {
