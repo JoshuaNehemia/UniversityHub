@@ -117,39 +117,44 @@ class Mahasiswa extends Akun
      * Merubah data object class Akun dari serializable object menjadi PHP Array
      * @return array data kelas dalam array.
      */
-    public function getArray() : array{
+    public function getArray(): array
+    {
         return array_merge(
             parent::getArray(),
             array(
-                "nrp"=>$this->getNRP(),
-                "tanggal_lahir"=>$this->getTanggalLahir(),
-                "gender"=>$this->getGender(),
-                "angkatan"=>$this->getAngkatan(),
-                "foto_extention"=>$this->getFotoExtention()
-            ));
+                "nrp" => $this->getNRP(),
+                "tanggal_lahir" => $this->getTanggalLahir(),
+                "gender" => $this->getGender(),
+                "angkatan" => $this->getAngkatan(),
+                "foto_extention" => $this->getFotoExtention()
+            )
+        );
     }
 
     /**
      * Merubah data array menjadi Mahasiswa serializable object
      * @return Mahasiswa data kelas yang sudah dikonversi
      */
-    public static function readArray(array $data){
-        return new Mahasiswa($data['username'],$data['nama'],$data['nrp'],$data['tanggal_lahir'],$data['gender'],$data['angkatan'],$data['foto_extention']);
+    public static function readArray(array $data)
+    {
+        return new Mahasiswa($data['username'], $data['nama'], $data['nrp'], $data['tanggal_lahir'], $data['gender'], $data['angkatan'], $data['foto_extention']);
     }
 
     /**
      * Merubah data object class Mahasiswa dari serializable object menjadi JSON (JavaScript Object Notation)
      * @return string data kelas dalam JSON String.
      */
-    public function getJSON(): string{
+    public function getJSON(): string
+    {
         return json_encode($this->getArray());
     }
-    
+
     /**
      * Merubah data JSON menjadi Mahasiswa serializable object
      * @return Mahasiswa data kelas yang sudah dikonversi
      */
-    public static function readJSON(string $json){
+    public static function readJSON(string $json)
+    {
         $data = json_decode($json);
         return self::readArray($data);
     }
@@ -247,22 +252,35 @@ class Mahasiswa extends Akun
     // CRUD: READ ALL 
     // Pakai cursor boleh ndak ya?
     // ================================================================================
-    public static function mahasiswaGetAll($numdisplayed,$offsett)
+    public static function mahasiswaGetAll($limit, $offset)
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
         $stmt = null;
 
         try {
-            $sql = "SELECT nrp, nama, gender, tanggal_lahir, angkatan, foto_extention FROM mahasiswa";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-            $result = $stmt->get_result();
+            $sql = "SELECT 
+                    m.nrp,
+                    a.username,
+                    m.nama,
+                    m.gender,
+                    m.tanggal_lahir,
+                    m.angkatan,
+                    m.foto_extention
+                FROM mahasiswa m
+                INNER JOIN akun a ON m.nrp = a.username
+                LIMIT ? OFFSET ?";
 
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ii", $limit, $offset);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
             $list = [];
+
             while ($row = $result->fetch_assoc()) {
                 $list[] = new Mahasiswa(
-                    $row["nrp"],        
+                    $row["username"],
                     $row["nama"],
                     $row["nrp"],
                     $row["tanggal_lahir"],
@@ -275,10 +293,56 @@ class Mahasiswa extends Akun
             return $list;
         } finally {
             if ($stmt) $stmt->close();
-            $conn->close();
             $db->__destruct();
         }
     }
+
+    public static function mahasiswaGetAllByUsername($limit, $offset,$keyword)
+    {
+        $db = new DatabaseConnection();
+        $conn = $db->conn;
+        $stmt = null;
+        $keyword = "%{$keyword}%";
+        try {
+            $sql = "SELECT 
+                    m.nrp,
+                    a.username,
+                    m.nama,
+                    m.gender,
+                    m.tanggal_lahir,
+                    m.angkatan,
+                    m.foto_extention
+                FROM mahasiswa m
+                INNER JOIN akun a ON m.nrp = a.username
+                WHERE a.username LIKE {$keyword}
+                LIMIT ? OFFSET ?";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ii", $limit, $offset);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            $list = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $list[] = new Mahasiswa(
+                    $row["username"],
+                    $row["nama"],
+                    $row["nrp"],
+                    $row["tanggal_lahir"],
+                    $row["gender"],
+                    $row["angkatan"],
+                    $row["foto_extention"]
+                );
+            }
+
+            return $list;
+        } finally {
+            if ($stmt) $stmt->close();
+            $db->__destruct();
+        }
+    }
+
     // ================================================================================
     // CRUD: READ — GET ONE MAHASISWA
     // ================================================================================

@@ -11,5 +11,7 @@ use MODELS\Dosen;
 use Exception;
 
 class AccountController{
-
+    public function getMahasiswa(){
+        
+    }
 }
