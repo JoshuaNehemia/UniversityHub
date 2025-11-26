@@ -3,6 +3,7 @@
 namespace MODELS;
 
 require_once(__DIR__ . '/Akun.php');
+require_once(__DIR__ . '/../config.php');
 require_once(__DIR__ . '/../CORE/DatabaseConnection.php');
 
 use CORE\DatabaseConnection;

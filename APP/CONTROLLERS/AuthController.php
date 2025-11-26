@@ -45,7 +45,4 @@ class AuthController
         }
     }
 
-    private function findImage(){
-
-    }
 }

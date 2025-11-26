@@ -25,6 +25,7 @@ function main()
         $password = $_POST['password'];
 
         $akun = $auth->login($username, $password);
+        $_SESSION[CURRENT_ACCOUNT] = $akun;
         $response = array(
             "status" => "success",
             "data" => $akun,
