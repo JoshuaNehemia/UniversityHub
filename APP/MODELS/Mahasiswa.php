@@ -297,7 +297,7 @@ class Mahasiswa extends Akun
         }
     }
 
-    public static function mahasiswaGetAllByUsername($limit, $offset,$keyword)
+    public static function mahasiswaGetAllByUsername($limit, $offset, $keyword)
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -346,7 +346,7 @@ class Mahasiswa extends Akun
     // ================================================================================
     // CRUD: READ — GET ONE MAHASISWA
     // ================================================================================
-    public static function mahasiswaGetByUsername(string $username)
+    public static function mahasiswaGetByUsername(string $username): Mahasiswa
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -378,16 +378,15 @@ class Mahasiswa extends Akun
             $result = $stmt->get_result();
 
             if ($result->num_rows === 0) {
-                return null;
-                // or: throw new Exception("Mahasiswa dengan username tersebut tidak ditemukan.");
+                throw new Exception("Mahasiswa dengan username tersebut tidak ditemukan.");
             }
 
             $row = $result->fetch_assoc();
 
             return new Mahasiswa(
-                $row["username"],           // username
-                $row["nama"],               // nama (from mahasiswa)
-                $row["nrp_mahasiswa"],      // nrp
+                $row["username"],
+                $row["nama"],
+                $row["nrp_mahasiswa"],
                 $row["tanggal_lahir"],
                 $row["gender"],
                 $row["angkatan"],
