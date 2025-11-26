@@ -68,7 +68,7 @@ class Akun extends DatabaseConnection
     // ================================================================================================
     // CRUD: CREATE
     // ================================================================================================
-    public function createAccount(string $password, string $nrp = null, string $npk = null)
+    public function akunCreate(string $password, string $nrp = null, string $npk = null)
     {
         if ($this->jenis ===  ACCOUNT_ROLE[0] && empty($nrp)) throw new Exception("Mahasiswa wajib punya NRP");
         if ($this->jenis === ACCOUNT_ROLE[1] && empty($npk)) throw new Exception("Dosen wajib punya NPK");
@@ -157,7 +157,7 @@ class Akun extends DatabaseConnection
     }
 
 
-    public static function getByUsername($username)
+    public static function akunGetByUsername($username)
     {
         $instance = new DatabaseConnection();
         $conn = $instance->conn;
@@ -190,7 +190,7 @@ class Akun extends DatabaseConnection
     // ================================================================================================
     // CRUD: UPDATE
     // ================================================================================================
-    public function updateProfile()
+    public function akunUpdate()
     {
         $sql = "UPDATE `akun` SET `nama` = ?WHERE `username` = ?";
         $stmt = null;
@@ -216,7 +216,7 @@ class Akun extends DatabaseConnection
     }
 
 
-    public function updatePassword($newPassword)
+    public function akunUpdatePassword($newPassword)
     {
         $sql = "UPDATE `akun` SET `password` = ? WHERE `username` = ?";
         $hashed = password_hash($newPassword, PASSWORD_BCRYPT);
@@ -239,7 +239,7 @@ class Akun extends DatabaseConnection
     // ================================================================================================
     // CRUD: DELETE
     // ================================================================================================
-    public function delete()
+    public function akunDelete()
     {
         $sql = "DELETE FROM `akun` WHERE `username` = ?";
         $stmt = null;

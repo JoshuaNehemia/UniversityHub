@@ -112,7 +112,7 @@ class Mahasiswa extends Akun
     // ================================================================================
     // CRUD: CREATE
     // ================================================================================
-    public function createMahasiswa($password)
+    public function mahasiswaCreate($password)
     {
         $stmt = null;
         $this->conn->begin_transaction();
@@ -137,7 +137,7 @@ class Mahasiswa extends Akun
                 throw new Exception("Gagal insert mahasiswa.");
             }
 
-            parent::createAccount($password, $this->nrp, null);
+            parent::akunCreate($password, $this->nrp, null);
 
             $this->conn->commit();
             return true;
@@ -200,9 +200,10 @@ class Mahasiswa extends Akun
     }
 
     // ================================================================================
-    // CRUD: READ ALL
+    // CRUD: READ ALL 
+    // Pakai cursor boleh ndak ya?
     // ================================================================================
-    public static function getAllMahasiswa()
+    public static function mahasiswaGetAll($numdisplayed,$offsett)
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -217,7 +218,7 @@ class Mahasiswa extends Akun
             $list = [];
             while ($row = $result->fetch_assoc()) {
                 $list[] = new Mahasiswa(
-                    $row["nrp"],         // username = nrp (unless you use different logic)
+                    $row["nrp"],        
                     $row["nama"],
                     $row["nrp"],
                     $row["tanggal_lahir"],
@@ -235,9 +236,9 @@ class Mahasiswa extends Akun
         }
     }
     // ================================================================================
-    // CRUD: READ — GET ONE MAHASISWA BY USERNAME (JOIN akun + mahasiswa)
+    // CRUD: READ — GET ONE MAHASISWA
     // ================================================================================
-    public static function getMahasiswaByUsername(string $username)
+    public static function mahasiswaGetByUsername(string $username)
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -296,7 +297,7 @@ class Mahasiswa extends Akun
     // ================================================================================
     // CRUD: UPDATE
     // ================================================================================
-    public function updateMahasiswa()
+    public function mahasiswaUpdate()
     {
         $stmt = null;
         $this->conn->begin_transaction();
@@ -319,7 +320,7 @@ class Mahasiswa extends Akun
 
             $stmt->execute();
 
-            parent::updateProfile();
+            parent::akunUpdate();
 
             $this->conn->commit();
             return true;
@@ -335,7 +336,7 @@ class Mahasiswa extends Akun
     // ================================================================================
     // CRUD: DELETE
     // ================================================================================
-    public function deleteMahasiswa()
+    public function mahasiswaDelete()
     {
         $stmt = null;
 

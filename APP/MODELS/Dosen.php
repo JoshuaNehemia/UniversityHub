@@ -63,7 +63,7 @@ class Dosen extends Akun
     // ================================================================================
     // LOGIN
     // ================================================================================
-    public static function login(string $username, string $password): Dosen
+    public static function dosenLogin(string $username, string $password): Dosen
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -107,9 +107,9 @@ class Dosen extends Akun
     }
 
     // ================================================================================
-    // GET SINGLE DOSEN BY USERNAME (JOIN)
+    // CRUD: READ (Single Dosen)
     // ================================================================================
-    public static function getDosenByUsername(string $username): ?Dosen
+    public static function dosenGetByUsername(string $username): ?Dosen
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -154,7 +154,7 @@ class Dosen extends Akun
     // ================================================================================
     // GET ALL DOSEN (ADMIN)
     // ================================================================================
-    public static function getAllDosen(): array
+    public static function dosenGetAll(): array
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -198,7 +198,7 @@ class Dosen extends Akun
     // ================================================================================
     // CREATE DOSEN
     // ================================================================================
-    public function create_dosen_in_database(string $password): void
+    public function dosenCreate(string $password): void
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -214,9 +214,9 @@ class Dosen extends Akun
 
             $stmt->bind_param(
                 "sss",
-                $this->npk,
-                $this->nama,
-                $this->foto_extention
+                $this->getNPK(),
+                $this->getNama(),
+                $this->getFotoExtention()
             );
 
             $stmt->execute();
@@ -225,7 +225,7 @@ class Dosen extends Akun
 
             $stmt->close();
 
-            parent::create_in_database("", $this->npk, $password, 0);
+            parent::akunCreate("", $this->getNPK(), $password, 0);
 
             $conn->commit();
 
@@ -242,7 +242,7 @@ class Dosen extends Akun
     // ================================================================================
     // UPDATE
     // ================================================================================
-    public function update_database(): void
+    public function dosenUpdate(): void
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -260,10 +260,10 @@ class Dosen extends Akun
 
             $stmt->bind_param(
                 "ssss",
-                $this->npk,
-                $this->nama,
-                $this->foto_extention,
-                $this->username
+                $this->getNPK(),
+                $this->getNama(),
+                $this->getFotoExtention(),
+                $this->getUsername()
             );
 
             $stmt->execute();
@@ -281,7 +281,7 @@ class Dosen extends Akun
     // ================================================================================
     // DELETE
     // ================================================================================
-    public static function delete_dosen_from_database(string $username, string $npk): void
+    public static function dosenDelete(string $username, string $npk): void
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
