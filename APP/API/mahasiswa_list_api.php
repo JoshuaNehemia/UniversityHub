@@ -26,7 +26,7 @@ function main()
         $offset = $_GET['offset'];
         if (checkKeyword()) {
             $username = $_GET['keyword'];
-            $list = $accController->getMahasiswaListByUsername($limit, $offset, $username);
+            $list = $accController->getMahasiswaListByName($limit, $offset, $username);
         } else {
             $list = $accController->getMahasiswaList($limit, $offset);
         }

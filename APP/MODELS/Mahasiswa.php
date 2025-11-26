@@ -297,7 +297,7 @@ class Mahasiswa extends Akun
         }
     }
 
-    public static function mahasiswaGetAllByUsername($limit, $offset, $keyword)
+    public static function mahasiswaGetAllByName($limit, $offset, $keyword)
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -305,8 +305,7 @@ class Mahasiswa extends Akun
         $keyword = "%{$keyword}%";
         $offset = $offset * $limit;
         try {
-            $sql = "
-                    SELECT 
+            $sql = "SELECT 
                         m.nrp,
                         a.username,
                         m.nama,
@@ -316,9 +315,8 @@ class Mahasiswa extends Akun
                         m.foto_extention
                     FROM mahasiswa m
                     INNER JOIN akun a ON m.nrp = a.nrp_mahasiswa
-                    WHERE a.username LIKE ?
-                    LIMIT ? OFFSET ?
-                ";
+                    WHERE m.nama LIKE ?
+                    LIMIT ? OFFSET ?";
 
 
             $stmt = $conn->prepare($sql);

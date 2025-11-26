@@ -204,32 +204,35 @@ class Dosen extends Akun
     }
 
     // ================================================================================
-    // GET ALL DOSEN (ADMIN)
+    // CRUD: READ ALL 
+    // Pakai cursor boleh ndak ya?
     // ================================================================================
-    public static function dosenGetAll(): array
+    public static function dosenGetAll($limit, $offset)
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
         $stmt = null;
-
+        $offset = $offset * $limit;
         try {
-            $sql = "
-                SELECT d.npk, d.nama, d.foto_extension, a.username
-                FROM dosen AS d
-                LEFT JOIN akun AS a ON a.npk_dosen = d.npk
-            ";
+            $sql = "SELECT 
+                    a.username,
+                    d.nama,
+                    d.npk,
+                    d.foto_extension
+                FROM dosen d
+                INNER JOIN akun a ON d.npk = a.npk_dosen
+                LIMIT ? OFFSET ?";
 
             $stmt = $conn->prepare($sql);
-            if (!$stmt) throw new Exception("Prepare gagal: " . $conn->error);
-
+            $stmt->bind_param("ii", $limit, $offset);
             $stmt->execute();
-            $result = $stmt->get_result();
 
+            $result = $stmt->get_result();
             $list = [];
 
             while ($row = $result->fetch_assoc()) {
                 $list[] = new Dosen(
-                    $row["username"] ?? "-",   // dosen without akun yet
+                    $row["username"],
                     $row["nama"],
                     $row["npk"],
                     $row["foto_extension"]
@@ -237,15 +240,53 @@ class Dosen extends Akun
             }
 
             return $list;
-        } catch (Exception $e) {
-            throw new Exception("Gagal mengambil semua dosen: " . $e->getMessage());
         } finally {
             if ($stmt) $stmt->close();
-            $conn->close();
             $db->__destruct();
         }
     }
 
+    public static function dosenGetAllByName($limit, $offset, $keyword)
+    {
+        $db = new DatabaseConnection();
+        $conn = $db->conn;
+        $stmt = null;
+        $keyword = "%{$keyword}%";
+        $offset = $offset * $limit;
+        try {
+            $sql = "SELECT 
+                    a.username,
+                    d.nama,
+                    d.npk,
+                    d.foto_extension
+                FROM dosen d
+                INNER JOIN akun a ON d.npk = a.npk_dosen
+                WHERE d.nama LIKE ?
+                LIMIT ? OFFSET ?";
+
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sii", $keyword, $limit, $offset);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            $list = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $list[] = new Dosen(
+                    $row["username"],
+                    $row["nama"],
+                    $row["npk"],
+                    $row["foto_extension"]
+                );
+            }
+
+            return $list;
+        } finally {
+            if ($stmt) $stmt->close();
+            $db->__destruct();
+        }
+    }
     // ================================================================================
     // CREATE DOSEN
     // ================================================================================

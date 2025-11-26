@@ -12,10 +12,8 @@ use Exception;
 
 class AccountController
 {
-    public function __construct()
-    {
-    }
-    
+    public function __construct() {}
+
     public function getMahasiswaList($limit, $offset)
     {
         $list = Mahasiswa::mahasiswaGetAll($limit, $offset);
@@ -24,9 +22,9 @@ class AccountController
         }
         return $list;
     }
-    public function getMahasiswaListByUsername($limit, $offset,$keyword)
+    public function getMahasiswaListByName($limit, $offset, $keyword)
     {
-        $list = Mahasiswa::mahasiswaGetAllByUsername($limit, $offset,$keyword);
+        $list = Mahasiswa::mahasiswaGetAllByName($limit, $offset, $keyword);
         foreach ($list as $key => $mhs) {
             $list[$key] = $mhs->getArray();
         }
@@ -35,5 +33,22 @@ class AccountController
     public function getSingleMahasiswaByUsername($username)
     {
         return Mahasiswa::mahasiswaGetByUsername($username)->getArray();
+    }
+
+        public function getDosenList($limit, $offset)
+    {
+        $list = Dosen::dosenGetAll($limit, $offset);
+        foreach ($list as $key => $mhs) {
+            $list[$key] = $mhs->getArray();
+        }
+        return $list;
+    }
+    public function getDosenListByName($limit, $offset, $keyword)
+    {
+        $list = Dosen::dosenGetAllByName($limit, $offset, $keyword);
+        foreach ($list as $key => $mhs) {
+            $list[$key] = $mhs->getArray();
+        }
+        return $list;
     }
 }
