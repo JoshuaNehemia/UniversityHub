@@ -19,7 +19,7 @@ class AuthController
     public function login($username, $password): array
     {
 
-        $jenis = Akun::akunRetrieveRole($username, $password);
+        $jenis = Akun::akunRetrieveRole($username);
         if(!isset($jenis)){
             throw new Exception("Akun anda tidak tercatat di database, mohon hubungi admin untuk pembuatan akun anda");
         }
@@ -43,5 +43,9 @@ class AuthController
                 throw new Exception("Terjadi kesalahan dengan akun anda, mohon hubungi admin");
                 break;
         }
+    }
+
+    private function findImage(){
+
     }
 }

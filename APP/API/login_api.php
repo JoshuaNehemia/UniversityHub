@@ -17,6 +17,7 @@ main();
 // =============================================================================================
 function main()
 {
+    $response = null;
     try {
         $auth = new AuthController;
 
@@ -25,15 +26,15 @@ function main()
 
         $akun = $auth->login($username, $password);
         $response = array(
-            "status"=>"success",
-            "message"=>$akun,
-            "route"=>getRoute($akun['jenis'])
+            "status" => "success",
+            "data" => $akun,
+            "route" => getRoute($akun['jenis'])
         );
     } catch (Exception $e) {
         $response = array(
-            "status"=>"error",
-            "message"=>$e->getMessage(),
-            "route"=>"login.php"
+            "status" => "error",
+            "message" => $e->getMessage(),
+            "route" => "login.php"
         );
     } finally {
         echo json_encode($response);
@@ -43,14 +44,14 @@ function main()
 function checkDataIntegrity()
 {
     if (!($_SERVER['REQUEST_METHOD'] === "POST")) throw new Exception("Request server illegal");
-    if(!(isset($_POST['username'])&&isset($_POST['password']))) throw new Exception("Data tidak lengkap");
+    if (!(isset($_POST['username']) && isset($_POST['password']))) throw new Exception("Data tidak lengkap");
 }
 
-function getRoute($role){
-    if($role === ACCOUNT_ROLE[2]){
+function getRoute($role)
+{
+    if ($role === ACCOUNT_ROLE[2]) {
         return "ADMIN/";
-    }
-    else{
+    } else {
         return "index.php";
     }
 }

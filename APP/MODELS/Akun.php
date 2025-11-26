@@ -20,10 +20,10 @@ class Akun extends DatabaseConnection
 {
     /** @var string Username pengguna (Primary Key/Unique). */
     private string $username;
-    
+
     /** @var string Nama lengkap pengguna. */
     private string $nama;
-    
+
     /** @var string Jenis role akun */
     private string $jenis;
 
@@ -41,7 +41,7 @@ class Akun extends DatabaseConnection
      */
     public function __construct(string $username = "", string $nama = "", string $jenis = "")
     {
-        parent::__construct(); 
+        parent::__construct();
 
         if (!empty($username)) $this->setUsername($username);
         if (!empty($nama)) $this->setNama($nama);
@@ -125,11 +125,12 @@ class Akun extends DatabaseConnection
      * Merubah data object class Akun dari serializable object menjadi PHP Array
      * @return array data kelas dalam array.
      */
-    public function getArray() : array{
+    public function getArray(): array
+    {
         return array(
-            "username"=>$this->getUsername(),
-            "nama"=>$this->getNama(),
-            "jenis"=>$this->getJenis()
+            "username" => $this->getUsername(),
+            "nama" => $this->getNama(),
+            "jenis" => $this->getJenis()
         );
     }
 
@@ -137,23 +138,26 @@ class Akun extends DatabaseConnection
      * Merubah data array menjadi Akun serializable object
      * @return Akun data kelas yang sudah dikonversi
      */
-    public static function readArray(array $data){
-        return new Akun($data['username'],$data['nama'],$data['jenis']);
+    public static function readArray(array $data)
+    {
+        return new Akun($data['username'], $data['nama'], $data['jenis']);
     }
 
     /**
      * Merubah data object class Akun dari serializable object menjadi JSON (JavaScript Object Notation)
      * @return string data kelas dalam JSON String.
      */
-    public function getJSON(): string{
+    public function getJSON(): string
+    {
         return json_encode($this->getArray());
     }
-    
+
     /**
      * Merubah data JSON menjadi Akun serializable object
      * @return Akun data kelas yang sudah dikonversi
      */
-    public static function readJSON(string $json){
+    public static function readJSON(string $json)
+    {
         $data = json_decode($json);
         return self::readArray($data);
     }
@@ -179,7 +183,7 @@ class Akun extends DatabaseConnection
         $sql = "INSERT INTO `akun` (`username`, `password`, `nama`, `jenis`, `nrp_mahasiswa`, `npk_dosen`, `isadmin`) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-        
+
         // Logika isadmin (Asumsi index 2 array ACCOUNT_ROLE adalah Admin)
         $isAdmin = ($this->jenis === ACCOUNT_ROLE[2]) ? 1 : 0;
 
@@ -225,12 +229,12 @@ class Akun extends DatabaseConnection
      * @return Akun Objek Akun yang berhasil login.
      * @throws Exception Jika username tidak ditemukan atau password salah.
      */
-    public static function akunRetrieveRole(string $username, string $password)
+    public static function akunRetrieveRole(string $username)
     {
-        $instance = new self(); 
-        $conn = $instance->conn; 
+        $instance = new self();
+        $conn = $instance->conn;
 
-        $sql = "SELECT jenis password, nama, jenis FROM akun WHERE username = ?";
+        $sql = "SELECT `nrp_mahasiswa`,`npk_dosen`,`isadmin` FROM akun WHERE username = ?";
         $stmt = null;
 
         try {
@@ -246,19 +250,21 @@ class Akun extends DatabaseConnection
             }
 
             $row = $result->fetch_assoc();
-
-            if (!password_verify($password, $row['password'])) {
-                throw new Exception("Password salah.");
+            $jenis = "";
+            if (!empty($row['nrp_mahasiswa'])) {
+                $jenis = ACCOUNT_ROLE[0];
+            } else if (!empty($row['npk_dosen'])) {
+                $jenis = ACCOUNT_ROLE[1];
+            } else if (!empty($row['isadmin']) && $row['isadmin'] == 1) {
+                $jenis = ACCOUNT_ROLE[2];
             }
-
             // Return objek baru yang terisi
-            return $row['jenis'];
+            return $jenis;
         } catch (Exception $e) {
             throw $e;
         } finally {
             if ($stmt) $stmt->close();
-            $instance->__destruct(); 
-            $conn->close();
+            $instance->__destruct();
         }
     }
 
@@ -274,10 +280,10 @@ class Akun extends DatabaseConnection
      */
     public static function akunLogin(string $username, string $password)
     {
-        $instance = new self(); 
-        $conn = $instance->conn; 
+        $instance = new self();
+        $conn = $instance->conn;
 
-        $sql = "SELECT username, password, nama, jenis FROM akun WHERE username = ?";
+        $sql = "SELECT `username`, `password` FROM akun WHERE username = ?";
         $stmt = null;
 
         try {
@@ -301,15 +307,14 @@ class Akun extends DatabaseConnection
             // Return objek baru yang terisi
             return new Akun(
                 $row['username'],
-                $row['nama'],
-                $row['jenis']
+                ACCOUNT_ROLE[2],
+                ACCOUNT_ROLE[2]
             );
         } catch (Exception $e) {
             throw $e;
         } finally {
             if ($stmt) $stmt->close();
-            $instance->__destruct(); 
-            $conn->close();
+            $instance->__destruct();
         }
     }
 
@@ -402,7 +407,7 @@ class Akun extends DatabaseConnection
             return true;
         } catch (Exception $e) {
             throw new Exception("Gagal update password: " . $e->getMessage());
-        } finally{
+        } finally {
             if ($stmt) $stmt->close();
         }
     }

@@ -238,7 +238,6 @@ class Mahasiswa extends Akun
             );
         } finally {
             if ($stmt) $stmt->close();
-            $conn->close();
             $db->__destruct();
         }
     }
