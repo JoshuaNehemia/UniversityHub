@@ -3,6 +3,7 @@
 require_once(__DIR__ . "/../boot.php");
 require_once(__DIR__ . "/../config.php");
 require_once(__DIR__ . "/../Auth.php");
+require_once(__DIR__ . "/../CONTROLLERS/UploadController.php");
 
 // =============================================================================================
 // RUN
@@ -31,8 +32,8 @@ function main()
             "message" => $e->getMessage()
         );
     } finally {
-        //echo json_encode($response);
-        echo "<img src='{$media_address}'>";
+        echo json_encode($response);
+        //echo "<img src='{$media_address}'>";
     }
 }
 
@@ -63,9 +64,9 @@ function retrieveProfilePicture(): string
     $code = $_GET['code'];
     $jenis = $_GET['jenis'];
     $ext = $_GET['foto_extention'];
-    return API_ADDRESS ."DATABASE/PROFILE/{$jenis}/{$code}.{$ext}";
-}
-
-function fileExist($address){
-
+    $address = "DATABASE/PROFILE/{$jenis}/{$code}.{$ext}";
+    if(!file_exists("../" .$address)){
+        throw new Exception("Tidak menemukan file");
+    }
+    return API_ADDRESS . $address;
 }

@@ -80,12 +80,31 @@ class UploadController
         }
     }
 
-    public function renameMahasiswaProfilePicture($oldnrp,$newnrp,$extension){
-        $oldPath = $this->uploadDir . "PROFILE/" . ACCOUNT_ROLE[0] . "/" .$oldnrp ."." .$extension;
-        $this->renameLocalFile($oldPath,$newnrp);
+    public function renameMahasiswaProfilePicture($oldnrp, $newnrp, $extension)
+    {
+        $oldPath = $this->uploadDir . "PROFILE/" . ACCOUNT_ROLE[0] . "/" . $oldnrp . "." . $extension;
+        $this->renameLocalFile($oldPath, $newnrp);
     }
-    public function renameDosenProfilePicture($oldnpk,$newnpk,$extension){
-        $oldPath = $this->uploadDir . "PROFILE/" . ACCOUNT_ROLE[1] . "/" .$oldnpk ."." .$extension;
-        $this->renameLocalFile($oldPath,$newnpk);
+    public function renameDosenProfilePicture($oldnpk, $newnpk, $extension)
+    {
+        $oldPath = $this->uploadDir . "PROFILE/" . ACCOUNT_ROLE[1] . "/" . $oldnpk . "." . $extension;
+        $this->renameLocalFile($oldPath, $newnpk);
+    }
+
+    public function deleteMahasiswaProfilePicture($nrp, $extension)
+    {
+        $path = $this->uploadDir . "PROFILE/" . ACCOUNT_ROLE[0] . "/" . $nrp . "." . $extension;
+        if (file_exists($path)) {
+            unlink($path);
+        }
+        else throw new Exception("Gagal menghapus gambar");
+    }
+    public function deleteDosenProfilePicture($npk, $extension)
+    {
+        $path = $this->uploadDir . "PROFILE/" . ACCOUNT_ROLE[1] . "/" . $npk . "." . $extension;
+        if (file_exists($path)) {
+            unlink($path);
+        }
+        else throw new Exception("Gagal menghapus gambar");
     }
 }

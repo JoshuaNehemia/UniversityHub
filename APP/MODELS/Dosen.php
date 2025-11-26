@@ -183,7 +183,7 @@ class Dosen extends Akun
             $stmt->execute();
             $result = $stmt->get_result();
 
-            if ($result->num_rows === 0){
+            if ($result->num_rows === 0) {
                 throw new Exception("Tidak ditemukan data dosen yang sesuai");
             }
 
@@ -207,7 +207,7 @@ class Dosen extends Akun
     // CRUD: READ ALL 
     // Pakai cursor boleh ndak ya?
     // ================================================================================
-    public static function dosenGetAll($limit, $offset):array
+    public static function dosenGetAll($limit, $offset): array
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -246,7 +246,7 @@ class Dosen extends Akun
         }
     }
 
-    public static function dosenGetAllByName($limit, $offset, $keyword):array
+    public static function dosenGetAllByName($limit, $offset, $keyword): array
     {
         $db = new DatabaseConnection();
         $conn = $db->conn;
@@ -310,10 +310,10 @@ class Dosen extends Akun
             );
 
             $stmt->execute();
-            if ($stmt->affected_rows !== 1){
+            if ($stmt->affected_rows !== 1) {
                 throw new Exception("Gagal menyimpan data dosen.");
             }
-            parent::akunCreate($password,"", $this->getNPK(), 0);
+            parent::akunCreate($password, "", $this->getNPK(), 0);
 
             $this->conn->commit();
             return $this;
@@ -374,34 +374,33 @@ class Dosen extends Akun
     // ================================================================================
     // DELETE
     // ================================================================================
-    public static function dosenDelete(string $username, string $npk): void
+    public function dosenDelete(): void
     {
-        $db = new DatabaseConnection();
-        $conn = $db->conn;
+        $this->startConnection();
         $stmt = null;
 
         $sql = "DELETE FROM dosen WHERE npk = ?";
 
         try {
-            $conn->begin_transaction();
+            $this->conn->begin_transaction();
+            $username = $this->getUsername();
+            $npk = $this->getNPK();
 
             parent::akunDelete($username);
 
-            $stmt = $conn->prepare($sql);
+            $stmt = $this->conn->prepare($sql);
             $stmt->bind_param("s", $npk);
             $stmt->execute();
 
             if ($stmt->affected_rows < 1)
                 throw new Exception("Data dosen tidak ditemukan.");
 
-            $conn->commit();
+            $this->conn->commit();
         } catch (Exception $e) {
-            $conn->rollback();
+            $this->conn->rollback();
             throw $e;
         } finally {
             if ($stmt) $stmt->close();
-            $conn->close();
-            $db->__destruct();
         }
     }
 }

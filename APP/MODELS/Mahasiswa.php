@@ -472,7 +472,6 @@ class Mahasiswa extends Akun
             return true;
         } finally {
             if ($stmt) $stmt->close();
-            $this->conn->close();
         }
     }
 }

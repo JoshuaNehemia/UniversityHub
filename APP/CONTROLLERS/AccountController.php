@@ -46,6 +46,12 @@ class AccountController
         return $mahasiswa->mahasiswaCreate($arr_mahasiswa['password'])->getArray();
     }
 
+    public function deleteMahasiswa(array $mahasiswa)
+    {
+        $mahasiswa = Mahasiswa::readArray($mahasiswa);
+        $mahasiswa->mahasiswaDelete();
+    }
+
     public function getDosenList($limit, $offset): array
     {
         $list = Dosen::dosenGetAll($limit, $offset);
@@ -78,5 +84,11 @@ class AccountController
     {
         $dosen = Dosen::readArray($arr_dosen);
         return $dosen->dosenCreate($arr_dosen['password'])->getArray();
+    }
+
+    public function deleteDosen(array $dosen)
+    {
+        $dosen = Dosen::readArray($dosen);
+        $dosen->dosenDelete();
     }
 }
