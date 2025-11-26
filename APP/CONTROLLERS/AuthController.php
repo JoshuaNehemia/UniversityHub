@@ -8,5 +8,9 @@ require_once(__DIR__ ."/../MODELS/Mahasiswa.php");
 
 class AuthController{
     public function __construct(){}
+
+    public function login($username,$password):array{
+        return array();
+    }
 }
 ?>

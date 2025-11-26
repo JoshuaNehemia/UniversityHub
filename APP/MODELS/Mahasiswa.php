@@ -109,6 +109,50 @@ class Mahasiswa extends Akun
         $this->foto_address = $address;
     }
 
+    // ================================================================================================
+    // FUNCTION
+    // ================================================================================================
+    /**
+     * Merubah data object class Akun dari serializable object menjadi PHP Array
+     * @return array data kelas dalam array.
+     */
+    public function getArray() : array{
+        return array_merge(
+            parent::getArray(),
+            array(
+                "nrp"=>$this->getNRP(),
+                "tanggal_lahir"=>$this->getTanggalLahir(),
+                "gender"=>$this->getGender(),
+                "angkatan"=>$this->getAngkatan(),
+                "foto_extention"=>$this->getFotoExtention()
+            ));
+    }
+
+    /**
+     * Merubah data array menjadi Mahasiswa serializable object
+     * @return Mahasiswa data kelas yang sudah dikonversi
+     */
+    public static function readArray(array $data){
+        return new Mahasiswa($data['username'],$data['nama'],$data['nrp'],$data['tanggal_lahir'],$data['gender'],$data['angkatan'],$data['foto_extention']);
+    }
+
+    /**
+     * Merubah data object class Mahasiswa dari serializable object menjadi JSON (JavaScript Object Notation)
+     * @return string data kelas dalam JSON String.
+     */
+    public function getJSON(): string{
+        return json_encode($this->getArray());
+    }
+    
+    /**
+     * Merubah data JSON menjadi Mahasiswa serializable object
+     * @return Mahasiswa data kelas yang sudah dikonversi
+     */
+    public static function readJSON(string $json){
+        $data = json_decode($json);
+        return self::readArray($data);
+    }
+
     // ================================================================================
     // CRUD: CREATE
     // ================================================================================

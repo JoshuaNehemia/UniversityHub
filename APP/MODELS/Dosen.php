@@ -29,9 +29,18 @@ class Dosen extends Akun
     // ================================================================================
     // GETTERS
     // ================================================================================
-    public function getNPK() { return $this->npk; }
-    public function getFotoExtention() { return $this->foto_extention; }
-    public function getFotoAddress() { return $this->foto_address; }
+    public function getNPK()
+    {
+        return $this->npk;
+    }
+    public function getFotoExtention()
+    {
+        return $this->foto_extention;
+    }
+    public function getFotoAddress()
+    {
+        return $this->foto_address;
+    }
 
     // ================================================================================
     // SETTERS
@@ -58,6 +67,52 @@ class Dosen extends Akun
     public function setFotoAddress($address)
     {
         $this->foto_address = $address;
+    }
+
+    // ================================================================================================
+    // FUNCTION
+    // ================================================================================================
+    /**
+     * Merubah data object class Akun dari serializable object menjadi PHP Array
+     * @return array data kelas dalam array.
+     */
+    public function getArray(): array
+    {
+        return array_merge(
+            parent::getArray(),
+            array(
+                "npk" => $this->getNPK(),
+                "foto_extention" => $this->getFotoExtention()
+            )
+        );
+    }
+
+    /**
+     * Merubah data array menjadi Dosen serializable object
+     * @return Dosen object kelas yang sudah dikonversi
+     */
+    public static function readArray(array $data): Dosen
+    {
+        return new Dosen($data['username'], $data['nama'], $data['npk'], $data['foto_extention']);
+    }
+
+    /**
+     * Merubah data object class Dosen dari serializable object menjadi JSON (JavaScript Object Notation)
+     * @return string data kelas dalam JSON String.
+     */
+    public function getJSON(): string
+    {
+        return json_encode($this->getArray());
+    }
+
+    /**
+     * Merubah data JSON menjadi Dosen serializable object
+     * @return Dosen object kelas yang sudah dikonversi
+     */
+    public static function readJSON(string $json): Dosen
+    {
+        $data = json_decode($json);
+        return self::readArray($data);
     }
 
     // ================================================================================
@@ -98,7 +153,6 @@ class Dosen extends Akun
                 $row['npk'],
                 $row['foto_extension']
             );
-
         } finally {
             if ($stmt) $stmt->close();
             $conn->close();
@@ -141,7 +195,6 @@ class Dosen extends Akun
                 $row["npk"],
                 $row["foto_extension"]
             );
-
         } catch (Exception $e) {
             throw new Exception("Gagal mengambil dosen: " . $e->getMessage());
         } finally {
@@ -185,7 +238,6 @@ class Dosen extends Akun
             }
 
             return $list;
-
         } catch (Exception $e) {
             throw new Exception("Gagal mengambil semua dosen: " . $e->getMessage());
         } finally {
@@ -228,11 +280,9 @@ class Dosen extends Akun
             parent::akunCreate("", $this->getNPK(), $password, 0);
 
             $conn->commit();
-
         } catch (Exception $e) {
             $conn->rollback();
             throw $e;
-
         } finally {
             $conn->close();
             $db->__destruct();
@@ -270,7 +320,6 @@ class Dosen extends Akun
 
             if ($stmt->affected_rows === 0)
                 throw new Exception("Tidak ada data dosen yang diperbarui.");
-
         } finally {
             if ($stmt) $stmt->close();
             $conn->close();
@@ -292,7 +341,7 @@ class Dosen extends Akun
         try {
             $conn->begin_transaction();
 
-            parent::delete_from_database($username);
+            parent::akunDelete($username);
 
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("s", $npk);
@@ -302,11 +351,9 @@ class Dosen extends Akun
                 throw new Exception("Data dosen tidak ditemukan.");
 
             $conn->commit();
-
         } catch (Exception $e) {
             $conn->rollback();
             throw $e;
-
         } finally {
             if ($stmt) $stmt->close();
             $conn->close();
