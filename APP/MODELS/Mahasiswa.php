@@ -257,7 +257,7 @@ class Mahasiswa extends Akun
         $db = new DatabaseConnection();
         $conn = $db->conn;
         $stmt = null;
-
+        $offset = $offset * $limit;
         try {
             $sql = "SELECT 
                     m.nrp,
@@ -268,7 +268,7 @@ class Mahasiswa extends Akun
                     m.angkatan,
                     m.foto_extention
                 FROM mahasiswa m
-                INNER JOIN akun a ON m.nrp = a.username
+                INNER JOIN akun a ON m.nrp = a.nrp_mahasiswa
                 LIMIT ? OFFSET ?";
 
             $stmt = $conn->prepare($sql);
@@ -303,22 +303,26 @@ class Mahasiswa extends Akun
         $conn = $db->conn;
         $stmt = null;
         $keyword = "%{$keyword}%";
+        $offset = $offset * $limit;
         try {
-            $sql = "SELECT 
-                    m.nrp,
-                    a.username,
-                    m.nama,
-                    m.gender,
-                    m.tanggal_lahir,
-                    m.angkatan,
-                    m.foto_extention
-                FROM mahasiswa m
-                INNER JOIN akun a ON m.nrp = a.username
-                WHERE a.username LIKE {$keyword}
-                LIMIT ? OFFSET ?";
+            $sql = "
+                    SELECT 
+                        m.nrp,
+                        a.username,
+                        m.nama,
+                        m.gender,
+                        m.tanggal_lahir,
+                        m.angkatan,
+                        m.foto_extention
+                    FROM mahasiswa m
+                    INNER JOIN akun a ON m.nrp = a.nrp_mahasiswa
+                    WHERE a.username LIKE ?
+                    LIMIT ? OFFSET ?
+                ";
+
 
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ii", $limit, $offset);
+            $stmt->bind_param("sii", $keyword, $limit, $offset);
             $stmt->execute();
 
             $result = $stmt->get_result();

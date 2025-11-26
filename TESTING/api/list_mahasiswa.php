@@ -7,8 +7,8 @@
 </head>
 <body>
     <form action="../../APP/API/mahasiswa_list_api.php" method="GET">
-        <input type="hidden" name="limit" value=5>
-        <input type="hidden" name="offset" value=0>
+        <input type="text" name="limit" value=5>
+        <input type="text" name="offset" value=0>
         <input type="text" name="keyword">
         <input type="submit">
     </form>

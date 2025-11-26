@@ -28,8 +28,7 @@ function main()
             $username = $_GET['keyword'];
             $list = $accController->getMahasiswaListByUsername($limit, $offset, $username);
         } else {
-            $username = $_GET['keyword'];
-            $list = $accController->getMahasiswaListByUsername($limit, $offset, $username);
+            $list = $accController->getMahasiswaList($limit, $offset);
         }
 
         $response = array(
@@ -55,6 +54,6 @@ function checkKeyword()
 
 function checkDataIntegrity()
 {
-    if (!(isset($_GET['offset']) && !empty($_GET['offset']))) throw new Exception("Offset tidak ada.");
+    if (!(isset($_GET['offset']) && ($_GET['offset']>=0))) throw new Exception("Offset tidak ada.");
     if (!(isset($_GET['limit']) && !empty($_GET['limit']))) throw new Exception("Limit tidak ada.");
 }
