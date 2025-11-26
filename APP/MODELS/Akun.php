@@ -230,7 +230,7 @@ class Akun extends DatabaseConnection
         $instance = new self(); 
         $conn = $instance->conn; 
 
-        $sql = "SELECT username, password, nama, jenis FROM akun WHERE username = ?";
+        $sql = "SELECT jenis password, nama, jenis FROM akun WHERE username = ?";
         $stmt = null;
 
         try {
@@ -252,11 +252,7 @@ class Akun extends DatabaseConnection
             }
 
             // Return objek baru yang terisi
-            return new Akun(
-                $row['username'],
-                $row['nama'],
-                $row['jenis']
-            );
+            return $row['jenis'];
         } catch (Exception $e) {
             throw $e;
         } finally {

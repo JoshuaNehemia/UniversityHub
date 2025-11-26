@@ -7,11 +7,14 @@ require_once(__DIR__ . "/../CONTROLLERS/AuthController.php");
 use CONTROLLERS\AuthController;
 
 // =============================================================================================
-// LOGIC
+// RUN
 // =============================================================================================
 main();
 
 
+// =============================================================================================
+// FUNCTION
+// =============================================================================================
 function main()
 {
     try {
@@ -33,12 +36,14 @@ function main()
             "route"=>"login.php"
         );
     } finally {
+        echo json_encode($response);
     }
 }
 
 function checkDataIntegrity()
 {
     if (!($_SERVER['REQUEST_METHOD'] === "POST")) throw new Exception("Request server illegal");
+    if(!(isset($_POST['username'])&&isset($_POST['password']))) throw new Exception("Data tidak lengkap");
 }
 
 function getRoute($role){
