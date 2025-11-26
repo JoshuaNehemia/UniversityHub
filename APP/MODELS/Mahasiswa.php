@@ -172,10 +172,12 @@ class Mahasiswa extends Akun
                     VALUES (?, ?, ?, ?, ?, ?)";
 
             $stmt = $this->conn->prepare($sql);
+            $nama = $this->getNama();
+
             $stmt->bind_param(
                 "ssssss",
                 $this->nrp,
-                $this->getNama(),
+                $nama,
                 $this->gender,
                 $this->tanggal_lahir,
                 $this->angkatan,

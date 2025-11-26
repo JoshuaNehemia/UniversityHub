@@ -8,7 +8,6 @@ require_once(__DIR__ . "/../config.php");
 
 use MODELS\Mahasiswa;
 use MODELS\Dosen;
-use Exception;
 
 class AccountController
 {

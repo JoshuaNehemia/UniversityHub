@@ -180,7 +180,7 @@ class Akun extends DatabaseConnection
         if ($this->jenis === ACCOUNT_ROLE[0] && empty($nrp)) throw new Exception("Mahasiswa wajib punya NRP");
         if ($this->jenis === ACCOUNT_ROLE[1] && empty($npk)) throw new Exception("Dosen wajib punya NPK");
 
-        $sql = "INSERT INTO `akun` (`username`, `password`, `nama`, `jenis`, `nrp_mahasiswa`, `npk_dosen`, `isadmin`) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO `akun` (`username`, `password`, `nrp_mahasiswa`, `npk_dosen`, `isadmin`) VALUES (?, ?, ?, ?, ?)";
 
         $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
@@ -195,11 +195,9 @@ class Akun extends DatabaseConnection
             $stmt = $this->conn->prepare($sql);
 
             $stmt->bind_param(
-                'ssssssi',
+                'ssssi',
                 $this->username,
                 $hashed_password,
-                $this->nama,
-                $this->jenis,
                 $nrp_val,
                 $npk_val,
                 $isAdmin
@@ -215,7 +213,7 @@ class Akun extends DatabaseConnection
         } catch (Exception $e) {
             throw $e;
         } finally {
-            if ($stmt) $stmt->close();
+            //if ($stmt) $stmt->close();
             // Catatan: Jangan menutup $this->conn di sini jika objek ini masih ingin dipakai setelah create.
         }
     }

@@ -47,7 +47,7 @@ function main()
 
 function checkDataIntegrity()
 {
-    $required = ['username', 'nama', 'npk'];
+    $required = ['username','password', 'nama', 'npk'];
 
     foreach ($required as $field) {
         if (!isset($_POST[$field])) {

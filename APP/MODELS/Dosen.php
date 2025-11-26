@@ -301,22 +301,19 @@ class Dosen extends Akun
 
             $stmt = $this->conn->prepare($sql);
             if (!$stmt) throw new Exception("Prepare insert gagal.");
-
+            $nama = $this->getNama();
             $stmt->bind_param(
                 "sss",
-                $this->getNPK(),
-                $this->getNama(),
-                $this->getFotoExtention()
+                $this->npk,
+                $nama,
+                $this->foto_extention
             );
 
             $stmt->execute();
             if ($stmt->affected_rows !== 1){
                 throw new Exception("Gagal menyimpan data dosen.");
             }
-
-            $stmt->close();
-
-            parent::akunCreate("", $this->getNPK(), $password, 0);
+            parent::akunCreate($password,"", $this->getNPK(), 0);
 
             $this->conn->commit();
             return $this;
