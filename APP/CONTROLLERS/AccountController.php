@@ -12,6 +12,10 @@ use Exception;
 
 class AccountController
 {
+    public function __construct()
+    {
+    }
+    
     public function getMahasiswaList($limit, $offset)
     {
         $list = Mahasiswa::mahasiswaGetAll($limit, $offset);
