@@ -4,9 +4,7 @@ namespace MODELS;
 
 require_once(__DIR__ . '/Akun.php');
 require_once(__DIR__ . '/../config.php');
-require_once(__DIR__ . '/../CORE/DatabaseConnection.php');
 
-use CORE\DatabaseConnection;
 use MODELS\Akun;
 use Exception;
 
@@ -23,22 +21,24 @@ class Mahasiswa extends Akun
     // CONSTRUCTOR
     // ================================================================================
     public function __construct(
-        $username,
-        $nama,
-        $nrp,
-        $tanggal_lahir,
-        $gender,
-        $angkatan,
-        $foto_extention
+        $username = null,
+        $nama = null,
+        $nrp = null,
+        $tanggal_lahir = null,
+        $gender = null,
+        $angkatan = null,
+        $foto_extention = null
     ) {
-        parent::__construct($username, $nama, "MAHASISWA");
+        // Parent may also accept null, depending on its signature
+        parent::__construct($username, $nama, ACCOUNT_ROLE[0]);
 
-        $this->setNRP($nrp);
-        $this->setTanggalLahir($tanggal_lahir);
-        $this->setGender($gender);
-        $this->setAngkatan($angkatan);
-        $this->setFotoExtention($foto_extention);
+        if ($nrp !== null)               $this->setNRP($nrp);
+        if ($tanggal_lahir !== null)     $this->setTanggalLahir($tanggal_lahir);
+        if ($gender !== null)            $this->setGender($gender);
+        if ($angkatan !== null)          $this->setAngkatan($angkatan);
+        if ($foto_extention !== null)    $this->setFotoExtention($foto_extention);
     }
+
 
     // ================================================================================
     // GETTERS
@@ -137,7 +137,15 @@ class Mahasiswa extends Akun
      */
     public static function readArray(array $data)
     {
-        return new Mahasiswa($data['username'], $data['nama'], $data['nrp'], $data['tanggal_lahir'], $data['gender'], $data['angkatan'], $data['foto_extention']);
+        $mhs = new Mahasiswa();
+        $mhs->setUsername($data['username']);
+        $mhs->setNama($data['nama']);
+        $mhs->setNRP($data['nrp']);
+        $mhs->setTanggalLahir($data['tanggal_lahir']);
+        $mhs->setGender($data['gender']);
+        $mhs->setAngkatan($data['angkatan']);
+        $mhs->setFotoExtention($data['foto_extention']);
+        return $mhs;
     }
 
     /**
@@ -162,7 +170,7 @@ class Mahasiswa extends Akun
     // ================================================================================
     // CRUD: CREATE
     // ================================================================================
-    public function mahasiswaCreate($password):Mahasiswa
+    public function mahasiswaCreate($password): Mahasiswa
     {
         $stmt = null;
         $this->conn->begin_transaction();
@@ -204,7 +212,7 @@ class Mahasiswa extends Akun
     // ================================================================================
     // CRUD: LOGIN
     // ================================================================================
-    public static function mahasiswaLogin($username, $password):Mahasiswa
+    public static function mahasiswaLogin($username, $password): Mahasiswa
     {
         $sql = "
             SELECT a.username, a.password, a.nrp_mahasiswa,
@@ -214,7 +222,7 @@ class Mahasiswa extends Akun
             WHERE a.username = ?;
         ";
 
-        $db = new DatabaseConnection();
+        $db = new self();
         $conn = $db->conn;
         $stmt = null;
 
@@ -253,54 +261,9 @@ class Mahasiswa extends Akun
     // CRUD: READ ALL 
     // Pakai cursor boleh ndak ya?
     // ================================================================================
-    public static function mahasiswaGetAll($limit, $offset):array
+    public static function mahasiswaGetAllByName($limit, $offset, $keyword): array
     {
-        $db = new DatabaseConnection();
-        $conn = $db->conn;
-        $stmt = null;
-        $offset = $offset * $limit;
-        try {
-            $sql = "SELECT 
-                    m.nrp,
-                    a.username,
-                    m.nama,
-                    m.gender,
-                    m.tanggal_lahir,
-                    m.angkatan,
-                    m.foto_extention
-                FROM mahasiswa m
-                INNER JOIN akun a ON m.nrp = a.nrp_mahasiswa
-                LIMIT ? OFFSET ?";
-
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ii", $limit, $offset);
-            $stmt->execute();
-
-            $result = $stmt->get_result();
-            $list = [];
-
-            while ($row = $result->fetch_assoc()) {
-                $list[] = new Mahasiswa(
-                    $row["username"],
-                    $row["nama"],
-                    $row["nrp"],
-                    $row["tanggal_lahir"],
-                    $row["gender"],
-                    $row["angkatan"],
-                    $row["foto_extention"]
-                );
-            }
-
-            return $list;
-        } finally {
-            if ($stmt) $stmt->close();
-            $db->__destruct();
-        }
-    }
-
-    public static function mahasiswaGetAllByName($limit, $offset, $keyword):array
-    {
-        $db = new DatabaseConnection();
+        $db = new self();
         $conn = $db->conn;
         $stmt = null;
         $keyword = "%{$keyword}%";
@@ -345,13 +308,65 @@ class Mahasiswa extends Akun
             $db->__destruct();
         }
     }
+    
+    // ================================================================================
+    // CRUD: READ ALL 
+    // Pakai cursor boleh ndak ya?
+    // ================================================================================
+    public static function mahasiswaGetAllByNRP($limit, $offset, $keyword): array
+    {
+        $db = new self();
+        $conn = $db->conn;
+        $stmt = null;
+        $keyword = "%{$keyword}%";
+        $offset = $offset * $limit;
+        try {
+            $sql = "SELECT 
+                        m.nrp,
+                        a.username,
+                        m.nama,
+                        m.gender,
+                        m.tanggal_lahir,
+                        m.angkatan,
+                        m.foto_extention
+                    FROM mahasiswa m
+                    INNER JOIN akun a ON m.nrp = a.nrp_mahasiswa
+                    WHERE m.nrp LIKE ?
+                    LIMIT ? OFFSET ?";
+
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sii", $keyword, $limit, $offset);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            $list = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $list[] = new Mahasiswa(
+                    $row["username"],
+                    $row["nama"],
+                    $row["nrp"],
+                    $row["tanggal_lahir"],
+                    $row["gender"],
+                    $row["angkatan"],
+                    $row["foto_extention"]
+                );
+            }
+
+            return $list;
+        } finally {
+            if ($stmt) $stmt->close();
+            $db->__destruct();
+        }
+    }
 
     // ================================================================================
     // CRUD: READ — GET ONE MAHASISWA
     // ================================================================================
     public static function mahasiswaGetByUsername(string $username): Mahasiswa
     {
-        $db = new DatabaseConnection();
+        $db = new self();
         $conn = $db->conn;
         $stmt = null;
 
@@ -406,7 +421,7 @@ class Mahasiswa extends Akun
     // ================================================================================
     // CRUD: UPDATE
     // ================================================================================
-    public function mahasiswaUpdate() : Mahasiswa
+    public function mahasiswaUpdate(): Mahasiswa
     {
         $stmt = null;
         $this->startConnection();
@@ -455,7 +470,7 @@ class Mahasiswa extends Akun
     // ================================================================================
     // CRUD: DELETE
     // ================================================================================
-    public function mahasiswaDelete():bool
+    public function mahasiswaDelete(): bool
     {
         $stmt = null;
 

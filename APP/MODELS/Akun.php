@@ -39,7 +39,7 @@ class Akun extends DatabaseConnection
      * @param string $jenis    Jenis/Role akun.
      * @throws Exception Jika validasi setter gagal.
      */
-    public function __construct(string $username = "", string $nama = "", string $jenis = "")
+    public function __construct(string $username = null, string $nama = null, string $jenis = null)
     {
         parent::__construct();
 
@@ -49,7 +49,7 @@ class Akun extends DatabaseConnection
     }
 
     // ================================================================================================
-    // SETTERS & GETTERS
+    // GETTERS
     // ================================================================================================
 
     /**
@@ -79,6 +79,9 @@ class Akun extends DatabaseConnection
         return $this->jenis;
     }
 
+    // ================================================================================================
+    // SETTERS
+    // ================================================================================================
     /**
      * Mengatur username dengan validasi.
      * @param string $username

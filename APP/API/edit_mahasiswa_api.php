@@ -13,7 +13,7 @@ main();
 
 function main()
 {
-    $response = [];
+    $response = null;
 
     try {
         requireRole([ACCOUNT_ROLE[2]]);

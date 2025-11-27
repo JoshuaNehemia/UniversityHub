@@ -45,10 +45,6 @@ class Event
     {
         return $this->id;
     }
-    public function getIdGrup(): int
-    {
-        return $this->idGrup;
-    }
     public function getJudul(): string
     {
         return $this->judul;
@@ -81,13 +77,7 @@ class Event
     {
         if ($id < 0) throw new Exception("ID must be a non-negative integer.");
         $this->id = $id;
-    }
-
-    public function setIdGrup(int $idGrup): void
-    {
-        if ($idGrup <= 0) throw new Exception("Group ID must be a positive integer.");
-        $this->idGrup = $idGrup;
-    }
+    } 
 
     public function setJudul(string $judul): void
     {

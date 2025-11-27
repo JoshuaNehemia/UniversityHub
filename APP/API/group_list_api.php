@@ -2,15 +2,15 @@
 
 require_once(__DIR__ . "/../boot.php");
 require_once(__DIR__ . "/../config.php");
-require_once(__DIR__ . "/../CONTROLLERS/AuthController.php");
+require_once(__DIR__ . "/../Auth.php");
+require_once(__DIR__ . "/../CONTROLLERS/GroupController.php");
 
-use CONTROLLERS\AuthController;
+use CONTROLLERS\GroupController;
 
 // =============================================================================================
 // RUN
 // =============================================================================================
 main();
-
 
 // =============================================================================================
 // FUNCTION
@@ -19,23 +19,21 @@ function main()
 {
     $response = null;
     try {
-        $auth = new AuthController;
-
-        $username = $_POST['username'];
-        $password = $_POST['password'];
-
-        $akun = $auth->login($username, $password);
-        $_SESSION[CURRENT_ACCOUNT] = $akun;
+        requireRole(ACCOUNT_ROLE);
+        $accController = new GroupController();
+        checkDataIntegrity();
+        $limit = $_GET['limit'];
+        $offset = $_GET['offset'];
+        $keyword = $_GET['keyword'];
+        $list = $accController->getListGroupByName($limit, $offset, $keyword);
         $response = array(
             "status" => "success",
-            "data" => $akun,
-            "route" => getRoute($akun['jenis'])
+            "data" => $list
         );
     } catch (Exception $e) {
         $response = array(
             "status" => "error",
-            "message" => $e->getMessage(),
-            "route" => "login.php"
+            "message" => $e->getMessage()
         );
     } finally {
         echo json_encode($response);
@@ -44,15 +42,6 @@ function main()
 
 function checkDataIntegrity()
 {
-    if (!($_SERVER['REQUEST_METHOD'] === "POST")) throw new Exception("Request server illegal");
-    if (!(isset($_POST['username']) && isset($_POST['password']))) throw new Exception("Data tidak lengkap");
-}
-
-function getRoute($role)
-{
-    if ($role === ACCOUNT_ROLE[2]) {
-        return "ADMIN/";
-    } else {
-        return "index.php";
-    }
+    if (!(isset($_GET['offset']) && ($_GET['offset'] >= 0))) throw new Exception("Offset tidak ada.");
+    if (!(isset($_GET['limit']) && !empty($_GET['limit']))) throw new Exception("Limit tidak ada.");
 }
