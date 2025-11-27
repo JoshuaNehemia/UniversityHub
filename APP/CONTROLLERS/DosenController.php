@@ -11,7 +11,7 @@ class DosenController
 {
     public function __construct() {}
 
-    public function getDosenList($limit, $offset,$keyword): array
+    public function getListDosenByName($limit, $offset,$keyword): array
     {
         $list = Dosen::dosenGetAllByName($limit, $offset,$keyword);
         foreach ($list as $key => $mhs) {

@@ -17,12 +17,12 @@ switch ($resource) {
         require_once("$routesPath/AUTH/" .$index);
         break;
 
-    case "DOSEN":
-        require_once("$routesPath/AUTH/" .$index);
-        break;
-
     case "MAHASISWA":
         require_once("$routesPath/MAHASISWA/" .$index);
+        break;
+
+    case "DOSEN":
+        require_once("$routesPath/DOSEN/" .$index);
         break;
 
     case "GROUP":

@@ -3,10 +3,10 @@
 require_once(__DIR__ . "/../../auth.php");
 require_once(__DIR__ . "/../../boot.php");
 require_once(__DIR__ . "/../../config.php");
-require_once(__DIR__ . "/../../CONTROLLERS/MahasiswaController.php");
+require_once(__DIR__ . "/../../CONTROLLERS/DosenController.php");
 require_once(__DIR__ . "/../../CONTROLLERS/UploadController.php");
 
-use CONTROLLERS\MahasiswaController;
+use CONTROLLERS\DosenController;
 use CONTROLLERS\UploadController;
 
 // =============================================================================================
@@ -22,7 +22,7 @@ function main()
 {
     $method = $_SERVER['REQUEST_METHOD'];
     //echo $method;
-    $controller = new MahasiswaController();
+    $controller = new DosenController();
     $upload = new UploadController();
     switch ($method) {
         case "POST":
@@ -42,7 +42,7 @@ function main()
             echo json_encode(["error" => "API not found"]);
     }
 }
-function post(MahasiswaController $controller, UploadController $upload)
+function post(DosenController $controller, UploadController $upload)
 {
     if (isset($_FILES['new_foto'])) {
         changeProfilePicture($controller, $upload);
@@ -51,13 +51,13 @@ function post(MahasiswaController $controller, UploadController $upload)
     }
 }
 
-function create(MahasiswaController $controller, UploadController $upload)
+function create(DosenController $controller, UploadController $upload)
 {
     $response = null;
     try {
         requireRole(array(ACCOUNT_ROLE[2]));
 
-        $required = ['username', 'password', 'nama', 'nrp', 'tanggal_lahir', 'gender', 'angkatan'];
+        $required = ['username', 'password', 'nama', 'npk'];
 
         foreach ($required as $field) {
             if (!isset($_POST[$field])) {
@@ -69,10 +69,10 @@ function create(MahasiswaController $controller, UploadController $upload)
             throw new Exception("Tidak ada foto profil yang diupload");
         }
 
-        $ext = $upload->saveMahasiswaProfilePicture($_FILES['foto'], $_POST['nrp']);
+        $ext = $upload->saveDosenProfilePicture($_FILES['foto'], $_POST['npk']);
         $_POST['foto_extention'] = $ext;
 
-        $data = $controller->createMahasiswa($_POST);
+        $data = $controller->createDosen($_POST);
         if (!$data) {
             throw new Exception("Gagal update data");
         }
@@ -91,22 +91,22 @@ function create(MahasiswaController $controller, UploadController $upload)
     }
 }
 
-function changeProfilePicture(MahasiswaController $controller, UploadController $upload)
+function changeProfilePicture(DosenController $controller, UploadController $upload)
 {
     $response = null;
     try {
         if (!isset($_POST['username'])) throw new Exception("Tidak ada username.");
-        $mahasiswa = $controller->getSingleMahasiswaByUsername($_POST['username']);
+        $mahasiswa = $controller->getSingleDosenByUsername($_POST['username']);
         $ext = "";
         if (!isset($_FILES['new_foto']) || $_FILES['new_foto']['error'] === UPLOAD_ERR_NO_FILE) throw new Exception("File foto tidak terupload");
-        $ext = $upload->saveMahasiswaProfilePicture($_FILES['new_foto'], $mahasiswa['nrp']);
+        $ext = $upload->saveDosenProfilePicture($_FILES['new_foto'], $mahasiswa['npk']);
         if ($ext !== $mahasiswa['foto_extention']) {
             $mahasiswa['foto_extention'] = $ext;
-            $mahasiswa = $controller->updateMahasiswa($mahasiswa);
+            $mahasiswa = $controller->updateDosen($mahasiswa);
         }
         $response = [
             "status" => "success",
-            "data"   => "berhasil mengganti profile picture {$mahasiswa['nrp']}.{$mahasiswa['foto_extention']}"
+            "data"   => "berhasil mengganti profile picture {$mahasiswa['npk']}.{$mahasiswa['foto_extention']}"
         ];
     } catch (Exception $e) {
         $response = [
@@ -118,7 +118,7 @@ function changeProfilePicture(MahasiswaController $controller, UploadController 
     }
 }
 
-function update(MahasiswaController $controller, UploadController $upload)
+function update(DosenController $controller, UploadController $upload)
 {
     $response = null;
     $raw = file_get_contents("php://input");
@@ -131,7 +131,7 @@ function update(MahasiswaController $controller, UploadController $upload)
         if (!is_array($params)) {
             throw new Exception("Invalid  input");
         }
-        $required = ['username', 'nama', 'nrp', 'tanggal_lahir', 'gender', 'angkatan'];
+        $required = ['username', 'nama', 'npk',];
 
         foreach ($required as $field) {
             if (!isset($params[$field])) {
@@ -139,12 +139,12 @@ function update(MahasiswaController $controller, UploadController $upload)
             }
         }
 
-        $mahasiswa = $controller->getSingleMahasiswaByUsername($params['username']);
+        $mahasiswa = $controller->getSingleDosenByUsername($params['username']);
         $params['foto_extention'] = $mahasiswa['foto_extention'];
-        $data = $controller->updateMahasiswa($params);
-        $upload->renameMahasiswaProfilePicture(
-            $mahasiswa['nrp'],
-            $params['nrp'],
+        $data = $controller->updateDosen($params);
+        $upload->renameDosenProfilePicture(
+            $mahasiswa['npk'],
+            $params['npk'],
             $mahasiswa['foto_extention']
         );
 
@@ -167,7 +167,7 @@ function update(MahasiswaController $controller, UploadController $upload)
 }
 
 
-function get(MahasiswaController $controller, UploadController $upload)
+function get(DosenController $controller, UploadController $upload)
 {
     if (isset($_GET['username'])) {
         single($controller);
@@ -176,7 +176,7 @@ function get(MahasiswaController $controller, UploadController $upload)
     }
 }
 
-function single(MahasiswaController $controller)
+function single(DosenController $controller)
 {
     $response = null;
     try {
@@ -184,7 +184,7 @@ function single(MahasiswaController $controller)
         $username = $_GET['username'];
         $response = array(
             "status" => "success",
-            "data" => $controller->getSingleMahasiswaByUsername($username)
+            "data" => $controller->getSingleDosenByUsername($username)
         );
     } catch (Exception $e) {
         $response = array(
@@ -196,7 +196,7 @@ function single(MahasiswaController $controller)
     }
 }
 
-function all(MahasiswaController $controller, $filter = "")
+function all(DosenController $controller, $filter = "")
 {
     $response = null;
     try {
@@ -208,7 +208,7 @@ function all(MahasiswaController $controller, $filter = "")
         $limit = $_GET['limit'];
         $offset = $_GET['offset'];
         $nama = $_GET['keyword'] ?? "";
-        $list = $controller->getListMahasiswaByNama($limit, $offset, $nama);
+        $list = $controller->getListDosenByName($limit, $offset, $nama);
 
         $response = array(
             "status" => "success",
@@ -224,7 +224,7 @@ function all(MahasiswaController $controller, $filter = "")
     }
 }
 
-function delete(MahasiswaController $controller,UploadController $upload)
+function delete(DosenController $controller,UploadController $upload)
 {
 
     $response = null;
@@ -237,9 +237,9 @@ function delete(MahasiswaController $controller,UploadController $upload)
         requireRole([ACCOUNT_ROLE[2]]);
         if (!isset($params['username'])) throw new Exception("Data tidak lengkap, tidak ada username");
         $username = $params['username'];
-        $mhs = $controller->getSingleMahasiswaByUsername($username);
-        $upload->deleteMahasiswaProfilePicture($mhs['nrp'], $mhs['foto_extention']);
-        $controller->deleteMahasiswa($mhs);
+        $mhs = $controller->getSingleDosenByUsername($username);
+        $upload->deleteDosenProfilePicture($mhs['npk'], $mhs['foto_extention']);
+        $controller->deleteDosen($mhs);
 
         $response = [
             "status" => "success",
