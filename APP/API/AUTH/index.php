@@ -28,6 +28,11 @@ function main()
             logout();
             break;
         case "PUT":
+            //edit password
+            echo json_encode("belum buat lupa gua");
+            break;
+        case "GET":
+            //Ngambil data akun, ngambil data grup yang diikuti dll dari get type="{apa yang dicari}
             echo json_encode("belum buat lupa gua");
             break;
         default:

@@ -3,9 +3,9 @@
 require_once(__DIR__ . "/../../auth.php");
 require_once(__DIR__ . "/../../boot.php");
 require_once(__DIR__ . "/../../config.php");
-require_once(__DIR__ . "/../../CONTROLLERS/MemberController.php");
+require_once(__DIR__ . "/../../CONTROLLERS/JoinGroupController.php");
 
-use CONTROLLERS\MemberController;
+use CONTROLLERS\JoinGroupController;
 
 // =============================================================================================
 // RUN
@@ -18,18 +18,15 @@ main();
 // =============================================================================================
 function main()
 {
-    requireRole(array(ACCOUNT_ROLE[1], ACCOUNT_ROLE[2]));
+    requireRole(ACCOUNT_ROLE);
     $method = $_SERVER['REQUEST_METHOD'];
-    $controller = new MemberController();
+    $controller = new JoinGroupController();
     switch ($method) {
         case "POST":
             post($controller);
             break;
         case "GET":
             get($controller);
-            break;
-        case "DELETE":
-            delete($controller);
             break;
         default:
             http_response_code(404);
@@ -42,18 +39,19 @@ function main()
     }
 }
 
-function post(MemberController $controller)
+function post(JoinGroupController $controller)
 {
     $response = null;
     try {
         if (!((isset($_GET['idgroup'])) && ($_GET['idgroup'] > 0))) throw new Exception("Id group tidak ada atau tidak valid.");
-        if (!isset($_POST['username'])) throw new Exception("Username tidak ada atau tidak valid.");
+        if (!isset($_POST['kode'])) throw new Exception("Kode tidak ada.");
         $idgroup = $_GET['idgroup'];
-        $username = $_POST['username'];
-        $controller->addMemberToGroup($idgroup, $username);
+        $username = $_SESSION[CURRENT_ACCOUNT]['username'];
+        $kode = $_POST['kode'];
+        $controller->joinGroup($idgroup, $username, $kode);
         $response = [
             "status"  => "success",
-            "message" => "Berhasil menambahkan akun kedalam group"
+            "message" => "Berhasil masuk sebagai anggota kedalam group"
         ];
     } catch (Exception $e) {
         $response = [
@@ -65,47 +63,17 @@ function post(MemberController $controller)
     }
 }
 
-function delete(MemberController $controller)
-{
-
-    $response = null;
-    $raw = file_get_contents("php://input");
-    //var_dump($raw); // DEBUG
-    $params = json_decode($raw, true);
-    //print_r($params);
-    try {
-        if (!((isset($_GET['idgroup'])) && ($_GET['idgroup'] > 0))) throw new Exception("Id group tidak ada atau tidak valid.");
-        if (!isset($params['username'])) throw new Exception("Username tidak ada atau tidak valid.");
-        $idgroup = $_GET['idgroup'];
-        $username = $params['username'];
-        $controller->removeMemberFromGroup($idgroup, $username);
-        $response = [
-            "status"  => "success",
-            "message" => "Berhasil mengeluarkan akun dari group"
-        ];
-    } catch (Exception $e) {
-        $response = [
-            "status"  => "error",
-            "message" => $e->getMessage()
-        ];
-    } finally {
-        echo json_encode($response);
-    }
-}
-
-function get(MemberController $controller)
+function get(JoinGroupController $controller)
 {
     $response = null;
     try {
         if (!((isset($_GET['idgroup'])) && ($_GET['idgroup'] > 0))) throw new Exception("Id group tidak ada atau tidak valid.");
         $idgroup = $_GET['idgroup'];
-        $list = $controller->getAllMemberOfGroup($idgroup);
-        if(count($list) <=0){
-            throw new Exception("Gagal mendapatkan data");
-        }
+        $username = $_GET['username'];
+        $result = $controller->checkUserJoined($idgroup,$username);
         $response = [
             "status"  => "success",
-            "data" => $list
+            "data" => $result
         ];
     } catch (Exception $e) {
         $response = [

@@ -50,6 +50,15 @@ class GroupController
         }
         return $list;
     }
+    
+    public function getAllGroupJoinedByUser($username, $limit, $offset, $keyword = "")
+    {
+        $list = Group::getAllGroupJoinedByUser($username, $limit, $offset, $keyword);
+        foreach ($list as $key => $value) {
+            $list[$key] = $value->getArray();
+        }
+        return $list;
+    }
 
     public function deleteGroup($id)
     {
@@ -58,43 +67,6 @@ class GroupController
         return $g->delete();
     }
 
-    public function getAllGroupJoinedByUser($username, $limit, $offset, $keyword = "")
-    {
-        $list = Group::getAllGroupJoinedByUser($username, $limit, $offset, $keyword);
-
-        foreach ($list as $key => $value) {
-            $list[$key] = $value->getArray();
-        }
-
-        return $list;
-    }
-
-    public function addMemberToGroup($idgrup, $username)
-    {
-        $g = new Group();
-        $g->setId($idgrup);
-        return $g->addMember($username);
-    }
-
-    public function removeMemberFromGroup($idgrup, $username)
-    {
-        $g = new Group();
-        $g->setId($idgrup);
-        return $g->deleteMember($username);
-    }
-
-    public function getAllMemberOfGroup($idgrup)
-    {
-        $g = new Group();
-        $g->setId($idgrup);
-        return $g->getAllMember();
-    }
-
-    public function checkGroupMember($idgrup, $username)
-    {
-        return Group::isMember($idgrup, $username);
-    }
-    
     private function randomString($length = CODE_LENGTH)
     {
         $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';

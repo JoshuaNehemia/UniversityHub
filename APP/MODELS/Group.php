@@ -418,61 +418,6 @@ class Group extends DatabaseConnection
             if ($stmt) $stmt->close();
         }
     }
-    // ================================================================================================
-    // SEARCH GROUP
-    // ================================================================================================
-    public static function getAllGroupJoinedByUser(string $username, int $limit, int $offset, string $search = "")
-    {
-        $instance = new self();
-        $stmt = null;
-        $offset *= $limit;
-
-        try {
-            $like = "%$search%";
-
-            $sql = "
-            SELECT g.* 
-            FROM member_grup mg
-            INNER JOIN grup g ON mg.idgrup = g.idgrup
-            WHERE mg.username = ?
-              AND g.nama LIKE ?
-            LIMIT ? OFFSET ?;
-        ";
-
-            $stmt = $instance->conn->prepare($sql);
-            if (!$stmt) {
-                throw new Exception("Gagal mempersiapkan query Get Joined Group: " . $instance->conn->error);
-            }
-
-            $stmt->bind_param("ssii", $username, $like, $limit, $offset);
-
-            if (!$stmt->execute()) {
-                throw new Exception("Gagal mengambil grup yang diikuti: " . $stmt->error);
-            }
-
-            $result = $stmt->get_result();
-            $groups = [];
-
-            while ($row = $result->fetch_assoc()) {
-                $groups[] = new Group(
-                    $row['idgrup'],
-                    $row['username_pembuat'],
-                    $row['nama'],
-                    $row['deskripsi'],
-                    $row['tanggal_pembentukan'],
-                    $row['jenis'],
-                    $row['kode_pendaftaran']
-                );
-            }
-
-            return $groups;
-        } catch (Exception $e) {
-            throw new Exception("Error Get Joined Groups: " . $e->getMessage());
-        } finally {
-            if ($stmt) $stmt->close();
-        }
-    }
-
 
     // ================================================================================================
     // ADD MEMBER
@@ -494,6 +439,9 @@ class Group extends DatabaseConnection
                 throw new Exception("Gagal menambahkan anggota ke grup: " . $stmt->error);
             }
 
+            if ($stmt->affected_rows != 1) {
+                throw new Exception("Tidak menambahkan anggota ke grup, tidak ada perubahan");
+            }
             return true;
         } catch (Exception $e) {
             // Bisa handle error duplicate entry (kode 1062) biar pesan lebih enak
@@ -543,9 +491,11 @@ class Group extends DatabaseConnection
         try {
             $sql = "
                 SELECT 
-                    a.*,
-                    m.*, 
-                    d.*
+                    a.username,
+                    m.nama,
+                    m.nrp, 
+                    d.nama,
+                    d.npk
                 FROM member_grup mg
                 JOIN akun a ON mg.username = a.username
                 LEFT JOIN mahasiswa m ON a.nrp_mahasiswa = m.nrp
@@ -573,9 +523,11 @@ class Group extends DatabaseConnection
 
             while ($row = $result->fetch_assoc()) {
                 if (!empty($row["npk"])) {
+                    unset($row['nrp']);
                     $members["DOSEN"][] = $row;
                 }
                 if (!empty($row["nrp"])) {
+                    unset($row['npk']);
                     $members["MAHASISWA"][] = $row;
                 }
             }
@@ -607,6 +559,62 @@ class Group extends DatabaseConnection
             return $stmt->get_result()->num_rows > 0;
         } catch (Exception $e) {
             throw new Exception("Error Checking Member: " . $e->getMessage());
+        } finally {
+            if ($stmt) $stmt->close();
+        }
+    }
+
+
+    // ================================================================================================
+    // SEARCH GROUP
+    // ================================================================================================
+    public static function getAllGroupJoinedByUser(string $username, int $limit, int $offset, string $search = "")
+    {
+        $instance = new self();
+        $stmt = null;
+        $offset *= $limit;
+
+        try {
+            $like = "%$search%";
+
+            $sql = "
+            SELECT g.* 
+            FROM member_grup mg
+            INNER JOIN grup g ON mg.idgrup = g.idgrup
+            WHERE mg.username = ?
+              AND g.nama LIKE ?
+            LIMIT ? OFFSET ?;
+        ";
+
+            $stmt = $instance->conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("Gagal mempersiapkan query Get Joined Group: " . $instance->conn->error);
+            }
+
+            $stmt->bind_param("ssii", $username, $like, $limit, $offset);
+
+            if (!$stmt->execute()) {
+                throw new Exception("Gagal mengambil grup yang diikuti: " . $stmt->error);
+            }
+
+            $result = $stmt->get_result();
+            $groups = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $groups[] = new Group(
+                    $row['idgrup'],
+                    $row['username_pembuat'],
+                    $row['nama'],
+                    $row['deskripsi'],
+                    $row['tanggal_pembentukan'],
+                    $row['jenis'],
+                    $row['kode_pendaftaran']
+                );
+            }
+
+            return $groups;
+        } catch (Exception $e) {
+            throw new Exception("Gagal mendapatkan grup yang diikuti: " . $e->getMessage());
         } finally {
             if ($stmt) $stmt->close();
         }
