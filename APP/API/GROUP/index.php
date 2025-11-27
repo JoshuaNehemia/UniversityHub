@@ -57,8 +57,6 @@ function post(GroupController $controller)
         }
         if ($_SESSION[CURRENT_ACCOUNT]['jenis'] === ACCOUNT_ROLE[0]) throw new Exception("Akun anda tidak dapat membuat group.");
         $_POST['pembuat'] = $_SESSION[CURRENT_ACCOUNT]['username'];
-        $_POST['tanggal_dibuat'] = "" . date("Y-m-d H:i:s");
-
         $data = $controller->createGroup($_POST);
 
         if (!$data) {

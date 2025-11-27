@@ -10,6 +10,6 @@ define("UPLOAD_DATABASE","../DATABASE/");
 define("CODE_LENGTH",6);
 
 //MEDIA
-define("MEDIA_TYPE",array("PROFILE_PICTURE"));
+define("MEDIA_TYPE",array("PROFILE_PICTURE","EVENT_POSTER"));
 define("MAX_IMAGE_SIZE",2000); //In mega bytes
 define("ALLOWED_PICTURE_EXTENSION",array("jpg","jpeg","png","webp"));

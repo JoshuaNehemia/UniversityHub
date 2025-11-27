@@ -79,6 +79,9 @@ class Mahasiswa extends Akun
 
     public function setTanggalLahir(string $tanggal_lahir)
     {
+        if (!preg_match(DATETIME_REGEX, $tanggal_lahir)) {
+            throw new Exception("Format tanggal lahir invalid. Format yang benar: YYYY-MM-DD (Y-m-d)");
+        }
         if (empty($tanggal_lahir)) throw new Exception("Tanggal lahir tidak boleh kosong.");
         $this->tanggal_lahir = $tanggal_lahir;
     }

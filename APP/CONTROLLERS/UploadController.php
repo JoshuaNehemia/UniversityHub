@@ -96,15 +96,30 @@ class UploadController
         $path = $this->uploadDir . "PROFILE/" . ACCOUNT_ROLE[0] . "/" . $nrp . "." . $extension;
         if (file_exists($path)) {
             unlink($path);
-        }
-        else throw new Exception("Gagal menghapus gambar");
+        } else throw new Exception("Gagal menghapus gambar");
     }
     public function deleteDosenProfilePicture($npk, $extension)
     {
         $path = $this->uploadDir . "PROFILE/" . ACCOUNT_ROLE[1] . "/" . $npk . "." . $extension;
         if (file_exists($path)) {
             unlink($path);
+        } else throw new Exception("Gagal menghapus gambar");
+    }
+
+    public function saveEventPoster(array $file, string $name)
+    {
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            throw new Exception("Gagal upload");
         }
-        else throw new Exception("Gagal menghapus gambar");
+        $savePath = $this->uploadDir . "EVENT/";
+        return $this->saveFoto($file, $savePath, $name);
+    }
+
+    public function deleteEventPoster($name, $extension)
+    {
+        $path = $this->uploadDir . "EVENT/" . $name . "." . $extension;
+        if (file_exists($path)) {
+            unlink($path);
+        } else throw new Exception("Gagal menghapus gambar");
     }
 }

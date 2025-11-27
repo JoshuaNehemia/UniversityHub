@@ -123,12 +123,12 @@ class Group extends DatabaseConnection
         $this->deskripsi = $deskripsi;
     }
 
-    public function setTanggalDibuat(string $tanggalDibuat)
+    public function setTanggalDibuat()
     {
-        if (empty($tanggalDibuat)) {
-            throw new Exception("Tanggal pembuatan tidak boleh kosong.");
+        if (empty($tanggal)) {
+            $this->tanggalDibuat = date("Y-m-d H:i:s");
+            return;
         }
-        $this->tanggalDibuat = $tanggalDibuat;
     }
 
     public function setJenis($jenis)
@@ -157,7 +157,7 @@ class Group extends DatabaseConnection
         $g->setPembuat($group['pembuat']);
         $g->setNama($group['nama']);
         $g->setDeskripsi($group['deskripsi']);
-        $g->setTanggalDibuat($group['tanggal_dibuat']);
+        $g->setTanggalDibuat();
         $g->setJenis($group['jenis']);
         if ($id != null) $g->setId($id);
         return $g;
@@ -287,7 +287,7 @@ class Group extends DatabaseConnection
     }
 
     // ================================================================================================
-    // GET GROUP BY ID (STATIC)
+    // GET GROUP BY ID 
     // ================================================================================================
     public static function getGroupById($id): Group
     {
