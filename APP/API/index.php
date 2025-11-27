@@ -1,6 +1,6 @@
 <?php
 
-//header("Content-Type: application/json");
+header("Content-Type: application/json");
 
 $uri = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
 $method = $_SERVER['REQUEST_METHOD'];
@@ -26,6 +26,10 @@ switch ($resource) {
         break;
 
     case "GROUP":
+        require_once("$routesPath/GROUP/" .$index);
+        break;
+
+    case "MEMBER":
         require_once("$routesPath/AUTH/" .$index);
         break;
 

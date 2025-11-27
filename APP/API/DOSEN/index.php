@@ -39,7 +39,12 @@ function main()
             break;
         default:
             http_response_code(404);
-            echo json_encode(["error" => "API not found"]);
+            echo json_encode(
+                array(
+                    "status" => "error",
+                    "message" => "API not found"
+                )
+            );
     }
 }
 function post(DosenController $controller, UploadController $upload)
@@ -106,7 +111,7 @@ function changeProfilePicture(DosenController $controller, UploadController $upl
         }
         $response = [
             "status" => "success",
-            "data"   => "berhasil mengganti profile picture {$mahasiswa['npk']}.{$mahasiswa['foto_extention']}"
+            "message"   => "berhasil mengganti profile picture {$mahasiswa['npk']}.{$mahasiswa['foto_extention']}"
         ];
     } catch (Exception $e) {
         $response = [

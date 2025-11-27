@@ -86,7 +86,7 @@ class Group extends DatabaseConnection
 
 
     // ================================================================================================
-    // SETTER (Dengan Exception Bahasa Indonesia)
+    // SETTER
     // ================================================================================================
     public function setId(int $id)
     {
@@ -134,7 +134,6 @@ class Group extends DatabaseConnection
     public function setJenis($jenis)
     {
         $normalized = ucfirst(strtolower($jenis));
-        // Asumsi GROUP_TYPES didefinisikan di config.php
         if (defined('GROUP_TYPES') && !in_array($normalized, GROUP_TYPES)) {
             throw new Exception("Jenis Grup tidak valid. Harus 'Privat' atau 'Publik'.");
         }
@@ -160,8 +159,6 @@ class Group extends DatabaseConnection
         $g->setDeskripsi($group['deskripsi']);
         $g->setTanggalDibuat($group['tanggal_dibuat']);
         $g->setJenis($group['jenis']);
-        $g->setKode($group['kode']);
-
         if ($id != null) $g->setId($id);
         return $g;
     }
@@ -230,8 +227,7 @@ class Group extends DatabaseConnection
             $sql = "UPDATE grup SET
                         nama = ?,
                         deskripsi = ?,
-                        jenis = ?,
-                        kode_pendaftaran = ?
+                        jenis = ?
                     WHERE idgrup = ?";
 
             $stmt = $this->conn->prepare($sql);
@@ -240,11 +236,10 @@ class Group extends DatabaseConnection
             }
 
             $stmt->bind_param(
-                "ssssi",
+                "sssi",
                 $this->nama,
                 $this->deskripsi,
                 $this->jenis,
-                $this->kode,
                 $this->id
             );
 
@@ -381,7 +376,48 @@ class Group extends DatabaseConnection
             if ($stmt) $stmt->close();
         }
     }
+    public static function getAllGroupByNameForMahasiswa(int $limit, int $offset, $search = "")
+    {
+        $instance = new self();
+        $stmt = null;
+        $offset *= $limit;
+        try {
+            $like = "%$search%";
+            $sql = "SELECT * FROM grup WHERE nama LIKE ? AND jenis= 'Publik' LIMIT ? OFFSET ?;";
 
+            $stmt = $instance->conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("Gagal mempersiapkan query (Search): " . $instance->conn->error);
+            }
+
+            $stmt->bind_param("sii", $like, $limit, $offset);
+
+            if (!$stmt->execute()) {
+                throw new Exception("Gagal mencari grup: " . $stmt->error);
+            }
+
+            $result = $stmt->get_result();
+            $groups = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $groups[] = new Group(
+                    $row['idgrup'],
+                    $row['username_pembuat'],
+                    $row['nama'],
+                    $row['deskripsi'],
+                    $row['tanggal_pembentukan'],
+                    $row['jenis'],
+                    $row['kode_pendaftaran']
+                );
+            }
+
+            return $groups;
+        } catch (Exception $e) {
+            throw new Exception("Error Search Group: " . $e->getMessage());
+        } finally {
+            if ($stmt) $stmt->close();
+        }
+    }
     // ================================================================================================
     // SEARCH GROUP
     // ================================================================================================

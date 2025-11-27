@@ -27,9 +27,17 @@ function main()
         case "DELETE":
             logout();
             break;
+        case "PUT":
+            echo json_encode("belum buat lupa gua");
+            break;
         default:
             http_response_code(404);
-            echo json_encode(["error" => "API not found"]);
+            echo json_encode(
+                array(
+                    "status" => "error",
+                    "message" => "API not found"
+                )
+            );
     }
 }
 
@@ -57,6 +65,10 @@ function login($controller)
     } finally {
         echo json_encode($response);
     }
+}
+
+function changePassword($controller){
+
 }
 
 function logout()
