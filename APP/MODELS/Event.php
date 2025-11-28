@@ -92,9 +92,10 @@ class Event extends DatabaseConnection
         $this->judul = $judul;
     }
 
-    public function setSlug(string $slug): void
+    public function setSlug(): void
     {
-        $slug = trim($slug);
+        $judul = $this->getJudul();
+        $slug = trim($judul);
         $slug = explode(" ", $slug);
         $slug = implode("-", $slug);
         $this->slug = $slug;
@@ -144,14 +145,16 @@ class Event extends DatabaseConnection
     // ================================================================================================
     // CRUD
     // ================================================================================================
-    public function getEvent(int $id): ?self
+    public static function getEvent(int $id): ?self
     {
+        $db = new self();
+        $conn = $db->conn;
         $stmt = null;
         try {
             $sql = "SELECT * FROM event WHERE idevent = ?";
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $conn->prepare($sql);
             
-            if (!$stmt) throw new Exception("Prepare failed: " . $this->conn->error);
+            if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
 
             $stmt->bind_param("i", $id);
             $stmt->execute();
@@ -179,18 +182,25 @@ class Event extends DatabaseConnection
         }
     }
 
-    public static function getAllGroupEvent(int $idgroup): array
+    public static function getAllGroupEvent(int $idgroup,$keyword,$limit,$offset): array
     {
         $db = new self();
         $conn = $db->conn;
         $stmt = null;
+        $keyword = "%" .$keyword ."%";
+        $offset *= $limit;
         try {
-            $sql = "SELECT * FROM event WHERE idgrup = ? ORDER BY tanggal DESC";
+            $sql = "SELECT * FROM event WHERE idgrup = ? and judul LIKE ? ORDER BY tanggal DESC LIMIT ? OFFSET ?";
             $stmt = $conn->prepare($sql);
             
             if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
 
-            $stmt->bind_param("i", $idgroup);
+            $stmt->bind_param("isii", 
+            $idgroup,
+            $keyword,
+            $limit,
+            $offset
+        );
             $stmt->execute();
 
             $result = $stmt->get_result();
@@ -255,7 +265,7 @@ class Event extends DatabaseConnection
         }
     }
 
-    public function create(int $idgroup): int
+    public function create(int $idgroup): Event
     {
         $stmt = null;
         try {
@@ -285,7 +295,7 @@ class Event extends DatabaseConnection
             
             $this->id = (int)$this->conn->insert_id;
             
-            return $this->id;
+            return $this;
 
         } catch (Exception $e) {
             throw new Exception("Gagal menyimpan event: " . $e->getMessage());

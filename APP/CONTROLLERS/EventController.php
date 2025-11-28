@@ -16,30 +16,25 @@ class EventController
         $event = new Event();
         $event->setId($event['id']);
         $event->setJudul($event['judul']);
-        $event->setSlug($event['slug']);
+        $event->setSlug();
         $event->setTanggal($event['tanggal']);
         $event->setKeterangan($event['keterangan']);
         $event->setJenis($event['jenis']);
         $event->setPosterExtension($event['poster_extension']);
-        return $event->create($idgroup);
+        return $event->create($idgroup)->getArray();
     }
 
-    public function getUserEvent($username)
+    public function getGroupEvent($groupid,$keyword,$limit,$offset)
     {
-        $list = Event::getAllUserEvent($username);
+        $list = Event::getAllGroupEvent($groupid,$keyword,$limit,$offset);
         foreach ($list as $key => $mhs) {
             $list[$key] = $mhs->getArray();
         }
         return $list;
     }
 
-    public function getGroupEvent($groupid)
-    {
-        $list = Event::getAllGroupEvent($groupid);
-        foreach ($list as $key => $mhs) {
-            $list[$key] = $mhs->getArray();
-        }
-        return $list;
+    public function getEventById($eventid){
+        return Event::getEvent($eventid)->getArray();
     }
 
     public function updateEvent(array $event)

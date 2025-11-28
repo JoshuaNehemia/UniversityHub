@@ -21,7 +21,7 @@ main();
 function main()
 {
     $method = $_SERVER['REQUEST_METHOD'];
-    requireRole(array(ACCOUNT_ROLE[1],ACCOUNT_ROLE[2]));
+    requireRole(ACCOUNT_ROLE);
     //echo $method;
     $controller = new EventController();
     $upload = new UploadController();
@@ -50,8 +50,9 @@ function main()
 }
 function post(EventController $controller, UploadController $upload)
 {
+    requireRole(array(ACCOUNT_ROLE[1], ACCOUNT_ROLE[2]));
     if (isset($_FILES['new_foto'])) {
-        changeProfilePicture($controller, $upload);
+        changeEventPoster($controller, $upload);
     } else {
         create($controller, $upload);
     }
@@ -61,10 +62,10 @@ function create(EventController $controller, UploadController $upload)
 {
     $response = null;
     try {
-        requireRole(array(ACCOUNT_ROLE[2]));
 
-        $required = ['username', 'password', 'nama', 'nrp', 'tanggal_lahir', 'gender', 'angkatan'];
+        if (!isset($_GET['idgroup'])) throw new Exception("idgroup tidak ada");
 
+        $required = ['judul', 'tanggal', 'keterangan', 'jenis'];
         foreach ($required as $field) {
             if (!isset($_POST[$field])) {
                 throw new Exception("Data yang dikirim tidak lengkap: tidak ditemukan {$field}");
@@ -75,12 +76,19 @@ function create(EventController $controller, UploadController $upload)
             throw new Exception("Tidak ada foto profil yang diupload");
         }
 
-        $ext = $upload->saveEventPoster($_FILES['foto'], $_POST['nrp']);
-        $_POST['foto_extention'] = $ext;
+        $ext = "";
 
-        $data = $controller->createEvent($_POST);
+        if (isset($_FILES['uploaded_file'])) {
+            $filename = $_FILES['uploaded_file']['name'];
+            $ext = pathinfo($filename, PATHINFO_EXTENSION);
+        }
+
+        $_POST['foto_extention'] = $ext;
+        $data = $controller->createEvent($_POST, $_GET['idgroup']);
+        $ext = $upload->saveEventPoster($_FILES['foto'], $data['id']);
+
         if (!$data) {
-            throw new Exception("Gagal update data");
+            throw new Exception("Gagal membuat event");
         }
 
         $response = [
@@ -97,22 +105,26 @@ function create(EventController $controller, UploadController $upload)
     }
 }
 
-function changeProfilePicture(EventController $controller, UploadController $upload)
+function changeEventPoster(EventController $controller, UploadController $upload)
 {
     $response = null;
     try {
-        if (!isset($_POST['username'])) throw new Exception("Tidak ada username.");
-        $Event = $controller->getSingleEventByUsername($_POST['username']);
-        $ext = "";
+        if (!isset($_POST['idevent'])) throw new Exception("Tidak ada idevent.");
+
         if (!isset($_FILES['new_foto']) || $_FILES['new_foto']['error'] === UPLOAD_ERR_NO_FILE) throw new Exception("File foto tidak terupload");
-        $ext = $upload->saveEventPoster($_FILES['new_foto'], $Event['nrp']);
-        if ($ext !== $Event['foto_extention']) {
-            $Event['foto_extention'] = $ext;
-            $Event = $controller->updateEvent($Event);
+
+
+        $event = $controller->getEventById($_POST['idevent']);
+        $ext = $upload->saveEventPoster($_FILES['new_foto'], $event['id']);
+
+        if ($ext !== $event['foto_extention']) {
+            $event['foto_extention'] = $ext;
+            $event = $controller->updateEvent($event);
         }
+
         $response = [
             "status" => "success",
-            "data"   => "berhasil mengganti profile picture {$Event['nrp']}.{$Event['foto_extention']}"
+            "data"   => "berhasil mengganti poster event {$event['id']}.{$event['foto_extention']}"
         ];
     } catch (Exception $e) {
         $response = [
@@ -133,26 +145,22 @@ function update(EventController $controller, UploadController $upload)
     //print_r($params);
 
     try {
-        requireRole([ACCOUNT_ROLE[2]]);
+        requireRole(array(ACCOUNT_ROLE[1], ACCOUNT_ROLE[2]));
+
         if (!is_array($params)) {
             throw new Exception("Invalid  input");
         }
-        $required = ['username', 'nama', 'nrp', 'tanggal_lahir', 'gender', 'angkatan'];
 
+        $required = ['idevent', 'judul', 'tanggal', 'keterangan', 'jenis'];
         foreach ($required as $field) {
             if (!isset($params[$field])) {
                 throw new Exception("Data yang dikirim tidak lengkap: tidak ditemukan {$field}");
             }
         }
 
-        $Event = $controller->getSingleEventByUsername($params['username']);
-        $params['foto_extention'] = $Event['foto_extention'];
+        $event = $controller->getEventById($params['idevent']);
+        $params['foto_extention'] = $event['foto_extention'];
         $data = $controller->updateEvent($params);
-        $upload->renameEventProfilePicture(
-            $Event['nrp'],
-            $params['nrp'],
-            $Event['foto_extention']
-        );
 
         if (!$data) {
             throw new Exception("Gagal update data");
@@ -175,7 +183,7 @@ function update(EventController $controller, UploadController $upload)
 
 function get(EventController $controller, UploadController $upload)
 {
-    if (isset($_GET['username'])) {
+    if (isset($_GET['idevent'])) {
         single($controller);
     } else {
         all($controller);
@@ -186,11 +194,10 @@ function single(EventController $controller)
 {
     $response = null;
     try {
-        requireRole(array(ACCOUNT_ROLE[2]));
-        $username = $_GET['username'];
+        $idevent = $_GET['idevent'];
         $response = array(
             "status" => "success",
-            "data" => $controller->getSingleEventByUsername($username)
+            "data" => $controller->getEventById($idevent)
         );
     } catch (Exception $e) {
         $response = array(
@@ -206,15 +213,15 @@ function all(EventController $controller, $filter = "")
 {
     $response = null;
     try {
-        requireRole(array(ACCOUNT_ROLE[1], ACCOUNT_ROLE[2]));
 
         if (!(isset($_GET['offset']) && ($_GET['offset'] >= 0))) throw new Exception("Offset tidak ada.");
         if (!(isset($_GET['limit']) && !empty($_GET['limit']))) throw new Exception("Limit tidak ada.");
-
+        if (!isset($_GET['idgroup'])) throw new Exception("idgroup tidak ada.");
+        $idgroup = $_GET['idgroup'];
         $limit = $_GET['limit'];
         $offset = $_GET['offset'];
-        $nama = $_GET['keyword'] ?? "";
-        $list = $controller->getListEventByNama($limit, $offset, $nama);
+        $keyword = $_GET['keyword'] ?? "";
+        $list = $controller->getGroupEvent($idgroup, $keyword, $limit, $offset);
 
         $response = array(
             "status" => "success",
@@ -230,7 +237,7 @@ function all(EventController $controller, $filter = "")
     }
 }
 
-function delete(EventController $controller,UploadController $upload)
+function delete(EventController $controller, UploadController $upload)
 {
 
     $response = null;
@@ -240,16 +247,18 @@ function delete(EventController $controller,UploadController $upload)
     $params = json_decode($raw, true);
     //print_r($params);
     try {
-        requireRole([ACCOUNT_ROLE[2]]);
-        if (!isset($params['username'])) throw new Exception("Data tidak lengkap, tidak ada username");
-        $username = $params['username'];
-        $mhs = $controller->getSingleEventByUsername($username);
-        $upload->deleteEventProfilePicture($mhs['nrp'], $mhs['foto_extention']);
-        $controller->deleteEvent($mhs);
+        requireRole(array(ACCOUNT_ROLE[1], ACCOUNT_ROLE[2]));
+
+        if (!isset($params['idevent'])) throw new Exception("Data tidak lengkap, tidak ada idevent");
+        
+        $idevent = $params['idevent'];
+        $event = $controller->getEventById($idevent);
+        $upload->deleteEventPoster($event['id'], $event['foto_extention']);
+        $controller->deleteEvent($event);
 
         $response = [
             "status" => "success",
-            "message"   => "Berhasil menghapus akun Event {$username}"
+            "message"   => "Berhasil menghapus event {$event['judul']}"
         ];
     } catch (Exception $e) {
         $response = [

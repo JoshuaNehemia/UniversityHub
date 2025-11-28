@@ -79,7 +79,7 @@ function create(MahasiswaController $controller, UploadController $upload)
 
         $data = $controller->createMahasiswa($_POST);
         if (!$data) {
-            throw new Exception("Gagal update data");
+            throw new Exception("Gagal membuat akun, tidak ada yang tersimpan di database.");
         }
 
         $response = [
