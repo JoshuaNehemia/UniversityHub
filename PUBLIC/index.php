@@ -64,6 +64,11 @@
     </aside>
     <main>
         <h2>Daftar Group</h2>
+        <section class="dosen_only">
+            <button onclick="window.location.href='add-group.php'" style="margin-top:15px;">
+                Tambah Group
+            </button>
+        </section>
         <section id="daftar-group">
         </section>
     </main>

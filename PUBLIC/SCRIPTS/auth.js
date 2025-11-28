@@ -28,7 +28,14 @@ function login(data = {}) {
       if (res.status === "success") {
         status.text("Berhasil login.");
         status.attr("class", "success");
-        window.location.href = "index.php";
+        console.log(res.data)
+        if (res.data.jenis === "ADMIN") {
+          console.log("Masuk halaman admin");
+          window.location.href = "ADMIN/index.php";
+        } else {
+          console.log("Masuk halaman user");
+          window.location.href = "index.php";
+        }
       } else if (res.status === "error") {
         status.text("Gagal login, " + res.message);
         status.attr("class", "error");
