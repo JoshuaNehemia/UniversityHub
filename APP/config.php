@@ -5,6 +5,7 @@ define("ACCOUNT_ROLE",array("MAHASISWA","DOSEN","ADMIN"));
 define("GENDER",array("Pria","Wanita"));
 define("GROUP_TYPES",array("Privat","Publik"));
 define("DATETIME_REGEX","/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/");
+define("DATE_REGEX","/^\d{4}-\d{2}-\d{2}$/");
 define("API_ADDRESS","http://localhost/universityhub/APP/");
 define("UPLOAD_DATABASE","../DATABASE/");
 define("CODE_LENGTH",6);

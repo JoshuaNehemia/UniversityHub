@@ -1,6 +1,7 @@
 <?php
 
 require_once(__DIR__ . "/../../boot.php");
+require_once(__DIR__ . "/../../auth.php");
 require_once(__DIR__ . "/../../config.php");
 require_once(__DIR__ . "/../../CONTROLLERS/AuthController.php");
 
@@ -31,8 +32,7 @@ function main()
             changePassword($controller);
             break;
         case "GET":
-            //Ngambil data akun, ngambil data grup yang diikuti dll dari get type="{apa yang dicari}
-            echo json_encode("belum buat lupa gua");
+            get($controller);
             break;
         default:
             http_response_code(404);
@@ -174,15 +174,24 @@ function getRoute($role)
 
 function get(AuthController $controller)
 {
-    if (!isset($_GET['type'])) throw new Exception("Data tidak lengkap, tidak ada jenis");
-    $type = $_GET['type'];
+    $type = $_GET['jenis'] ?? "";
     switch ($type) {
         case "account":
             getCurrentAccount();
+            break;
         case "group":
             getGroup($controller);
+            break;
         case "event":
             getEvent($controller);
+            break;
+        default:
+            echo json_encode(
+                array(
+                    "status" => "error",
+                    "message" => "Jenis tidak ditemukan"
+                )
+            );
     }
 }
 
@@ -216,7 +225,7 @@ function getGroup(AuthController $controller)
         if (!(isset($_GET['offset']) && ($_GET['offset'] >= 0))) throw new Exception("Offset tidak ada.");
         if (!(isset($_GET['limit']) && !empty($_GET['limit']))) throw new Exception("Limit tidak ada.");
 
-        $username = $_SESSION[CURRENT_ACCOUNT];
+        $username = $_SESSION[CURRENT_ACCOUNT]['username'];
         $limit = $_GET['limit'];
         $offset = $_GET['offset'];
         $keyword = $_GET['keyword'] ?? "";

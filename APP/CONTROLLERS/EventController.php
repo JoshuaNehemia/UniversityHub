@@ -11,22 +11,21 @@ class EventController
 {
     public function __construct() {}
 
-    public function createEvent(array $event,$idgroup)
+    public function createEvent(array $arr_event,$idgroup)
     {
         $event = new Event();
-        $event->setId($event['id']);
-        $event->setJudul($event['judul']);
+        $event->setJudul($arr_event['judul']);
         $event->setSlug();
-        $event->setTanggal($event['tanggal']);
-        $event->setKeterangan($event['keterangan']);
-        $event->setJenis($event['jenis']);
-        $event->setPosterExtension($event['poster_extension']);
+        $event->setTanggal($arr_event['tanggal']);
+        $event->setKeterangan($arr_event['keterangan']);
+        $event->setJenis($arr_event['jenis']);
+        $event->setPosterExtension($arr_event['poster_extention']);
         return $event->create($idgroup)->getArray();
     }
 
-    public function getGroupEvent($groupid,$keyword,$limit,$offset)
+    public function getGroupEvent($groupid,$keyword,int $limit,int $offset)
     {
-        $list = Event::getAllGroupEvent($groupid,$limit,$offset,$keyword);
+        $list = Event::getAllGroupEvent($groupid,$keyword,$limit,$offset);
         foreach ($list as $key => $mhs) {
             $list[$key] = $mhs->getArray();
         }
@@ -37,16 +36,16 @@ class EventController
         return Event::getEvent($eventid)->getArray();
     }
 
-    public function updateEvent(array $event)
+    public function updateEvent(array $arr_event)
     {
         $event = new Event();
-        $event->setId($event['id']);
-        $event->setJudul($event['judul']);
-        $event->setSlug($event['slug']);
-        $event->setTanggal($event['tanggal']);
-        $event->setKeterangan($event['keterangan']);
-        $event->setJenis($event['jenis']);
-        $event->setPosterExtension($event['poster_extension']);
+        $event->setId($arr_event['idevent']);
+        $event->setJudul($arr_event['judul']);
+        $event->setSlug();
+        $event->setTanggal($arr_event['tanggal']);
+        $event->setKeterangan($arr_event['keterangan']);
+        $event->setJenis($arr_event['jenis']);
+        $event->setPosterExtension($arr_event['poster_extention']);
         return $event->update();
     }
 

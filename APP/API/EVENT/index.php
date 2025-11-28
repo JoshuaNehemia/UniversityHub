@@ -73,17 +73,17 @@ function create(EventController $controller, UploadController $upload)
         }
 
         if (!isset($_FILES['foto']) || $_FILES['foto']['error'] === UPLOAD_ERR_NO_FILE) {
-            throw new Exception("Tidak ada foto profil yang diupload");
+            throw new Exception("Tidak ada foto poster event yang diupload");
         }
 
         $ext = "";
 
-        if (isset($_FILES['uploaded_file'])) {
-            $filename = $_FILES['uploaded_file']['name'];
+        if (isset($_FILES['foto'])) {
+            $filename = $_FILES['foto']['name'];
             $ext = pathinfo($filename, PATHINFO_EXTENSION);
         }
 
-        $_POST['foto_extention'] = $ext;
+        $_POST['poster_extention'] = $ext;
         $data = $controller->createEvent($_POST, $_GET['idgroup']);
         $ext = $upload->saveEventPoster($_FILES['foto'], $data['id']);
 
@@ -117,8 +117,8 @@ function changeEventPoster(EventController $controller, UploadController $upload
         $event = $controller->getEventById($_POST['idevent']);
         $ext = $upload->saveEventPoster($_FILES['new_foto'], $event['id']);
 
-        if ($ext !== $event['foto_extention']) {
-            $event['foto_extention'] = $ext;
+        if ($ext !== $event['new_foto']) {
+            $event['poster_extention'] = $ext;
             $event = $controller->updateEvent($event);
         }
 
@@ -159,7 +159,7 @@ function update(EventController $controller, UploadController $upload)
         }
 
         $event = $controller->getEventById($params['idevent']);
-        $params['foto_extention'] = $event['foto_extention'];
+        $params['poster_extention'] = $event['poster_extention'];
         $data = $controller->updateEvent($params);
 
         if (!$data) {
@@ -250,12 +250,11 @@ function delete(EventController $controller, UploadController $upload)
         requireRole(array(ACCOUNT_ROLE[1], ACCOUNT_ROLE[2]));
 
         if (!isset($params['idevent'])) throw new Exception("Data tidak lengkap, tidak ada idevent");
-        
+
         $idevent = $params['idevent'];
         $event = $controller->getEventById($idevent);
-        $upload->deleteEventPoster($event['id'], $event['foto_extention']);
-        $controller->deleteEvent($event);
-
+        $controller->deleteEvent($event['id']);
+        $upload->deleteEventPoster($event['id'], $event['poster_extention']);
         $response = [
             "status" => "success",
             "message"   => "Berhasil menghapus event {$event['judul']}"

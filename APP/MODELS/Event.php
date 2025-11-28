@@ -3,7 +3,6 @@
 namespace MODELS;
 
 require_once(__DIR__ . '/../config.php');
-require_once(__DIR__ . '/../upload.php');
 require_once(__DIR__ . '/../CORE/DatabaseConnection.php');
 
 use CORE\DatabaseConnection;
@@ -138,7 +137,7 @@ class Event extends DatabaseConnection
             "tanggal"=>$this->getTanggal(),
             "keterangan"=>$this->getKeterangan(),
             "jenis"=>$this->getJenis(),
-            "poster_extension"=>$this->getPosterExtension()
+            "poster_extention"=>$this->getPosterExtension()
         );
     }
 
@@ -182,13 +181,13 @@ class Event extends DatabaseConnection
         }
     }
 
-    public static function getAllGroupEvent(int $idgroup,$keyword,$limit,$offset): array
+    public static function getAllGroupEvent(int $idgroup,$keyword,int $limit, int $offset): array
     {
         $db = new self();
         $conn = $db->conn;
         $stmt = null;
         $keyword = "%" .$keyword ."%";
-        $offset *= $limit;
+        $offset = $offset * $limit;
         try {
             $sql = "SELECT * FROM event WHERE idgrup = ? and judul LIKE ? ORDER BY tanggal DESC LIMIT ? OFFSET ?";
             $stmt = $conn->prepare($sql);
