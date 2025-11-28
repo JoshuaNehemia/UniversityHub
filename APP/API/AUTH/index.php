@@ -71,6 +71,45 @@ function login($controller)
     }
 }
 
+function put($controller)
+{
+    if (!isset($_SESSION[CURRENT_ACCOUNT])) throw new Exception("Tidak ada akun yang terloggedin");
+    if ($_SESSION[CURRENT_ACCOUNT]['jenis'] === ACCOUNT_ROLE[2]) {
+    } else {
+        changePassword($controller);
+    }
+}
+
+function changePasswordAdmin(AuthController $controller)
+{
+    $raw = file_get_contents("php://input");
+    //var_dump($raw); // DEBUG
+    $params = json_decode($raw, true);
+    //print_r($params);
+    try {
+        if (!isset($_SESSION[CURRENT_ACCOUNT])) throw new Exception("Tidak ada akun yang terloggedin");
+        if (!(isset($params['username']) && isset($params['new_password']) && isset($params['confirm_password']))) throw new Exception("Data tidak lengkap.");
+
+        $username = $params['username'];
+        $new_password = $params['new_password'];
+        $confirm_password = $params['confirm_password'];
+
+        $controller->adminChangePassword($username, $new_password, $confirm_password);
+        session_destroy();
+        $response = array(
+            "status" => "success",
+            "message" => "Password telah diganti mohon login ulang"
+        );
+    } catch (Exception $e) {
+        $response = array(
+            "status" => "error",
+            "message" => $e->getMessage()
+        );
+    } finally {
+        echo json_encode($response);
+    }
+}
+
 function changePassword($controller)
 {
     $raw = file_get_contents("php://input");
@@ -212,7 +251,7 @@ function getEvent(AuthController $controller)
         $limit = $_GET['limit'];
         $offset = $_GET['offset'];
         $keyword = $_GET['keyword'] ?? "";
-        $list = $controller->getAllUserEvent($username,$keyword,$limit,$offset);
+        $list = $controller->getAllUserEvent($username, $keyword, $limit, $offset);
         $response = array(
             "status" => "success",
             "data" => $list

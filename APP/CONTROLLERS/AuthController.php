@@ -56,7 +56,14 @@ class AuthController
         } catch (Exception $e) {
             throw new Exception("Password lama salah");
         };
-        if ($confim_password != $new_password) throw new Exception("Password konfim dan password baru harus sama");
+        if ($confim_password != $new_password) throw new Exception("Password konfirm dan password baru harus sama");
+        return $akun->akunUpdatePassword($new_password);
+    }
+
+    public function adminChangePassword($username, $new_password, $confim_password)
+    {
+        $akun = Akun::akunGetByUsername($username);
+        if ($confim_password != $new_password) throw new Exception("Password konfirm dan password baru harus sama");
         return $akun->akunUpdatePassword($new_password);
     }
 
