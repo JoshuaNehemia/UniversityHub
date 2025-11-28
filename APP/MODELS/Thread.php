@@ -8,15 +8,13 @@ class Thread
     private $pembuat;
     private $tanggalPembuatan;
     private $status;
-    private $chats; //Array
 
-    public function __construct($id, $pembuat, $tanggalPembuatan, $status, $chats)
+    public function __construct($id, $pembuat, $tanggalPembuatan, $status)
     {
         $this->setId($id);
         $this->setPembuat($pembuat);
         $this->setTanggalPembuatan($tanggalPembuatan);
         $this->setStatus($status);
-        $this->setChats($chats);
     }
 
     // getter
@@ -40,13 +38,8 @@ class Thread
         return $this->status;
     }
 
-    public function getChats()
-    {
-        return $this->chats;
-    }
 
     // setter
-
     public function setId(int $id)
     {
         $this->id = $id;
@@ -65,15 +58,5 @@ class Thread
     public function setTanggalPembuatan(string $tanggalPembuatan)
     {
         $this->tanggalPembuatan = $tanggalPembuatan;
-    }
-
-    public function setChats(array $chats)
-    {
-        $this->chats = $chats;
-    }
-
-    public function addChats(Chat $chat)
-    {
-        $this->chats[] = $chat;
     }
 }

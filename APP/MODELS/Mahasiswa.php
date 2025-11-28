@@ -2,10 +2,9 @@
 
 namespace MODELS;
 
-require_once(__DIR__ . '/../../DATABASE/Connection.php');
 require_once(__DIR__ . '/Akun.php');
+require_once(__DIR__ . '/../config.php');
 
-use DATABASE\Connection;
 use MODELS\Akun;
 use Exception;
 
@@ -18,355 +17,479 @@ class Mahasiswa extends Akun
     private $foto_extention;
     private $foto_address;
 
-    /**
-     * Constructor untuk Class Mahasiswa
-     * @param string $username Menyimpan nama akun
-     * @param string $nama Menyimpan password akun
-     * @param string $nrp Menyimpan kode NRP mahasiswa
-     * @param string $tanggal_lahir Menyimpan tanggal lahir mahasiswa
-     * @param string $gender Menyimpan gender mahasiswa (Enum: Pria / Wanita)
-     * @param int $angkatan Menyimpan tahun angkatan mahasiswa
-     * @param string $foto_extention Menyimpan ???????? (opo iki)
-     */
-    public function __construct($username, $nama, $nrp, $tanggal_lahir, $gender, $angkatan, $foto_extention)
-    {
-        parent::__construct($username, $nama, "MAHASISWA");
-        $this->setNRP($nrp);
-        $this->setTanggalLahir($tanggal_lahir);
-        $this->setGender($gender);
-        $this->setAngkatan($angkatan);
-        $this->setFotoExtention($foto_extention);
+    // ================================================================================
+    // CONSTRUCTOR
+    // ================================================================================
+    public function __construct(
+        $username = null,
+        $nama = null,
+        $nrp = null,
+        $tanggal_lahir = null,
+        $gender = null,
+        $angkatan = null,
+        $foto_extention = null
+    ) {
+        // Parent may also accept null, depending on its signature
+        parent::__construct($username, $nama, ACCOUNT_ROLE[0]);
+
+        if ($nrp !== null)               $this->setNRP($nrp);
+        if ($tanggal_lahir !== null)     $this->setTanggalLahir($tanggal_lahir);
+        if ($gender !== null)            $this->setGender($gender);
+        if ($angkatan !== null)          $this->setAngkatan($angkatan);
+        if ($foto_extention !== null)    $this->setFotoExtention($foto_extention);
     }
 
-    // --- Getters ---
 
-    /**
-     * Memberikan nilai kode NRP mahasiswa
-     * @return string 
-     */
+    // ================================================================================
+    // GETTERS
+    // ================================================================================
     public function getNRP()
     {
         return $this->nrp;
     }
-
-    /**
-     * Memberikan nilai tanggal lahir mahasiswa
-     * @return string 
-     */
     public function getTanggalLahir()
     {
         return $this->tanggal_lahir;
     }
-
-    /**
-     * Memberikan nilai tahun angkatan mahasiswa
-     * @return int 
-     */
-    public function getAngkatan()
-    {
-        return $this->angkatan;
-    }
-
-    /**
-     * apakah maksudnya yang ini ga tau aku. (NOTES: ditanyakan!!!!)
-     * @return string 
-     */
-    public function getFotoExtention()
-    {
-        return $this->foto_extention;
-    }
-    /**
-     * Memberikan gender mahasaiswa
-     * @return string 
-     */
     public function getGender()
     {
         return $this->gender;
     }
-
+    public function getAngkatan()
+    {
+        return $this->angkatan;
+    }
+    public function getFotoExtention()
+    {
+        return $this->foto_extention;
+    }
     public function getFotoAddress()
     {
         return $this->foto_address;
+    }
+
+    // ================================================================================
+    // SETTERS
+    // ================================================================================
+    public function setNRP(string $nrp)
+    {
+        if (empty($nrp)) throw new Exception("NRP tidak boleh kosong.");
+        $this->nrp = $nrp;
+    }
+
+    public function setTanggalLahir(string $tanggal_lahir)
+    {
+        if (!preg_match(DATETIME_REGEX, $tanggal_lahir)) {
+            throw new Exception("Format tanggal lahir invalid. Format yang benar: YYYY-MM-DD (Y-m-d)");
+        }
+        if (empty($tanggal_lahir)) throw new Exception("Tanggal lahir tidak boleh kosong.");
+        $this->tanggal_lahir = $tanggal_lahir;
+    }
+
+    public function setGender(string $gender)
+    {
+        $gender = ucfirst(strtolower($gender));
+        if (!in_array($gender, GENDER)) throw new Exception("Gender tidak valid.");
+        $this->gender = $gender;
+    }
+
+    public function setAngkatan(int $angkatan)
+    {
+        if (empty($angkatan)) throw new Exception("Tahun angkatan tidak boleh kosong.");
+        $this->angkatan = $angkatan;
+    }
+
+    public function setFotoExtention(string $foto_extention)
+    {
+        $foto_extention = strtolower($foto_extention);
+        if (!in_array($foto_extention, ALLOWED_PICTURE_EXTENSION)) {
+            throw new Exception("Ekstensi foto tidak valid.");
+        }
+        $this->foto_extention = $foto_extention;
     }
 
     public function setFotoAddress($address)
     {
         $this->foto_address = $address;
     }
-    // --- Setters ---
+
+    // ================================================================================================
+    // FUNCTION
+    // ================================================================================================
     /**
-     * Menyimpan nilai nrp kedalam class
-     * @param string $nrp
+     * Merubah data object class Akun dari serializable object menjadi PHP Array
+     * @return array data kelas dalam array.
      */
-    public function setNRP(string $nrp)
+    public function getArray(): array
     {
-        $this->nrp = $nrp;
+        return array_merge(
+            parent::getArray(),
+            array(
+                "nrp" => $this->getNRP(),
+                "tanggal_lahir" => $this->getTanggalLahir(),
+                "gender" => $this->getGender(),
+                "angkatan" => $this->getAngkatan(),
+                "foto_extention" => $this->getFotoExtention()
+            )
+        );
     }
 
     /**
-     * Menyimpan tanggal lahir kedalam class
-     * @param string $tanggal_lahir
+     * Merubah data array menjadi Mahasiswa serializable object
+     * @return Mahasiswa data kelas yang sudah dikonversi
      */
-    public function setTanggalLahir(string $tanggal_lahir)
+    public static function readArray(array $data)
     {
-        $this->tanggal_lahir = $tanggal_lahir;
+        $mhs = new Mahasiswa();
+        $mhs->setUsername($data['username']);
+        $mhs->setNama($data['nama']);
+        $mhs->setNRP($data['nrp']);
+        $mhs->setTanggalLahir($data['tanggal_lahir']);
+        $mhs->setGender($data['gender']);
+        $mhs->setAngkatan($data['angkatan']);
+        $mhs->setFotoExtention($data['foto_extention']);
+        return $mhs;
     }
 
     /**
-     * Menyimpan tahun angkatan kedalam class
-     * @param int $angkatan
+     * Merubah data object class Mahasiswa dari serializable object menjadi JSON (JavaScript Object Notation)
+     * @return string data kelas dalam JSON String.
      */
-    public function setAngkatan(int $angkatan)
+    public function getJSON(): string
     {
-        $this->angkatan = $angkatan;
+        return json_encode($this->getArray());
     }
 
     /**
-     * Menyimpan ??? kedalam class
-     * @param string $foto_extention
+     * Merubah data JSON menjadi Mahasiswa serializable object
+     * @return Mahasiswa data kelas yang sudah dikonversi
      */
-    public function setFotoExtention(string $foto_extention)
+    public static function readJSON(string $json)
     {
-        $this->foto_extention = $foto_extention;
+        $data = json_decode($json);
+        return self::readArray($data);
     }
 
-    /**
-     * Menyimpan gender mahasiswa ('Pria','Wanita') kedalam class
-     * @param string $foto_extention
-     */
-    public function setGender(string $gender)
+    // ================================================================================
+    // CRUD: CREATE
+    // ================================================================================
+    public function mahasiswaCreate($password): Mahasiswa
     {
-        $this->gender = $gender;
-    }
+        $stmt = null;
+        $this->conn->begin_transaction();
 
-    // Function =====================================================================
-    public static function LogIn_Mahasiswa(string $username, string $password)
-    {
-        $sql = "SELECT `username`,`password`,`nrp`,`nama`,`gender`,`tanggal_lahir`,`angkatan`,`foto_extention` FROM `akun` INNER JOIN `mahasiswa` ON `akun`.`nrp_mahasiswa` = `mahasiswa`.`nrp` WHERE `username` = ?;";
         try {
-            Connection::startConnection();
-            $stmt = Connection::getCOnnection()->prepare($sql);
-            $stmt->bind_param('s', $username);
+            $sql = "INSERT INTO mahasiswa (nrp, nama, gender, tanggal_lahir, angkatan, foto_extention)
+                    VALUES (?, ?, ?, ?, ?, ?)";
 
-            if ($stmt === false) {
-                throw new Exception("Gagal request ke database");
-            }
+            $stmt = $this->conn->prepare($sql);
+            $nama = $this->getNama();
+
+            $stmt->bind_param(
+                "ssssss",
+                $this->nrp,
+                $nama,
+                $this->gender,
+                $this->tanggal_lahir,
+                $this->angkatan,
+                $this->foto_extention
+            );
 
             $stmt->execute();
-            $result = $stmt->get_result();
-
-            if ($result->num_rows > 0) {
-                $row = $result->fetch_assoc();
-            } else {
-                throw new Exception("Username tidak ditemukan");
-            }
-            if (!password_verify($password,$row['password'])) {
-                throw new Exception("Password salah");
-            }
-            if ($row['gender'] === "Pria") {
-                $nama = "Mahasiswa " . $row['nama'];
-            } else {
-                $nama = "Mahasiswi " . $row['nama'];
+            if ($stmt->affected_rows !== 1) {
+                throw new Exception("Gagal insert mahasiswa.");
             }
 
-            $stmt->close();
-            return new Mahasiswa($row['username'], $nama, $row['nrp'], $row['tanggal_lahir'], $row['gender'], $row['angkatan'], $row['foto_extention']);
+            parent::akunCreate($password, $this->nrp, null);
+
+            $this->conn->commit();
+            return $this;
         } catch (Exception $e) {
+            $this->conn->rollback();
             throw $e;
         } finally {
-            if (Connection::getConnection() !== null) {
-                Connection::closeConnection();
-            }
+            if ($stmt) $stmt->close();
         }
     }
 
-    public static function getData($username)
+    // ================================================================================
+    // CRUD: LOGIN
+    // ================================================================================
+    public static function mahasiswaLogin($username, $password): Mahasiswa
     {
-        $sql = "SELECT 
-                m.nrp,
+        $sql = "
+            SELECT a.username, a.password, a.nrp_mahasiswa,
+                   m.nama, m.gender, m.tanggal_lahir, m.angkatan, m.foto_extention
+            FROM akun a
+            INNER JOIN mahasiswa m ON a.nrp_mahasiswa = m.nrp
+            WHERE a.username = ?;
+        ";
+
+        $db = new self();
+        $conn = $db->conn;
+        $stmt = null;
+
+        try {
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows === 0) {
+                throw new Exception("Username atau Password salah.");
+            }
+
+            $row = $result->fetch_assoc();
+
+            if (!password_verify($password, $row["password"])) {
+                throw new Exception("Username atau Password salah.");
+            }
+
+            return new Mahasiswa(
+                $row["username"],
+                $row["nama"],
+                $row["nrp_mahasiswa"],
+                $row["tanggal_lahir"],
+                $row["gender"],
+                $row["angkatan"],
+                $row["foto_extention"]
+            );
+        } finally {
+            if ($stmt) $stmt->close();
+            $db->__destruct();
+        }
+    }
+
+    // ================================================================================
+    // CRUD: READ ALL 
+    // Pakai cursor boleh ndak ya?
+    // ================================================================================
+    public static function mahasiswaGetAllByName($limit, $offset, $keyword): array
+    {
+        $db = new self();
+        $conn = $db->conn;
+        $stmt = null;
+        $keyword = "%{$keyword}%";
+        $offset = $offset * $limit;
+        try {
+            $sql = "SELECT 
+                        m.nrp,
+                        a.username,
+                        m.nama,
+                        m.gender,
+                        m.tanggal_lahir,
+                        m.angkatan,
+                        m.foto_extention
+                    FROM mahasiswa m
+                    INNER JOIN akun a ON m.nrp = a.nrp_mahasiswa
+                    WHERE m.nama LIKE ?
+                    LIMIT ? OFFSET ?";
+
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sii", $keyword, $limit, $offset);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            $list = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $list[] = new Mahasiswa(
+                    $row["username"],
+                    $row["nama"],
+                    $row["nrp"],
+                    $row["tanggal_lahir"],
+                    $row["gender"],
+                    $row["angkatan"],
+                    $row["foto_extention"]
+                );
+            }
+
+            return $list;
+        } finally {
+            if ($stmt) $stmt->close();
+            $db->__destruct();
+        }
+    }
+    
+    // ================================================================================
+    // CRUD: READ ALL 
+    // Pakai cursor boleh ndak ya?
+    // ================================================================================
+    public static function mahasiswaGetAllByNRP($limit, $offset, $keyword): array
+    {
+        $db = new self();
+        $conn = $db->conn;
+        $stmt = null;
+        $keyword = "%{$keyword}%";
+        $offset = $offset * $limit;
+        try {
+            $sql = "SELECT 
+                        m.nrp,
+                        a.username,
+                        m.nama,
+                        m.gender,
+                        m.tanggal_lahir,
+                        m.angkatan,
+                        m.foto_extention
+                    FROM mahasiswa m
+                    INNER JOIN akun a ON m.nrp = a.nrp_mahasiswa
+                    WHERE m.nrp LIKE ?
+                    LIMIT ? OFFSET ?";
+
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sii", $keyword, $limit, $offset);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            $list = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $list[] = new Mahasiswa(
+                    $row["username"],
+                    $row["nama"],
+                    $row["nrp"],
+                    $row["tanggal_lahir"],
+                    $row["gender"],
+                    $row["angkatan"],
+                    $row["foto_extention"]
+                );
+            }
+
+            return $list;
+        } finally {
+            if ($stmt) $stmt->close();
+            $db->__destruct();
+        }
+    }
+
+    // ================================================================================
+    // CRUD: READ — GET ONE MAHASISWA
+    // ================================================================================
+    public static function mahasiswaGetByUsername(string $username): Mahasiswa
+    {
+        $db = new self();
+        $conn = $db->conn;
+        $stmt = null;
+
+        try {
+            $sql = "
+            SELECT 
+                a.username,
+                a.nrp_mahasiswa,
                 m.nama,
                 m.gender,
                 m.tanggal_lahir,
                 m.angkatan,
                 m.foto_extention
-            FROM mahasiswa AS m
-            INNER JOIN akun AS a ON m.nrp = a.nrp_mahasiswa
-            WHERE a.username = ?;";
+            FROM akun a
+            INNER JOIN mahasiswa m 
+                ON a.nrp_mahasiswa = m.nrp
+            WHERE a.username = ?
+        ";
 
-        try {
-            Connection::startConnection();
-            $stmt = Connection::getConnection()->prepare($sql);
-
-            if ($stmt === false) {
-                throw new Exception("Gagal mempersiapkan query ke database");
+            $stmt = $conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("Prepare gagal: " . $conn->error);
             }
 
             $stmt->bind_param("s", $username);
             $stmt->execute();
-
             $result = $stmt->get_result();
 
             if ($result->num_rows === 0) {
-                throw new Exception("Tidak ditemukan data mahasiswa");
+                throw new Exception("Mahasiswa dengan username tersebut tidak ditemukan.");
             }
 
             $row = $result->fetch_assoc();
 
-            // Buat object Mahasiswa baru dan isi data dari DB
-            $mhs = new Mahasiswa($username, $row['nama'], $row['nrp'], $row['tanggal_lahir'], $row['gender'], $row['angkatan'], $row['foto_extention']);
-            $stmt->close();
-
-            return $mhs;
+            return new Mahasiswa(
+                $row["username"],
+                $row["nama"],
+                $row["nrp_mahasiswa"],
+                $row["tanggal_lahir"],
+                $row["gender"],
+                $row["angkatan"],
+                $row["foto_extention"]
+            );
         } catch (Exception $e) {
-            throw $e;
+            throw new Exception("Gagal mengambil mahasiswa by username: " . $e->getMessage());
         } finally {
-            if (Connection::getConnection() !== null) {
-                Connection::closeConnection();
-            }
+            if ($stmt) $stmt->close();
+            $db->__destruct();
         }
     }
 
-
-    public function CreateMahasiswaInDatabase($password)
+    // ================================================================================
+    // CRUD: UPDATE
+    // ================================================================================
+    public function mahasiswaUpdate(): Mahasiswa
     {
-        $sql = "INSERT INTO `mahasiswa` (`nrp`, `nama`, `gender`, `tanggal_lahir`, `angkatan`, `foto_extention`) VALUES (?, ?, ?, ?, ?, ?);";
+        $stmt = null;
+        $this->startConnection();
+        $this->conn->begin_transaction();
         try {
-            Connection::startConnection();
-            Connection::getConnection()->begin_transaction();
-            $stmt = Connection::getConnection()->prepare($sql);
+            $sql = "UPDATE mahasiswa
+        SET nrp = ?, nama=?, gender = ?, tanggal_lahir = ?, angkatan = ?, foto_extention = ?
+        WHERE nrp = (SELECT `nrp_mahasiswa` FROM `akun` WHERE `username` = ?)";
 
-            if ($stmt === false) {
-                throw new Exception("Gagal request ke database");
-            }
+            $stmt = $this->conn->prepare($sql);
 
-            $nrp        = $this->getNRP();
-            $nama       = $this->getNama();
-            $gender     = $this->getGender();
-            $tanggal    = $this->getTanggalLahir();
-            $angkatan   = $this->getAngkatan();
-            $fotoExt    = $this->getFotoExtention();
+            $nrp = $this->getNRP();
+            $nama = $this->getNama();
+            $gender = $this->getGender();
+            $tglLahir = $this->getTanggalLahir();
+            $angkatan = $this->getAngkatan();
+            $foto_ext = $this->getFotoExtention();
+            $usn = $this->getUsername();
 
             $stmt->bind_param(
-                'ssssis',
+                "ssssiss",
                 $nrp,
                 $nama,
                 $gender,
-                $tanggal,
+                $tglLahir,
                 $angkatan,
-                $fotoExt
+                $foto_ext,
+                $usn
             );
 
             $stmt->execute();
-
-            if (!($stmt->affected_rows == 1)) {
-                throw new Exception("Data mahasiswa gagal dimasukan ke database,Tidak ada data yang disimpan.");
+            $rows = $stmt->affected_rows;
+            if ($rows != 1) {
+                throw new Exception("Gagal merubah data mahasiswa, tidak ada yang ter-update.");
             }
-
-            parent::CreateInDatabase($this->getNRP(), "", $password, 0);
-            if ($stmt !== null) {
-                $stmt->close();
-            }
-            Connection::getConnection()->commit();
+            $this->conn->commit();
+            return $this;
         } catch (Exception $e) {
-            if (Connection::getConnection() !== null) {
-                Connection::getConnection()->rollback();
-            }
-            throw $e;
+            $this->conn->rollback();
+            throw new Exception("Gagal update mahasiswa: " . $e->getMessage());
         } finally {
-            if (Connection::getConnection() !== null) {
-                Connection::closeConnection();
-            }
+            if ($stmt) $stmt->close();
         }
     }
 
-    public function UpdateMahasiswaInDatabase() //string $oldNRP)
+    // ================================================================================
+    // CRUD: DELETE
+    // ================================================================================
+    public function mahasiswaDelete(): bool
     {
-        $sql = "UPDATE `mahasiswa`
-            SET `nrp` = ?, 
-                `nama` = ?, 
-                `gender` = ?, 
-                `tanggal_lahir` = ?, 
-                `angkatan` = ?, 
-                `foto_extention` = ?
-            WHERE `nrp` = (SELECT `nrp_mahasiswa` FROM `akun` WHERE `username`= ?);";
+        $stmt = null;
+
         try {
-            Connection::startConnection();
-            $stmt = Connection::getConnection()->prepare($sql);
-
-            if ($stmt === false) {
-                throw new Exception("Gagal mempersiapkan query update ke database");
-            }
-            //print_r($this);
-            $username   = $this->getUsername();
-            $newNRP     = $this->getNRP();
-            $nama       = $this->getNama();
-            $gender     = $this->getGender();
-            $tanggal    = htmlspecialchars($this->getTanggalLahir());
-            //print_r($tanggal);
-            $angkatan   = $this->getAngkatan();
-            $fotoExt    = $this->getFotoExtention();
-
-            $stmt->bind_param(
-                'ssssiss',
-                $newNRP,
-                $nama,
-                $gender,
-                $tanggal,
-                $angkatan,
-                $fotoExt,
-                $username
-            );
-            print_r($stmt);
-
+            $sql = "DELETE FROM mahasiswa WHERE nrp = ?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("s", $this->nrp);
             $stmt->execute();
 
             if ($stmt->affected_rows === 0) {
-                throw new Exception("Tidak ada data mahasiswa yang diperbarui. Pastikan data yang dimasukan benar.");
+                throw new Exception("Mahasiswa tidak ditemukan.");
             }
 
-            if ($stmt !== null) {
-                $stmt->close();
-            }
-        } catch (Exception $e) {
-            //update on cascade ga perlu transaction 
-            throw $e;
+            return true;
         } finally {
-            if (Connection::getConnection() !== null) {
-                Connection::closeConnection();
-            }
-        }
-    }
-
-    public static function DeleteMahasiswaInDatabase(string $username, string $nrp)
-    {
-        $sql = "DELETE FROM `mahasiswa` WHERE `nrp` = ?;";
-
-        try {
-            Connection::startConnection();
-            Connection::getConnection()->begin_transaction();
-
-            //hps di akun 
-            parent::deleteAccountInDatabase($username);
-
-            //hps di mhs
-            $stmt = Connection::getConnection()->prepare($sql);
-            $stmt->bind_param("s", $nrp);
-            $stmt->execute();
-            if ($stmt->affected_rows < 1) {
-                throw new Exception("Data mahasiswa tidak ditemukan.");
-            }
-            $stmt->close();
-
-            Connection::getConnection()->commit();
-        } catch (Exception $e) {
-            if (Connection::getConnection() !== null) {
-                Connection::getConnection()->rollback();
-            }
-            throw $e;
-        } finally {
-            if (Connection::getConnection() !== null) {
-                Connection::closeConnection();
-            }
+            if ($stmt) $stmt->close();
         }
     }
 }

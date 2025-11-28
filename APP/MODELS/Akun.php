@@ -2,36 +2,59 @@
 
 namespace MODELS;
 
-require_once(__DIR__ . '/../../DATABASE/Connection.php');
+require_once(__DIR__ . '/../CORE/DatabaseConnection.php');
+require_once(__DIR__ . '/../config.php');
 
-use DATABASE\Connection;
+use CORE\DatabaseConnection;
 use Exception;
+use mysqli;
 
-class Akun
+/**
+ * Class Akun
+ * * Model yang merepresentasikan entitas Akun pengguna.
+ * Menangani operasi CRUD (Create, Read, Update, Delete) ke tabel `akun`.
+ * Mewarisi koneksi database dari class DatabaseConnection.
+ * * @package MODELS
+ */
+class Akun extends DatabaseConnection
 {
-    private $username;
-    private $nama;
-    private $jenis; //Enum value Admin, Dosen, atau Mahasiswa
+    /** @var string Username pengguna (Primary Key/Unique). */
+    private string $username;
 
+    /** @var string Nama lengkap pengguna. */
+    private string $nama;
+
+    /** @var string Jenis role akun */
+    private string $jenis;
+
+    // ================================================================================================
+    // CONSTRUCTOR
+    // ================================================================================================
     /**
-     * Constructor untuk Class Akun
-     *
-     * @param string $username Menyimpan nama akun
-     * @param string $nama Menyimpan nama pengguna
-     * @param string $password Menyimpan password akun
-     * @param string $jenis Menyimpan jenis akun
+     * Akun Constructor.
+     * Menginisialisasi objek Akun dan membuka koneksi database (via parent).
+     * Jika parameter diisi, properti akan langsung diset.
+     * @param string $username Username akun.
+     * @param string $nama     Nama akun.
+     * @param string $jenis    Jenis/Role akun.
+     * @throws Exception Jika validasi setter gagal.
      */
-    public function __construct(string $username, string $nama, string $jenis)
+    public function __construct(string $username = null, string $nama = null, string $jenis = null)
     {
-        $this->setUsername($username);
-        $this->setNama($nama);
-        $this->setJenis($jenis);
+        parent::__construct();
+
+        if (!empty($username)) $this->setUsername($username);
+        if (!empty($nama)) $this->setNama($nama);
+        if (!empty($jenis)) $this->setJenis($jenis);
     }
 
-    // --- Getters ---
+    // ================================================================================================
+    // GETTERS
+    // ================================================================================================
+
     /**
-     * Memberikan nilai username
-     * @return string 
+     * Mengambil username.
+     * @return string
      */
     public function getUsername()
     {
@@ -39,294 +62,355 @@ class Akun
     }
 
     /**
-     * Memberikan jenis akun Mahasiswa, Dosen atau Admin
-     * @return string 
-     */
-    public function getJenis()
-    {
-        return $this->jenis;
-    }
-    /**
-     * Memberikan nama pengguna
-     * @return string 
+     * Mengambil nama.
+     * @return string
      */
     public function getNama()
     {
         return $this->nama;
     }
 
-    // --- Setters ---
-
     /**
-     * Menyimpan nilali username kedalam class
+     * Mengambil jenis akun.
+     * @return string
+     */
+    public function getJenis()
+    {
+        return $this->jenis;
+    }
+
+    // ================================================================================================
+    // SETTERS
+    // ================================================================================================
+    /**
+     * Mengatur username dengan validasi.
      * @param string $username
+     * @throws Exception Jika username kosong.
      */
     public function setUsername(string $username)
     {
-        if ($username == "") throw new Exception("Username tidak boleh kosong", 1);
+        if (trim($username) == "") throw new Exception("Username tidak boleh kosong");
         $this->username = $username;
     }
 
     /**
-     * Menyimpan nilai nama kedalam class
+     * Mengatur nama dengan validasi.
      * @param string $nama
+     * @throws Exception Jika nama kosong.
      */
     public function setNama(string $nama)
     {
-        if ($nama == "") throw new Exception("Nama tidak boleh kosong", 1);
+        if (trim($nama) == "") throw new Exception("Nama tidak boleh kosong");
         $this->nama = $nama;
     }
 
     /**
-     * Menyimpan nilai jenis kedalam class
+     * Mengatur jenis akun dengan validasi terhadap konstanta ACCOUNT_ROLE.
      * @param string $jenis
+     * @throws Exception Jika jenis kosong atau tidak ada dalam daftar yang diizinkan.
      */
     public function setJenis(string $jenis)
     {
+        $jenis = strtoupper($jenis);
         if ($jenis == "") throw new Exception("Jenis tidak boleh kosong");
+        if (!in_array($jenis, ACCOUNT_ROLE)) {
+            throw new Exception("Jenis akun illegal. Harus: " . implode(',', ACCOUNT_ROLE));
+        }
         $this->jenis = $jenis;
     }
 
 
-    // FUNCTION =======================================================================================================
 
-    public static function logIn(string $username, string $password)
+    // ================================================================================================
+    // FUNCTION
+    // ================================================================================================
+    /**
+     * Merubah data object class Akun dari serializable object menjadi PHP Array
+     * @return array data kelas dalam array.
+     */
+    public function getArray(): array
     {
-        $sql = "SELECT `username`,`password`,`nrp_mahasiswa`,`npk_dosen`,`isadmin` FROM `akun` WHERE `username` = ?;";
-        try {
-            Connection::startConnection();
-            $stmt = Connection::getCOnnection()->prepare($sql);
+        return array(
+            "username" => $this->getUsername(),
+            "nama" => $this->getNama(),
+            "jenis" => $this->getJenis()
+        );
+    }
 
-            if ($stmt === false) {
-                throw new Exception("Gagal request ke database");
-            }
-            $stmt->bind_param('s', $username);
+    /**
+     * Merubah data array menjadi Akun serializable object
+     * @return Akun data kelas yang sudah dikonversi
+     */
+    public static function readArray(array $data)
+    {
+        return new Akun($data['username'], $data['nama'], $data['jenis']);
+    }
+
+    /**
+     * Merubah data object class Akun dari serializable object menjadi JSON (JavaScript Object Notation)
+     * @return string data kelas dalam JSON String.
+     */
+    public function getJSON(): string
+    {
+        return json_encode($this->getArray());
+    }
+
+    /**
+     * Merubah data JSON menjadi Akun serializable object
+     * @return Akun data kelas yang sudah dikonversi
+     */
+    public static function readJSON(string $json)
+    {
+        $data = json_decode($json);
+        return self::readArray($data);
+    }
+
+
+    // ================================================================================================
+    // CRUD: CREATE
+    // ================================================================================================
+    /**
+     * Menyimpan data akun baru ke database.
+     * * @param string $password Password mentah (akan di-hash).
+     * @param string|null $nrp (Opsional) NRP jika mahasiswa.
+     * @param string|null $npk (Opsional) NPK jika dosen.
+     * @return bool True jika berhasil.
+     * @throws Exception Jika validasi gagal atau query error.
+     */
+    public function akunCreate(string $password, string $nrp = null, string $npk = null)
+    {
+        // Validasi spesifik role
+        if ($this->jenis === ACCOUNT_ROLE[0] && empty($nrp)) throw new Exception("Mahasiswa wajib punya NRP");
+        if ($this->jenis === ACCOUNT_ROLE[1] && empty($npk)) throw new Exception("Dosen wajib punya NPK");
+
+        $sql = "INSERT INTO `akun` (`username`, `password`, `nrp_mahasiswa`, `npk_dosen`, `isadmin`) VALUES (?, ?, ?, ?, ?)";
+
+        $hashed_password = password_hash($password, PASSWORD_BCRYPT);
+
+        // Logika isadmin (Asumsi index 2 array ACCOUNT_ROLE adalah Admin)
+        $isAdmin = ($this->jenis === ACCOUNT_ROLE[2]) ? 1 : 0;
+
+        $nrp_val = empty($nrp) ? null : $nrp;
+        $npk_val = empty($npk) ? null : $npk;
+
+        $stmt = null;
+        try {
+            $stmt = $this->conn->prepare($sql);
+
+            $stmt->bind_param(
+                'ssssi',
+                $this->username,
+                $hashed_password,
+                $nrp_val,
+                $npk_val,
+                $isAdmin
+            );
+
             $stmt->execute();
 
-            $result = $stmt->get_result();
-            if ($result->num_rows > 0) {
-                $row = $result->fetch_assoc();
-            } else {
-                throw new Exception("Username atau password salah");
+            if ($stmt->affected_rows !== 1) {
+                throw new Exception("Gagal membuat akun.");
             }
 
-            if (!password_verify($password,$row['password'])) {
-                throw new Exception("Password salah");
-            }
-            $stmt->close();
-
-            $jenis = '';
-            if ($row['isadmin'] == '1') {
-                $jenis = 'ADMIN';
-            } else {
-                throw new Exception("Akun tidak memiliki data yang sesuai");
-            }
-
-            return new Akun($row['username'], $jenis, $jenis);
+            return true;
         } catch (Exception $e) {
             throw $e;
         } finally {
-            if (Connection::getConnection() !== null) {
-                Connection::closeConnection();
-            }
+            //if ($stmt) $stmt->close();
+            // Catatan: Jangan menutup $this->conn di sini jika objek ini masih ingin dipakai setelah create.
         }
     }
-
-    public static function getAccountRole($username)
+// ================================================================================================
+    // CRUD: READ
+    // ================================================================================================
+    /**
+     * Melakukan proses login dan mengembalikan objek Akun.
+     * * @param string $username
+     * @param string $password
+     * @return Akun Objek Akun yang berhasil login.
+     * @throws Exception Jika username tidak ditemukan atau password salah.
+     */
+    public static function akunRetrieveRole(string $username)
     {
-        $sql = "SELECT `nrp_mahasiswa`,`npk_dosen`,`isadmin` FROM `akun` WHERE `username` = ?;";
-        try {
-            Connection::startConnection();
-            $stmt = Connection::getCOnnection()->prepare($sql);
+        $instance = new self();
+        $conn = $instance->conn;
 
-            if ($stmt === false) {
-                throw new Exception("Gagal request ke database");
-            }
+        $sql = "SELECT `nrp_mahasiswa`,`npk_dosen`,`isadmin` FROM akun WHERE username = ?";
+        $stmt = null;
+
+        try {
+            $stmt = $conn->prepare($sql);
+            if (!$stmt) throw new Exception("Gagal mempersiapkan statement.");
 
             $stmt->bind_param('s', $username);
             $stmt->execute();
-
             $result = $stmt->get_result();
-            if ($result->num_rows > 0) {
-                $row = $result->fetch_assoc();
-            } else {
-                throw new Exception("Username atau password salah");
+
+            if (!$result || $result->num_rows === 0) {
+                throw new Exception("Username tidak ditemukan.");
             }
 
-            $stmt->close();
-
-            $jenis = '';
-            if ($row['isadmin'] == '1') {
-                $jenis = 'ADMIN';
+            $row = $result->fetch_assoc();
+            $jenis = "";
+            if (!empty($row['nrp_mahasiswa'])) {
+                $jenis = ACCOUNT_ROLE[0];
             } else if (!empty($row['npk_dosen'])) {
-                $jenis = 'DOSEN';
-            } else if (!empty($row['nrp_mahasiswa'])) {
-                $jenis = 'MAHASISWA';
-            } else {
-                throw new Exception("Akun tidak memiliki data yang sesuai");
+                $jenis = ACCOUNT_ROLE[1];
+            } else if (!empty($row['isadmin']) && $row['isadmin'] == 1) {
+                $jenis = ACCOUNT_ROLE[2];
             }
-
+            // Return objek baru yang terisi
             return $jenis;
         } catch (Exception $e) {
             throw $e;
         } finally {
-            if (Connection::getConnection() !== null) {
-                Connection::closeConnection();
-            }
+            if ($stmt) $stmt->close();
+            $instance->__destruct();
         }
     }
 
-    public function updateAccountInDatabase(string $code, string $oldcode, string $jenis, bool $override = true)
+    // ================================================================================================
+    // CRUD: READ
+    // ================================================================================================
+    /**
+     * Melakukan proses login dan mengembalikan objek Akun.
+     * * @param string $username
+     * @param string $password
+     * @return Akun Objek Akun yang berhasil login.
+     * @throws Exception Jika username tidak ditemukan atau password salah.
+     */
+    public static function akunLogin(string $username, string $password)
     {
-        if (strtoupper($jenis) === "MAHASISWA") {
-            $sql = "UPDATE akun SET nrp_mahasiswa = ? WHERE nrp_mahasiswa = ?;";
-        } else if (strtoupper($jenis) === "DOSEN") {
-            $sql = "UPDATE akun SET npk_dosen = ? WHERE npk_dosen?;";
-        } else {
-            throw new Exception("Tidak dapat memperbarui data akun, jenis akun tidak ada");
-        }
+        $instance = new self();
+        $conn = $instance->conn;
+
+        $sql = "SELECT `username`, `password` FROM akun WHERE username = ?";
+        $stmt = null;
+
         try {
-            Connection::startConnection();
-            $stmt = Connection::getCOnnection()->prepare($sql);
+            $stmt = $conn->prepare($sql);
+            if (!$stmt) throw new Exception("Gagal mempersiapkan statement.");
 
-            if ($stmt === false) {
-                throw new Exception("Gagal request ke database");
-            }
-
-            $stmt->bind_param('ss', $code, $oldcode);
+            $stmt->bind_param('s', $username);
             $stmt->execute();
+            $result = $stmt->get_result();
 
-            if (!($stmt->affected_rows == 1)) {
-                throw new Exception("Data akun gagal diperbarui di database,Tidak ada data yang disimpan.");
+            if (!$result || $result->num_rows === 0) {
+                throw new Exception("Username tidak ditemukan.");
             }
 
-            if ($stmt !== null) {
-                $stmt->close();
+            $row = $result->fetch_assoc();
+
+            if (!password_verify($password, $row['password'])) {
+                throw new Exception("Password salah.");
             }
+
+            // Return objek baru yang terisi
+            return new Akun(
+                $row['username'],
+                ACCOUNT_ROLE[2],
+                ACCOUNT_ROLE[2]
+            );
         } catch (Exception $e) {
             throw $e;
         } finally {
-            if (!$override) {
-                if (Connection::getConnection() !== null) {
-                    Connection::closeConnection();
-                }
-            }
+            if ($stmt) $stmt->close();
+            $instance->__destruct();
         }
     }
 
-    public function CreateInDatabase(string $nrp = "", string $npk = "", string $password, int $isAdmin = 0, bool $override = true)
+    /**
+     * Mencari akun berdasarkan username.
+     * * @param string $username
+     * @return Akun|null Mengembalikan objek Akun atau null jika tidak ditemukan.
+     * @throws Exception
+     */
+    public static function akunGetByUsername($username)
     {
-        if (!empty($nrp)) {
-            $sql  = "INSERT INTO `akun`(`username`, `password`,`nrp_mahasiswa`,`isadmin`) VALUES (?,?,?,?)";
-        } else if (!empty($npk)) {
-            $sql  = "INSERT INTO `akun`(`username`, `password`,`npk_dosen`,`isadmin`) VALUES (?,?,?,?)";
-        }
-        try {
-            if (!$override) {
-                Connection::startConnection();
-            }
-            $stmt = Connection::getConnection()->prepare($sql);
-            $username = $this->getUsername();
-            $password = password_hash($password, PASSWORD_BCRYPT);
-            if (!empty($nrp)) {
-                $stmt->bind_param(
-                    'sssi',
-                    $username,
-                    $password,
-                    $nrp,
-                    $isAdmin
-                );
-            } else if (!empty($npk)) {
-                $stmt->bind_param(
-                    'sssi',
-                    $username,
-                    $password,
-                    $npk,
-                    $isAdmin
-                );
-            }
+        $instance = new static(); // Perbaikan dari new DatabaseConnection()
+        $conn = $instance->conn;
+        $stmt = null;
 
-            $stmt->execute();
-
-            if (!($stmt->affected_rows == 1)) {
-                throw new Exception("Data akun gagal dimasukan ke database,Tidak ada data yang disimpan.");
-            }
-
-            if ($stmt !== null) {
-                $stmt->close();
-            }
-        } catch (Exception $e) {
-            throw $e;
-        } finally {
-            if (!$override) {
-                if (Connection::getConnection() !== null) {
-                    Connection::closeConnection();
-                }
-            }
-        }
-    }
-    public function updatePassword($password)
-    {
-        $sql = "UPDATE akun SET password = ? WHERE username = ?";
+        $sql = "SELECT username, nama, jenis FROM `akun` WHERE username = ?";
 
         try {
-            Connection::startConnection();
-            $password = password_hash($password, PASSWORD_BCRYPT);
-            $stmt = Connection::getConnection()->prepare($sql);
+            $stmt = $conn->prepare($sql);
+            if (!$stmt) throw new Exception("Gagal mempersiapkan statement.");
 
-            if (!$stmt) {
-                throw new Exception("Gagal mempersiapkan query update password.");
-            }
-
-            // Bind parameters
-            $username = $this->getUsername();
-            $stmt->bind_param("ss", $password, $username);
-
-            // Execute update
+            $stmt->bind_param('s', $username);
             $stmt->execute();
+            $result = $stmt->get_result();
 
-            if ($stmt->affected_rows < 1) {
-                throw new Exception("Gagal memperbarui password. Username tidak ditemukan atau tidak ada perubahan.");
+            if ($row = $result->fetch_assoc()) {
+                return new Akun($row['username'], $row['nama'], $row['jenis']);
             }
 
-            $stmt->close();
+            return null;
         } catch (Exception $e) {
-            throw $e;
+            throw new Exception("Gagal mengambil akun: " . $e->getMessage());
         } finally {
-            if (Connection::getConnection() !== null) {
-                Connection::closeConnection();
-            }
+            if ($stmt) $stmt->close();
+            $instance = null;
         }
     }
 
-
-    public static function deleteAccountInDatabase(string $username, bool $override = true)
+    // ================================================================================================
+    // CRUD: UPDATE
+    // ================================================================================================
+    /**
+     * Mengganti password akun.
+     * * @param string $newPassword Password baru (belum di-hash).
+     * @return bool
+     * @throws Exception
+     */
+    public function akunUpdatePassword($newPassword)
     {
-        $sqlAkun = "DELETE FROM akun WHERE username = ?";
+        $sql = "UPDATE `akun` SET `password` = ? WHERE `username` = ?";
+        $hashed = password_hash($newPassword, PASSWORD_BCRYPT);
+        $stmt = null;
 
         try {
-            if (!$override) {
-                Connection::startConnection();
-            }
-            Connection::getConnection();
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param('ss', $hashed, $this->username);
+            $stmt->execute();
+            return true;
+        } catch (Exception $e) {
+            throw new Exception("Gagal update password: " . $e->getMessage());
+        } finally {
+            if ($stmt) $stmt->close();
+        }
+    }
 
-            $stmt = Connection::getConnection()->prepare($sqlAkun);
-            $stmt->bind_param("s", $username);
+    // ================================================================================================
+    // CRUD: DELETE
+    // ================================================================================================
+
+    /**
+     * Menghapus akun dari database.
+     * * @return bool
+     * @throws Exception
+     */
+    public function akunDelete()
+    {
+        $sql = "DELETE FROM `akun` WHERE `username` = ?";
+        $stmt = null;
+
+        try {
+            $stmt = $this->conn->prepare($sql);
+            if (!$stmt) throw new Exception("Gagal mempersiapkan statement.");
+
+            $stmt->bind_param('s', $this->username);
             $stmt->execute();
 
-            if ($stmt->affected_rows < 1) {
-                throw new Exception("Akun tidak ditemukan.");
+            if ($stmt->affected_rows == 0) {
+                throw new Exception("User tidak ditemukan atau sudah terhapus.");
             }
 
-            $stmt->close();
+            return true;
         } catch (Exception $e) {
-            throw $e; // biar bisa ngerollback kalau gagal
+            throw new Exception("Gagal menghapus akun: " . $e->getMessage());
         } finally {
-            if (!$override) {
-                if (Connection::getConnection() !== null) {
-                    Connection::closeConnection();
-                }
-            }
+            if ($stmt) $stmt->close();
         }
     }
 }

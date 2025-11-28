@@ -2,97 +2,109 @@
 
 namespace MODELS;
 
-require_once(__DIR__ . '/../../DATABASE/Connection.php');
+require_once(__DIR__ . '/../config.php');
+require_once(__DIR__ . '/../upload.php');
+require_once(__DIR__ . '/../CORE/DatabaseConnection.php');
 
-use DATABASE\Connection;
+use CORE\DatabaseConnection;
 use Exception;
 
-class Event
+class Event extends DatabaseConnection
 {
-    // Typed properties matching DB columns
-    private int $id;         // Maps to 'idevent'
-    private int $idGrup;     // Maps to 'idgrup'
+    private int $id;
     private string $judul;
-    private string $slug;    // Maps to 'judul-slug'
+    private string $slug;
     private string $tanggal;
     private string $keterangan;
     private string $jenis;
-    private string $posterExtension; // Maps to 'poster_extension'
+    private string $posterExtension;
 
+    // ================================================================================================
+    // CONSTRUCTOR
+    // ================================================================================================
     public function __construct(
-        int $id,
-        int $idGrup,
-        string $judul, 
-        string $slug, 
-        string $tanggal, 
-        string $keterangan, 
-        string $jenis, 
-        string $posterExtension
+        ?int $id = null,
+        ?string $judul = null,
+        ?string $slug = null,
+        ?string $tanggal = null,
+        ?string $keterangan = null,
+        ?string $jenis = null,
+        ?string $posterExtension = null
     ) {
-        $this->setId($id);
-        $this->setIdGrup($idGrup);
-        $this->setJudul($judul);
-        $this->setSlug($slug);
-        $this->setTanggal($tanggal);
-        $this->setKeterangan($keterangan);
-        $this->setJenis($jenis);
-        $this->setPosterExtension($posterExtension);
+        parent::__construct(); 
+
+        if ($id !== null) $this->setId($id);
+        if ($judul !== null) $this->setJudul($judul);
+        if ($slug !== null) $this->setSlug($slug);
+        if ($tanggal !== null) $this->setTanggal($tanggal);
+        if ($keterangan !== null) $this->setKeterangan($keterangan);
+        if ($jenis !== null) $this->setJenis($jenis);
+        if ($posterExtension !== null) $this->setPosterExtension($posterExtension);
     }
 
-    // ==========================================================================
-    // GETTERS
-    // ==========================================================================
+    // ================================================================================================
+    // GETTER
+    // ================================================================================================
 
-    public function getId(): int { return $this->id; }
-    public function getIdGrup(): int { return $this->idGrup; }
-    public function getJudul(): string { return $this->judul; }
-    public function getSlug(): string { return $this->slug; }
-    public function getTanggal(): string { return $this->tanggal; }
-    public function getKeterangan(): string { return $this->keterangan; }
-    public function getJenis(): string { return $this->jenis; }
-    public function getPosterExtension(): string { return $this->posterExtension; }
+    public function getId(): int
+    {
+        return $this->id;
+    }
+    public function getJudul(): string
+    {
+        return $this->judul;
+    }
+    public function getSlug(): string
+    {
+        return $this->slug;
+    }
+    public function getTanggal(): string
+    {
+        return $this->tanggal;
+    }
+    public function getKeterangan(): string
+    {
+        return $this->keterangan;
+    }
+    public function getJenis(): string
+    {
+        return $this->jenis;
+    }
+    public function getPosterExtension(): string
+    {
+        return $this->posterExtension;
+    }
 
-    // ==========================================================================
-    // SETTERS (With Validation)
-    // ==========================================================================
-
+    // ================================================================================================
+    // SETTER
+    // ================================================================================================
     public function setId(int $id): void
     {
-        if ($id < 0) throw new Exception("ID must be a non-negative integer.");
+        if ($id < 0) throw new Exception("Id tidak boleh negative.");
         $this->id = $id;
-    }
-
-    public function setIdGrup(int $idGrup): void
-    {
-        if ($idGrup <= 0) throw new Exception("Group ID must be a positive integer.");
-        $this->idGrup = $idGrup;
     }
 
     public function setJudul(string $judul): void
     {
         $judul = trim($judul);
-        if (empty($judul)) throw new Exception("Judul cannot be empty.");
-        if (strlen($judul) > 45) throw new Exception("Judul cannot exceed 45 characters.");
+        if (empty($judul)) throw new Exception("Judul tidak bisa kosong.");
+        if (strlen($judul) > 45) throw new Exception("Judul tidak bisa melebihi 45 characters.");
         $this->judul = $judul;
     }
 
-    public function setSlug(string $slug): void
+    public function setSlug(): void
     {
-        $slug = trim($slug);
-        if (!preg_match('/^[a-z0-9-]+$/', $slug)) throw new Exception("Slug contains invalid characters.");
-        if (strlen($slug) > 45) throw new Exception("Slug cannot exceed 45 characters.");
+        $judul = $this->getJudul();
+        $slug = trim($judul);
+        $slug = explode(" ", $slug);
+        $slug = implode("-", $slug);
         $this->slug = $slug;
     }
 
     public function setTanggal(string $tanggal): void
     {
-        if (empty($tanggal)) {
-            $this->tanggal = date("Y-m-d H:i:s");
-            return;
-        }
-        // Simple regex check for Y-m-d H:i:s
-        if (!preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $tanggal)) {
-            throw new Exception("Invalid date format. Expected format: Y-m-d H:i:s");
+        if (!preg_match(DATETIME_REGEX, $tanggal)) {
+            throw new Exception("Invalid date format. Ganti format menjadi: YYYY-MM-DD HH:MM:SS");
         }
         $this->tanggal = $tanggal;
     }
@@ -104,99 +116,219 @@ class Event
 
     public function setJenis(string $jenis): void
     {
-        $allowedJenis = ['Privat', 'Publik'];
         $normalized = ucfirst(strtolower($jenis));
-        if (!in_array($normalized, $allowedJenis)) {
-            throw new Exception("Invalid 'jenis'. Allowed: " . implode(', ', $allowedJenis));
+        if (!in_array($normalized, GROUP_TYPES)) {
+            throw new Exception("Jenis tidak boleh {$jenis} harus: " . implode(', ', GROUP_TYPES));
         }
         $this->jenis = $normalized;
     }
 
     public function setPosterExtension(string $posterExtension): void
     {
-        $ext = str_replace('.', '', strtolower($posterExtension));
-        // Allow empty extension if no poster is uploaded? If not, remove empty check.
-        if ($ext !== "" && !in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
-             throw new Exception("Invalid file extension.");
-        }
-        if (strlen($ext) > 4) throw new Exception("Extension too long.");
-        $this->posterExtension = $ext;
+        if (empty($posterExtension)) throw new Exception("Extention tidak dapat kosong");
+        if (!in_array($posterExtension, ALLOWED_PICTURE_EXTENSION)) throw new Exception("Extention illegal, Upload file berupa: " . implode(', ', ALLOWED_PICTURE_EXTENSION));
+        $this->posterExtension = $posterExtension;
     }
 
-    // ==========================================================================
-    // DATABASE CRUD OPERATIONS
-    // ==========================================================================
+    function getArray(){
+        return array(
+            "id"=>$this->getId(),
+            "judul"=>$this->getJudul(),
+            "slug"=>$this->getSlug(),
+            "tanggal"=>$this->getTanggal(),
+            "keterangan"=>$this->getKeterangan(),
+            "jenis"=>$this->getJenis(),
+            "poster_extension"=>$this->getPosterExtension()
+        );
+    }
 
-    /**
-     * INSERT: Saves a new event to the database
-     */
-    public function save(): void
+    // ================================================================================================
+    // CRUD
+    // ================================================================================================
+    public static function getEvent(int $id): ?self
     {
-        // Note: `judul-slug` has a hyphen, so it MUST be wrapped in backticks ` `
-        $sql = "INSERT INTO `event` 
-                (`idgrup`, `judul`, `judul-slug`, `tanggal`, `keterangan`, `jenis`, `poster_extension`) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
-
+        $db = new self();
+        $conn = $db->conn;
+        $stmt = null;
         try {
-            Connection::startConnection();
-            $stmt = Connection::getConnection()->prepare($sql);
+            $sql = "SELECT * FROM event WHERE idevent = ?";
+            $stmt = $conn->prepare($sql);
+            
+            if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
 
-            if ($stmt === false) throw new Exception("Database Error: " . Connection::getConnection()->error);
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
 
-            // 'issssss' -> int, string, string, string, string, string, string
+            if ($row) {
+                return new self(
+                    (int)$row['idevent'],
+                    $row['judul'],
+                    $row['judul-slug'],
+                    $row['tanggal'],
+                    $row['keterangan'],
+                    $row['jenis'],
+                    $row['poster_extension']
+                );
+            }
+
+            return null;
+        } catch (Exception $e) {
+            throw new Exception("Error finding event: " . $e->getMessage());
+        } finally {
+            if ($stmt) $stmt->close();
+        }
+    }
+
+    public static function getAllGroupEvent(int $idgroup,$keyword,$limit,$offset): array
+    {
+        $db = new self();
+        $conn = $db->conn;
+        $stmt = null;
+        $keyword = "%" .$keyword ."%";
+        $offset *= $limit;
+        try {
+            $sql = "SELECT * FROM event WHERE idgrup = ? and judul LIKE ? ORDER BY tanggal DESC LIMIT ? OFFSET ?";
+            $stmt = $conn->prepare($sql);
+            
+            if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
+
+            $stmt->bind_param("isii", 
+            $idgroup,
+            $keyword,
+            $limit,
+            $offset
+        );
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            $events = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $events[] = new self(
+                    (int)$row['idevent'],
+                    $row['judul'],
+                    $row['judul-slug'],
+                    $row['tanggal'],
+                    $row['keterangan'],
+                    $row['jenis'],
+                    $row['poster_extension']
+                );
+            }
+            return $events;
+        } catch (Exception $e) {
+            throw new Exception("Error fetching group events: " . $e->getMessage());
+        } finally {
+            if ($stmt) $stmt->close();
+        }
+    }
+
+    public static function getAllUserEvent(string $username,$keyword,$limit,$offset): array
+    {
+        $db = new self();
+        $conn = $db->conn;
+        $stmt = null;
+        $keyword = "%" .$keyword ."%";
+        $offset *= $limit;
+        try {
+            $sql = "SELECT e.* FROM event e
+                    JOIN member_grup mg ON e.idgrup = mg.idgrup
+                    WHERE mg.username = ? AND e.judul LIKE ? 
+                    ORDER BY e.tanggal DESC
+                    LIMIT ? OFFSET ?";
+            
+            $stmt = $conn->prepare($sql);
+            
+            if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
+
+            $stmt->bind_param("ssii", $username,$keyword,$limit,$offset);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            $events = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $events[] = new self(
+                    (int)$row['idevent'],
+                    $row['judul'],
+                    $row['judul-slug'],
+                    $row['tanggal'],
+                    $row['keterangan'],
+                    $row['jenis'],
+                    $row['poster_extension']
+                );
+            }
+            return $events;
+        } catch (Exception $e) {
+            throw new Exception("Error fetching user events: " . $e->getMessage());
+        } finally {
+            if ($stmt) $stmt->close();
+        }
+    }
+
+    public function create(int $idgroup): Event
+    {
+        $stmt = null;
+        try {
+            if (empty($this->judul)) throw new Exception("Judul belum di-set.");
+            
+            $sql = "INSERT INTO event (idgrup, judul, `judul-slug`, tanggal, keterangan, jenis, poster_extension) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+            
+            $stmt = $this->conn->prepare($sql);
+            
+            if (!$stmt) throw new Exception("Prepare failed: " . $this->conn->error);
+
             $stmt->bind_param(
-                'issssss',
-                $this->idGrup,
-                $this->judul,
-                $this->slug,
-                $this->tanggal,
-                $this->keterangan,
-                $this->jenis,
+                "issssss", 
+                $idgroup, 
+                $this->judul, 
+                $this->slug, 
+                $this->tanggal, 
+                $this->keterangan, 
+                $this->jenis, 
                 $this->posterExtension
             );
 
-            $stmt->execute();
-
-            if ($stmt->affected_rows > 0) {
-                // Set the new auto-increment ID to the object
-                $this->id = $stmt->insert_id;
-            } else {
-                throw new Exception("Failed to insert event. No rows affected.");
+            if (!$stmt->execute()) {
+                throw new Exception("Execute failed: " . $stmt->error);
             }
+            
+            $this->id = (int)$this->conn->insert_id;
+            
+            return $this;
 
-            $stmt->close();
         } catch (Exception $e) {
-            throw $e;
+            throw new Exception("Gagal menyimpan event: " . $e->getMessage());
         } finally {
-            Connection::closeConnection();
+            if ($stmt) $stmt->close();
         }
     }
 
-    /**
-     * UPDATE: Updates an existing event in the database
-     */
-    public function update(): void
+    public function update(): bool
     {
-        $sql = "UPDATE `event` SET 
-                `idgrup` = ?, 
-                `judul` = ?, 
-                `judul-slug` = ?, 
-                `tanggal` = ?, 
-                `keterangan` = ?, 
-                `jenis` = ?, 
-                `poster_extension` = ? 
-                WHERE `idevent` = ?";
-
+        $stmt = null;
         try {
-            Connection::startConnection();
-            $stmt = Connection::getConnection()->prepare($sql);
+            if (empty($this->id)) throw new Exception("ID Event tidak ditemukan untuk proses update.");
 
-            if ($stmt === false) throw new Exception("Database Error: " . Connection::getConnection()->error);
+            $sql = "UPDATE event SET 
+                    judul = ?, 
+                    `judul-slug` = ?, 
+                    tanggal = ?, 
+                    keterangan = ?, 
+                    jenis = ?, 
+                    poster_extension = ? 
+                    WHERE idevent = ?";
 
-            // 'issssssi' -> Last 'i' is for idevent (WHERE clause)
+            $stmt = $this->conn->prepare($sql);
+            
+            if (!$stmt) throw new Exception("Prepare failed: " . $this->conn->error);
+
+            // Types: i(idgrup), s, s, s, s, s, s, i(idevent)
             $stmt->bind_param(
-                'issssssi',
-                $this->idGrup,
+                "ssssssi",
                 $this->judul,
                 $this->slug,
                 $this->tanggal,
@@ -206,163 +338,46 @@ class Event
                 $this->id
             );
 
-            $stmt->execute();
-            // Note: affected_rows might be 0 if you save without changing data. 
-            // That is not necessarily an error in UPDATE.
+            if (!$stmt->execute()) {
+                throw new Exception("Execute failed: " . $stmt->error);
+            }
 
-            $stmt->close();
+            return true;
+
         } catch (Exception $e) {
-            throw $e;
+            throw new Exception("Gagal mengupdate event: " . $e->getMessage());
         } finally {
-            Connection::closeConnection();
+            if ($stmt) $stmt->close();
         }
     }
 
     /**
-     * DELETE: Removes the event from the database
+     * DELETE: Menghapus data
      */
-    public function delete(): void
+    public function delete(): bool
     {
-        $sql = "DELETE FROM `event` WHERE `idevent` = ?";
-
+        $stmt = null;
         try {
-            Connection::startConnection();
-            $stmt = Connection::getConnection()->prepare($sql);
+            if (empty($this->id)) throw new Exception("ID Event tidak ditemukan untuk proses delete.");
+
+            $sql = "DELETE FROM event WHERE idevent = ?";
+            $stmt = $this->conn->prepare($sql);
             
-            $stmt->bind_param('i', $this->id);
-            $stmt->execute();
+            if (!$stmt) throw new Exception("Prepare failed: " . $this->conn->error);
 
-            if ($stmt->affected_rows === 0) {
-                throw new Exception("Delete failed. Event ID {$this->id} not found.");
+            $stmt->bind_param("i", $this->id);
+
+            if (!$stmt->execute()) {
+                throw new Exception("Execute failed: " . $stmt->error);
             }
 
-            $stmt->close();
+            return true;
+
         } catch (Exception $e) {
-            throw $e;
+            throw new Exception("Gagal menghapus event: " . $e->getMessage());
         } finally {
-            Connection::closeConnection();
+            if ($stmt) $stmt->close();
         }
     }
 
-    // ==========================================================================
-    // STATIC FINDER METHODS
-    // ==========================================================================
-
-    /**
-     * Find Event by ID
-     * @param int $id
-     * @return Event|null
-     */
-    public static function findById(int $id): ?Event
-    {
-        $sql = "SELECT * FROM `event` WHERE `idevent` = ?";
-        $event = null;
-
-        try {
-            Connection::startConnection();
-            $stmt = Connection::getConnection()->prepare($sql);
-            $stmt->bind_param('i', $id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-
-            if ($row = $result->fetch_assoc()) {
-                $event = new Event(
-                    (int)$row['idevent'],
-                    (int)$row['idgrup'],
-                    $row['judul'],
-                    $row['judul-slug'], // Note the hyphen key
-                    $row['tanggal'],
-                    $row['keterangan'],
-                    $row['jenis'],
-                    $row['poster_extension']
-                );
-            }
-            $stmt->close();
-            return $event;
-
-        } catch (Exception $e) {
-            throw $e;
-        } finally {
-            Connection::closeConnection();
-        }
-    }
-
-    /**
-     * Find all events belonging to a specific Group
-     * @param int $idGrup
-     * @return Event[]
-     */
-    public static function getByGroupId(int $idGrup): array
-    {
-        $sql = "SELECT * FROM `event` WHERE `idgrup` = ? ORDER BY `tanggal` DESC";
-        $events = [];
-
-        try {
-            Connection::startConnection();
-            $stmt = Connection::getConnection()->prepare($sql);
-            $stmt->bind_param('i', $idGrup);
-            $stmt->execute();
-            $result = $stmt->get_result();
-
-            while ($row = $result->fetch_assoc()) {
-                $events[] = new Event(
-                    (int)$row['idevent'],
-                    (int)$row['idgrup'],
-                    $row['judul'],
-                    $row['judul-slug'],
-                    $row['tanggal'],
-                    $row['keterangan'],
-                    $row['jenis'],
-                    $row['poster_extension']
-                );
-            }
-            $stmt->close();
-            return $events;
-
-        } catch (Exception $e) {
-            throw $e;
-        } finally {
-            Connection::closeConnection();
-        }
-    }
-
-    /**
-     * Search events by Title
-     * @param string $keyword
-     * @return Event[]
-     */
-    public static function searchByTitle(string $keyword): array
-    {
-        $sql = "SELECT * FROM `event` WHERE `judul` LIKE ? ORDER BY `tanggal` DESC";
-        $events = [];
-        $term = "%" . $keyword . "%";
-
-        try {
-            Connection::startConnection();
-            $stmt = Connection::getConnection()->prepare($sql);
-            $stmt->bind_param('s', $term);
-            $stmt->execute();
-            $result = $stmt->get_result();
-
-            while ($row = $result->fetch_assoc()) {
-                $events[] = new Event(
-                    (int)$row['idevent'],
-                    (int)$row['idgrup'],
-                    $row['judul'],
-                    $row['judul-slug'],
-                    $row['tanggal'],
-                    $row['keterangan'],
-                    $row['jenis'],
-                    $row['poster_extension']
-                );
-            }
-            $stmt->close();
-            return $events;
-
-        } catch (Exception $e) {
-            throw $e;
-        } finally {
-            Connection::closeConnection();
-        }
-    }
 }
