@@ -185,7 +185,7 @@ function single(DosenController $controller)
 {
     $response = null;
     try {
-        requireRole(array(ACCOUNT_ROLE[2]));
+        requireRole(ACCOUNT_ROLE);
         $username = $_GET['username'];
         $response = array(
             "status" => "success",

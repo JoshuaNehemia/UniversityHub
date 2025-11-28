@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic CSS Loaders</title>
+    <style>
+        /* * GLOBAL LAYOUT STYLES 
+         * (styles.css - Base)
+         */
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #94a3b8;
+            --accent-color: #38bdf8;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 2rem;
+            color: #fff;
+        }
+
+        /* * CONTAINER & UI STYLES 
+         */
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        button {
+            background-color: var(--card-bg);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+        }
+
+        /* The container that mimics the original .card selection */
+        #loader-container {
+            background: var(--card-bg);
+            padding: 4rem; /* Increased padding for better presentation */
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            min-height: 200px;
+            transition: transform 0.2s;
+        }
+
+        .label {
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* * =========================================
+         * EXTERNAL CSS SECTION (styles.css)
+         * =========================================
+         */
+
+        /* LOADER: SPINNER */
+        .loader-spinner {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #334155;
+            border-bottom-color: var(--accent-color);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* LOADER: BOUNCING DOTS */
+        .loader-dots {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            animation: bounce 0.5s cubic-bezier(0.19, 0.57, 0.3, 0.98) infinite alternate;
+        }
+
+        .dot:nth-child(2) { animation-delay: 0.1s; opacity: 0.8; }
+        .dot:nth-child(3) { animation-delay: 0.2s; opacity: 0.6; }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-16px); }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Loader Function Test</h1>
+
+    <!-- Control Buttons -->
+    <div class="controls">
+        <button onclick="getLoading('spinner')">Load Spinner</button>
+        <button onclick="getLoading('dots')">Load Dots</button>
+    </div>
+
+    <!-- Dynamic Display Area -->
+    <div id="loader-container">
+        <!-- Content will be injected here by JS -->
+    </div>
+
+    <!-- 
+      * =========================================
+      * EXTERNAL JS SECTION (script.js)
+      * =========================================
+    -->
+    <script>
+        /**
+         * Clears the container and injects the requested loader HTML.
+         * @param {string} type - 'spinner' or 'dots'
+         */
+        function getLoading(type) {
+            const container = document.getElementById('loader-container');
+            
+            // Clear current content
+            container.innerHTML = '';
+
+            if (type === 'spinner') {
+                // Logic for Spinner
+                const spinner = document.createElement('span');
+                spinner.className = 'loader-spinner';
+                
+                const label = document.createElement('span');
+                label.className = 'label';
+                label.textContent = 'Loading...';
+
+                container.appendChild(spinner);
+                container.appendChild(label);
+
+            } else if (type === 'dots') {
+                // Logic for Dots
+                const dotsWrapper = document.createElement('div');
+                dotsWrapper.className = 'loader-dots';
+                
+                // Create 3 dots
+                for(let i=0; i<3; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'dot';
+                    dotsWrapper.appendChild(dot);
+                }
+
+                const label = document.createElement('span');
+                label.className = 'label';
+                label.textContent = 'Please Wait';
+
+                container.appendChild(dotsWrapper);
+                container.appendChild(label);
+            }
+        }
+
+        // Initialize with spinner on page load
+        getLoading('spinner');
+    </script>
+
+</body>
+</html>

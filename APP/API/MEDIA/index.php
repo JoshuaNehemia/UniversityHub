@@ -43,6 +43,9 @@ function retrieveMedia($type): string
         case MEDIA_TYPE[0]:
             return retrieveProfilePicture();
             break;
+        case MEDIA_TYPE[1]:
+            return retrieveProfilePicture();
+            break;
         default:
             throw new Exception("Jenis media tidak tertulis, tidak dapat memproses ");
     }
@@ -65,6 +68,26 @@ function retrieveProfilePicture(): string
     $jenis = $_GET['jenis'];
     $ext = $_GET['foto_extention'];
     $address = "DATABASE/PROFILE/{$jenis}/{$code}.{$ext}";
+    $local_address = __DIR__ . "/../../" . $address;
+    if (!file_exists($local_address)) {
+        throw new Exception("Tidak menemukan file di " . $local_address);
+    }
+    return API_ADDRESS . $address;
+}
+
+function retrieveEventPoster(): string
+{
+    if (!(isset($_GET['code']) && !empty($_GET['code']))) {
+        throw new Exception("code tidak ada, tidak dapat memproses ");
+    }
+
+    if (!(isset($_GET['poster_extention']) && !empty($_GET['poster_extention']))) {
+        throw new Exception("poster_extention tidak tertulis, tidak dapat memproses ");
+    }
+    
+    $code = $_GET['code'];
+    $ext = $_GET['poster_extention'];
+    $address = "DATABASE/PEVENT/{$code}.{$ext}";
     $local_address = __DIR__ . "/../../" . $address;
     if (!file_exists($local_address)) {
         throw new Exception("Tidak menemukan file di " . $local_address);

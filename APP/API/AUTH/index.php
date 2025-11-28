@@ -203,8 +203,7 @@ function getCurrentAccount()
         $data = $_SESSION[CURRENT_ACCOUNT];
         $response = array(
             "status" => "success",
-            "message" => $data,
-            "route" => "login.php"
+            "data" => $data
         );
     } catch (Exception $e) {
         $response = array(

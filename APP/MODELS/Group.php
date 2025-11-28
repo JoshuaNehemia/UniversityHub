@@ -492,10 +492,12 @@ class Group extends DatabaseConnection
             $sql = "
                 SELECT 
                     a.username,
-                    m.nama,
+                    m.nama AS 'nama_mahasiswa',
                     m.nrp, 
-                    d.nama,
-                    d.npk
+                    m.foto_extention,
+                    d.nama AS 'nama_dosen',
+                    d.npk,
+                    d.foto_extension
                 FROM member_grup mg
                 JOIN akun a ON mg.username = a.username
                 LEFT JOIN mahasiswa m ON a.nrp_mahasiswa = m.nrp
@@ -524,10 +526,14 @@ class Group extends DatabaseConnection
             while ($row = $result->fetch_assoc()) {
                 if (!empty($row["npk"])) {
                     unset($row['nrp']);
+                    unset($row['nama_mahasiswa']);
+                    unset($row['foto_extention']);
                     $members["DOSEN"][] = $row;
                 }
                 if (!empty($row["nrp"])) {
                     unset($row['npk']);
+                    unset($row['nama_dosen']);
+                    unset($row['foto_extentsion']);
                     $members["MAHASISWA"][] = $row;
                 }
             }
@@ -577,21 +583,29 @@ class Group extends DatabaseConnection
         try {
             $like = "%$search%";
 
-            $sql = "
-            SELECT g.* 
+            $sql = "(SELECT g.* 
             FROM member_grup mg
             INNER JOIN grup g ON mg.idgrup = g.idgrup
             WHERE mg.username = ?
-              AND g.nama LIKE ?
-            LIMIT ? OFFSET ?;
-        ";
+            AND g.nama LIKE ?)
+
+            UNION
+
+            (SELECT *
+            FROM `grup`
+            WHERE username_pembuat = ?
+            AND nama LIKE ?
+            )
+
+            LIMIT ? OFFSET ?;";
+
 
             $stmt = $instance->conn->prepare($sql);
             if (!$stmt) {
                 throw new Exception("Gagal mempersiapkan query Get Joined Group: " . $instance->conn->error);
             }
 
-            $stmt->bind_param("ssii", $username, $like, $limit, $offset);
+            $stmt->bind_param("ssssii", $username, $like, $username, $like, $limit, $offset);
 
             if (!$stmt->execute()) {
                 throw new Exception("Gagal mengambil grup yang diikuti: " . $stmt->error);

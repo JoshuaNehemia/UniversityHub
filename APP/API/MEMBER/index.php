@@ -18,7 +18,7 @@ main();
 // =============================================================================================
 function main()
 {
-    requireRole(array(ACCOUNT_ROLE[1], ACCOUNT_ROLE[2]));
+    requireRole(ACCOUNT_ROLE);
     $method = $_SERVER['REQUEST_METHOD'];
     $controller = new MemberController();
     switch ($method) {
@@ -44,6 +44,7 @@ function main()
 
 function post(MemberController $controller)
 {
+    requireRole(array(ACCOUNT_ROLE[1],ACCOUNT_ROLE[2]));
     $response = null;
     try {
         if (!((isset($_GET['idgroup'])) && ($_GET['idgroup'] > 0))) throw new Exception("Id group tidak ada atau tidak valid.");
@@ -67,7 +68,7 @@ function post(MemberController $controller)
 
 function delete(MemberController $controller)
 {
-
+    requireRole(array(ACCOUNT_ROLE[1],ACCOUNT_ROLE[2]));
     $response = null;
     $raw = file_get_contents("php://input");
     //var_dump($raw); // DEBUG

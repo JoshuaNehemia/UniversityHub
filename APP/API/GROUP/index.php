@@ -157,6 +157,7 @@ function all(GroupController $controller, $filter = "")
         $keyword = $_GET['keyword'] ?? "";
         $list = array();
         if ($_SESSION[CURRENT_ACCOUNT]['jenis'] === ACCOUNT_ROLE[0]) {
+            $list = $controller->getListGroupByNameForMahasiswa($limit, $offset, $keyword);
         } else {
             $list = $controller->getListGroupByName($limit, $offset, $keyword);
         }
