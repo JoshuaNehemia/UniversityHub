@@ -225,22 +225,25 @@ class Event extends DatabaseConnection
         }
     }
 
-    public static function getAllUserEvent(string $username): array
+    public static function getAllUserEvent(string $username,$keyword,$limit,$offset): array
     {
         $db = new self();
         $conn = $db->conn;
         $stmt = null;
+        $keyword = "%" .$keyword ."%";
+        $offset *= $limit;
         try {
             $sql = "SELECT e.* FROM event e
                     JOIN member_grup mg ON e.idgrup = mg.idgrup
-                    WHERE mg.username = ?
-                    ORDER BY e.tanggal DESC";
+                    WHERE mg.username = ? AND e.judul LIKE ? 
+                    ORDER BY e.tanggal DESC
+                    LIMIT ? OFFSET ?";
             
             $stmt = $conn->prepare($sql);
             
             if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
 
-            $stmt->bind_param("s", $username);
+            $stmt->bind_param("ssii", $username,$keyword,$limit,$offset);
             $stmt->execute();
 
             $result = $stmt->get_result();

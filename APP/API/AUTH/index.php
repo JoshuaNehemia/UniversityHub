@@ -28,8 +28,7 @@ function main()
             logout();
             break;
         case "PUT":
-            //edit password
-            echo json_encode("belum buat lupa gua");
+            changePassword($controller);
             break;
         case "GET":
             //Ngambil data akun, ngambil data grup yang diikuti dll dari get type="{apa yang dicari}
@@ -50,8 +49,8 @@ function login($controller)
 {
     $response = null;
     try {
-        if(!isset($_POST['username'])) throw new Exception("Tidak ada username");
-        if(!isset($_POST['password'])) throw new Exception("Tidak ada password");
+        if (!isset($_POST['username'])) throw new Exception("Tidak ada username");
+        if (!isset($_POST['password'])) throw new Exception("Tidak ada password");
         $username = $_POST['username'];
         $password = $_POST['password'];
         $akun = $controller->login($username, $password);
@@ -72,8 +71,32 @@ function login($controller)
     }
 }
 
-function changePassword($controller){
-
+function changePassword($controller)
+{
+    $raw = file_get_contents("php://input");
+    //var_dump($raw); // DEBUG
+    $params = json_decode($raw, true);
+    //print_r($params);
+    try {
+        if (!isset($_SESSION[CURRENT_ACCOUNT])) throw new Exception("Tidak ada akun yang terloggedin");
+        if (!(isset($params['old_password']) && isset($params['new_password']) && isset($params['confirm_password']))) throw new Exception("Data tidak lengkap.");
+        $old_password = $params['old_password'];
+        $new_password = $params['new_password'];
+        $confirm_password = $params['confirm_password'];
+        $controller->accountChangePassword($_SESSION[CURRENT_ACCOUNT], $old_password, $new_password, $confirm_password);
+        session_destroy();
+        $response = array(
+            "status" => "success",
+            "message" => "Password telah diganti mohon login ulang"
+        );
+    } catch (Exception $e) {
+        $response = array(
+            "status" => "error",
+            "message" => $e->getMessage()
+        );
+    } finally {
+        echo json_encode($response);
+    }
 }
 
 function logout()
@@ -87,12 +110,14 @@ function logout()
         session_destroy();
         $response = array(
             "status" => "success",
-            "message" => "logged out"
+            "message" => "logged out",
+            "route" => "login.php"
         );
     } catch (Exception $e) {
         $response = array(
             "status" => "error",
-            "message" => $e->getMessage()
+            "message" => $e->getMessage(),
+            "route" => "login.php"
         );
     } finally {
         echo json_encode($response);
@@ -105,5 +130,100 @@ function getRoute($role)
         return "ADMIN/";
     } else {
         return "index.php";
+    }
+}
+
+function get(AuthController $controller)
+{
+    if (!isset($_GET['type'])) throw new Exception("Data tidak lengkap, tidak ada jenis");
+    $type = $_GET['type'];
+    switch ($type) {
+        case "account":
+            getCurrentAccount();
+        case "group":
+            getGroup($controller);
+        case "event":
+            getEvent($controller);
+    }
+}
+
+function getCurrentAccount()
+{
+    $response = null;
+    try {
+        if (!isset($_SESSION[CURRENT_ACCOUNT])) throw new Exception("Tidak ada akun yang terloggedin");
+        $data = $_SESSION[CURRENT_ACCOUNT];
+        $response = array(
+            "status" => "success",
+            "message" => $data,
+            "route" => "login.php"
+        );
+    } catch (Exception $e) {
+        $response = array(
+            "status" => "error",
+            "message" => $e->getMessage(),
+            "route" => "login.php"
+        );
+    } finally {
+        echo json_encode($response);
+    }
+}
+function getGroup(AuthController $controller)
+{
+    $response = null;
+    try {
+        requireRole(ACCOUNT_ROLE);
+        if (!isset($_SESSION[CURRENT_ACCOUNT])) throw new Exception("Tidak ada akun yang ter-logged-in");
+        if (!(isset($_GET['offset']) && ($_GET['offset'] >= 0))) throw new Exception("Offset tidak ada.");
+        if (!(isset($_GET['limit']) && !empty($_GET['limit']))) throw new Exception("Limit tidak ada.");
+
+        $username = $_SESSION[CURRENT_ACCOUNT];
+        $limit = $_GET['limit'];
+        $offset = $_GET['offset'];
+        $keyword = $_GET['keyword'] ?? "";
+
+        $list = $controller->getAllGroupJoinedByUser($username, $limit, $offset, $keyword);
+        if (sizeof($list) == 0) throw new Exception("Tidak ada grup yang ditemukan");
+
+        $response = array(
+            "status" => "success",
+            "data" => $list,
+        );
+    } catch (Exception $e) {
+        $response = array(
+            "status" => "error",
+            "message" => $e->getMessage(),
+            "route" => "login.php"
+        );
+    } finally {
+        echo json_encode($response);
+    }
+}
+function getEvent(AuthController $controller)
+{
+    $response = null;
+    try {
+        requireRole(ACCOUNT_ROLE);
+        if (!isset($_SESSION[CURRENT_ACCOUNT])) throw new Exception("Tidak ada akun yang ter-logged-in");
+        if (!(isset($_GET['offset']) && ($_GET['offset'] >= 0))) throw new Exception("Offset tidak ada.");
+        if (!(isset($_GET['limit']) && !empty($_GET['limit']))) throw new Exception("Limit tidak ada.");
+
+        $username = $_SESSION[CURRENT_ACCOUNT];
+        $limit = $_GET['limit'];
+        $offset = $_GET['offset'];
+        $keyword = $_GET['keyword'] ?? "";
+        $list = $controller->getAllUserEvent($username,$keyword,$limit,$offset);
+        $response = array(
+            "status" => "success",
+            "data" => $list
+        );
+    } catch (Exception $e) {
+        $response = array(
+            "status" => "error",
+            "message" => $e->getMessage(),
+            "route" => "login.php"
+        );
+    } finally {
+        echo json_encode($response);
     }
 }

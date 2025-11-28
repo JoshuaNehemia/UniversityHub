@@ -118,43 +118,12 @@ function get(GroupController $controller)
 {
     if (isset($_GET['id'])) {
         single($controller);
-    } else if (isset($_GET['username'])) {
-        joined($controller);
     } else {
         all($controller);
     }
 }
 
-function joined(GroupController $controller)
-{
-    $response = null;
-    try {
-        requireRole(ACCOUNT_ROLE);
-        if (!(isset($_GET['offset']) && ($_GET['offset'] >= 0))) throw new Exception("Offset tidak ada.");
-        if (!(isset($_GET['limit']) && !empty($_GET['limit']))) throw new Exception("Limit tidak ada.");
-        $limit = $_GET['limit'];
-        $offset = $_GET['offset'];
-        $username = $_GET['username'];
-        $keyword = $_GET['keyword'] ?? "";
-        $list = array();
-        if ($_SESSION[CURRENT_ACCOUNT]['jenis'] === ACCOUNT_ROLE[0]) {
-        } else {
-            $list = $controller->getAllGroupJoinedByUser($username,$limit, $offset, $keyword);
-        }
-        if (sizeof($list) == 0) throw new Exception("Tidak ada grup yang ditemukan");
-        $response = array(
-            "status" => "success",
-            "data" => $list
-        );
-    } catch (Exception $e) {
-        $response = array(
-            "status" => "error",
-            "message" => $e->getMessage()
-        );
-    } finally {
-        echo json_encode($response);
-    }
-}
+
 function single(GroupController $controller)
 {
     $response = null;

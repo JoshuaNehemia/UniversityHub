@@ -26,7 +26,7 @@ class EventController
 
     public function getGroupEvent($groupid,$keyword,$limit,$offset)
     {
-        $list = Event::getAllGroupEvent($groupid,$keyword,$limit,$offset);
+        $list = Event::getAllGroupEvent($groupid,$limit,$offset,$keyword);
         foreach ($list as $key => $mhs) {
             $list[$key] = $mhs->getArray();
         }

@@ -229,7 +229,7 @@ function all(DosenController $controller, $filter = "")
     }
 }
 
-function delete(DosenController $controller,UploadController $upload)
+function delete(DosenController $controller, UploadController $upload)
 {
 
     $response = null;

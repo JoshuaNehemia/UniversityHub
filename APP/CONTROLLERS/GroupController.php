@@ -51,15 +51,6 @@ class GroupController
         return $list;
     }
     
-    public function getAllGroupJoinedByUser($username, $limit, $offset, $keyword = "")
-    {
-        $list = Group::getAllGroupJoinedByUser($username, $limit, $offset, $keyword);
-        foreach ($list as $key => $value) {
-            $list[$key] = $value->getArray();
-        }
-        return $list;
-    }
-
     public function deleteGroup($id)
     {
         $g = new Group();
