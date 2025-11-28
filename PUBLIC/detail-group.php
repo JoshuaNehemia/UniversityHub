@@ -46,16 +46,17 @@
                 <a href="#" data-tab="event" class="tab-link">Event</a>
             </section>
 
-            <section id="member-group">
-                <h3>Daftar Member</h3>
-                <div id="list-member-container">
+            <section id="event-group" class="hidden">
+                <h3>Daftar Event</h3>
+                <div id="list-event-container">
 
                 </div>
             </section>
 
-            <section id="event-group" class="hidden">
-                <h3>Daftar Event</h3>
-                <div id="list-event-container">
+
+            <section id="member-group">
+                <h3>Daftar Member</h3>
+                <div id="list-member-container">
 
                 </div>
             </section>
@@ -89,6 +90,7 @@
         checkLoggedIn();
         getGroupDetail(idgroup);
         getGroupMember(idgroup);
+        getGroupEvent(idgroup);
     });
 </script>
 

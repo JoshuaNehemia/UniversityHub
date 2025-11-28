@@ -1,27 +1,29 @@
-url = API_ADDRESS + "AUTH/";
+const url = API_ADDRESS + "AUTH/";
 
 function login(data = {}) {
-  console.group("LOGIN - START");
-  const timeout = 500;
+  // 1. Setup Request Data
+  const method = "POST";
+  const requestUrl = API_ADDRESS + "AUTH/";
 
-  method = "POST";
-  url = API_ADDRESS + "AUTH/";
-
-  console.group(" Sending Login Request");
+  // 2. Log the Request immediately
+  console.group("Login Request");
+  console.log("URL    :", requestUrl);
   console.log("Method :", method);
-  console.log("URL    :", url);
-  console.log("Data   :", data);
+  console.log("Params :", data);
   console.groupEnd();
 
   var status = $("#status-message");
 
   $.ajax({
-    url: url,
+    url: requestUrl,
     type: method,
     data: data,
     dataType: "json",
     success: function (res) {
-      console.log("Server Response:", res);
+      // 3. Log the Success Response
+      console.group("Login Response - Success");
+      console.log("Data :", res);
+      console.groupEnd();
 
       if (res.status === "success") {
         status.text("Berhasil login.");
@@ -33,45 +35,49 @@ function login(data = {}) {
       }
     },
     error: function (xhr) {
-      console.error("AJAX Error:", xhr.responseText);
+      // 4. Log the Error Response
+      console.group("Login Response - Error");
+      console.log("Status :", xhr.status);
+      console.log("Text   :", xhr.responseText);
+      console.log("JSON   :", xhr.responseJSON);
+      console.groupEnd();
 
       let msg = "Terjadi kesalahan server";
       if (xhr.responseJSON && xhr.responseJSON.message) {
         msg = xhr.responseJSON.message;
       }
-
-      status.text(msg); // FIXED
+      status.text(msg);
     },
   });
-  console.groupEnd();
 }
 
 function checkLoggedIn() {
-  console.group("CHECK LOG IN - START");
-  const timeout = 500;
-  method = "GET";
-
-  data = {
+  const method = "GET";
+  const requestUrl = API_ADDRESS + "AUTH/";
+  const data = {
     jenis: "account",
   };
-  url = API_ADDRESS + "AUTH/";
 
-  console.group(" Sending Check logged in Request");
+  console.group("Check Logged In Request");
+  console.log("URL    :", requestUrl);
   console.log("Method :", method);
-  console.log("URL    :", url);
-  console.log("Data   :", data);
+  console.log("Params :", data);
   console.groupEnd();
 
   var status = $("#status-message");
 
   $.ajax({
-    url: url,
-    type: "GET",
+    url: requestUrl,
+    type: method,
     data: data,
     dataType: "json",
     success: function (res) {
-      console.log("Server Response:", res);
+      console.group("Check Logged In Response - Success");
+      console.log("Data :", res);
+      console.groupEnd();
+
       if (res.status === "success") {
+        console.log(res.data);
         if (res.data.jenis != "MAHASISWA") {
           allowDosenActions();
         }
@@ -82,22 +88,24 @@ function checkLoggedIn() {
       }
     },
     error: function (xhr) {
-      console.error("AJAX Error:", xhr.responseText);
+      console.group("Check Logged In Response - Error");
+      console.log("Status :", xhr.status);
+      console.log("Text   :", xhr.responseText);
+      console.log("JSON   :", xhr.responseJSON);
+      console.groupEnd();
 
       let msg = "Terjadi kesalahan server";
       if (xhr.responseJSON && xhr.responseJSON.message) {
         msg = xhr.responseJSON.message;
       }
-
       status.text(msg);
     },
   });
-  console.groupEnd();
 }
-function getGroupJoinedByUser(keyword = "") {
-  console.group("GET GROUPED JOIN BY USER - START");
-  const timeout = 500;
 
+function getGroupJoinedByUser(keyword = "") {
+  const method = "GET";
+  const requestUrl = API_ADDRESS + "AUTH/";
   const data = {
     limit: 5,
     offset: 0,
@@ -105,28 +113,25 @@ function getGroupJoinedByUser(keyword = "") {
     jenis: "group",
   };
 
-  const method = "GET";
-  const url = API_ADDRESS + "AUTH/";
-
-  console.group("GET GROUPED JOIN BY USER - Sending Request");
+  console.group("Get User Groups Request");
+  console.log("URL    :", requestUrl);
   console.log("Method :", method);
-  console.log("URL    :", url);
-  console.log("Data   :", data);
+  console.log("Params :", data);
   console.groupEnd();
 
   var status = $("#status-message");
 
   $.ajax({
-    url: url,
+    url: requestUrl,
     type: method,
     data: data,
     dataType: "json",
     success: function (res) {
-      console.log("Server Response:", res);
+      console.group("Get User Groups Response - Success");
+      console.log("Data :", res);
+      console.groupEnd();
 
       if (res.status === "success") {
-        console.log(res.data);
-
         $("#daftar-group").empty();
 
         res.data.forEach((g) => {
@@ -146,18 +151,21 @@ function getGroupJoinedByUser(keyword = "") {
       }
     },
     error: function (xhr) {
-      console.error("AJAX Error:", xhr.responseText);
+      console.group("Get User Groups Response - Error");
+      console.log("Status :", xhr.status);
+      console.log("Text   :", xhr.responseText);
+      console.log("JSON   :", xhr.responseJSON);
+      console.groupEnd();
 
       let msg = "Terjadi kesalahan server";
       if (xhr.responseJSON && xhr.responseJSON.message) {
         msg = xhr.responseJSON.message;
       }
-
       status.text(msg);
     },
   });
-  console.groupEnd();
 }
+
 function allowDosenActions() {
   $(".dosen_only").removeClass("dosen_only");
 }

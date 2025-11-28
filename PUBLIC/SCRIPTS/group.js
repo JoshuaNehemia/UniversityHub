@@ -1,4 +1,3 @@
-
 function getGroupDetail(id) {
   console.group("GET GROUP DETAIL - START");
   const data = { id: id };
@@ -56,6 +55,7 @@ function getGroupDetail(id) {
   console.groupEnd();
   console.groupEnd();
 }
+
 function getGroupMember(id) {
   console.group("GET GROUP MEMBER - START");
 
@@ -117,6 +117,74 @@ function getGroupMember(id) {
         });
       } else {
         $("#status-message").text(res.message || "Tidak ada member.");
+      }
+    },
+
+    error: function (xhr, status, error) {
+      console.error("ERROR:", { xhr, status, error });
+      let msg = xhr.responseJSON?.message || "Terjadi kesalahan server";
+      $("#status-message").text(msg);
+    },
+
+    complete: function () {
+      console.groupEnd(); // AJAX group
+    },
+  });
+
+  console.groupEnd(); // START group
+}
+
+function getGroupEvent(id, keyword = "") {
+  console.group("GET GROUP EVENT - START");
+
+  const method = "GET";
+  const url = API_ADDRESS + "EVENT/" + id + "/";
+  const data = {
+    limit: 5,
+    offset: 0,
+    keyword: keyword,
+  };
+
+  console.group("GET GROUP EVENT - Sending Request");
+  console.log("Method :", method);
+  console.log("URL    :", url);
+  console.groupEnd();
+
+  const list = $("#list-event-container");
+
+  console.group("GET GROUP EVENT - AJAX");
+
+  $.ajax({
+    url: url,
+    type: method,
+    data: data,
+    dataType: "json",
+
+    success: function (res) {
+      console.log("SUCCESS:", res);
+
+      if (res.status === "success") {
+        list.empty();
+
+        // DOSEN
+        res.data.forEach((d) => {
+          const row = `
+            <div class="card event">
+              <img src='http://localhost/UniversityHub/APP/DATABASE/EVENT/${d.id}.${d.poster_extention}' class="foto-event">
+              <p>${d.judul}</p>
+              <p>${d.jenis}</p>
+              <p>Tanggal: ${d.tanggal}</p>
+              <div class="dosen_only">
+                <button class="btn-remove-event" data-id="${d.id}" data-group="${id}">
+                  Hapus event
+                </button>
+              </div>
+            </div>
+          `;
+          list.append(row);
+        });
+      } else {
+        $("#status-message").text(res.message || "Tidak ada EVENT.");
       }
     },
 
