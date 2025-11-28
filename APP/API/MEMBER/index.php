@@ -48,7 +48,7 @@ function post(MemberController $controller)
     $response = null;
     try {
         if (!((isset($_GET['idgroup'])) && ($_GET['idgroup'] > 0))) throw new Exception("Id group tidak ada atau tidak valid.");
-        if (!isset($_POST['username'])) throw new Exception("Username tidak ada atau tidak valid.");
+        if (!isset($_POST['username'])) throw new Exception("Username tidak ada atau tidak valid untuk memasukan member.");
         $idgroup = $_GET['idgroup'];
         $username = $_POST['username'];
         $controller->addMemberToGroup($idgroup, $username);
@@ -76,7 +76,7 @@ function delete(MemberController $controller)
     //print_r($params);
     try {
         if (!((isset($_GET['idgroup'])) && ($_GET['idgroup'] > 0))) throw new Exception("Id group tidak ada atau tidak valid.");
-        if (!isset($params['username'])) throw new Exception("Username tidak ada atau tidak valid.");
+        if (!isset($params['username'])) throw new Exception("Username tidak ada atau tidak valid untuk remove member");
         $idgroup = $_GET['idgroup'];
         $username = $params['username'];
         $controller->removeMemberFromGroup($idgroup, $username);

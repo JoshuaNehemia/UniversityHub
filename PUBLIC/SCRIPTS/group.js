@@ -134,7 +134,7 @@ function getGroupMember(id) {
   console.groupEnd(); // START group
 }
 
-function getGroupEvent(id, keyword = "") {
+function getGroupEvent(id, offset = 0, keyword = "") {
   console.group("GET GROUP EVENT - START");
 
   const method = "GET";
@@ -178,6 +178,9 @@ function getGroupEvent(id, keyword = "") {
                 <button class="btn-remove-event" data-id="${d.id}" data-group="${id}">
                   Hapus event
                 </button>
+                <button type="button" class="btn-edit-event" data-id="${d.id}" >
+                    Edit Event
+                </button>
               </div>
             </div>
           `;
@@ -200,4 +203,99 @@ function getGroupEvent(id, keyword = "") {
   });
 
   console.groupEnd(); // START group
+}
+function removeMember(idgroup, username) {
+  console.group("REMOVE MEMBER - START");
+
+  const method = "DELETE";
+  const url = API_ADDRESS + "MEMBER/" + idgroup + "/";
+  const data = JSON.stringify({ username: username });
+
+  console.group("REMOVE MEMBER - Sending Request");
+  console.log("Method :", method);
+  console.log("URL    :", url);
+  console.log("Payload:", data);
+  console.groupEnd();
+
+  console.group("REMOVE MEMBER - AJAX");
+
+  $.ajax({
+    url: url,
+    type: method,
+    data: data,
+    dataType: "json",
+
+    success: function (res) {
+      console.log("SUCCESS:", res);
+
+      if (res.status === "success") {
+        $("#status-message").text("Member berhasil dihapus.");
+
+        // Reload member list
+        getGroupMember(idgroup);
+      } else {
+        $("#status-message").text(res.message || "Gagal menghapus member.");
+      }
+    },
+
+    error: function (xhr, status, error) {
+      console.error("ERROR:", { xhr, status, error });
+      let msg = xhr.responseJSON?.message || "Terjadi kesalahan server";
+      $("#status-message").text(msg);
+    },
+
+    complete: function () {
+      console.groupEnd();
+    },
+  });
+
+  console.groupEnd();
+}
+
+function removeEvent(idgroup, idevent) {
+  console.group("REMOVE EVENT - START");
+
+  const method = "DELETE";
+  const url = API_ADDRESS + "EVENT/" + idgroup + "/";
+  const data = JSON.stringify({ idevent: idevent });
+
+  console.group("REMOVE EVENT - Sending Request");
+  console.log("Method :", method);
+  console.log("URL    :", url);
+  console.log("Payload:", data);
+  console.groupEnd();
+
+  console.group("REMOVE EVENT - AJAX");
+
+  $.ajax({
+    url: url,
+    type: method,
+    data: data,
+    dataType: "json",
+
+    success: function (res) {
+      console.log("SUCCESS:", res);
+
+      if (res.status === "success") {
+        $("#status-message").text("Event berhasil dihapus.");
+
+        // Refresh event list after delete
+        loadEventPage();
+      } else {
+        $("#status-message").text(res.message || "Gagal menghapus event.");
+      }
+    },
+
+    error: function (xhr, status, error) {
+      console.error("ERROR:", { xhr, status, error });
+      let msg = xhr.responseJSON?.message || "Terjadi kesalahan server";
+      $("#status-message").text(msg);
+    },
+
+    complete: function () {
+      console.groupEnd(); // AJAX
+    },
+  });
+
+  console.groupEnd(); // START
 }
