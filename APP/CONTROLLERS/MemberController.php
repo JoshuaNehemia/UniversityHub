@@ -16,7 +16,7 @@ class MemberController
         $list = Group::getAllGroupJoinedByUser($username, $limit, $offset, $keyword);
 
         foreach ($list as $key => $value) {
-            $list[$key] = $value->getArray();
+            $list[$key] = $value->toArray();
         }
 
         return $list;

@@ -28,7 +28,7 @@ class AuthController
             throw new Exception("Akun anda tidak tercatat di database, mohon hubungi admin untuk pembuatan akun anda");
         }
         $akun = $this->assignLogin($username, $password, $jenis);
-        return $akun->getArray();
+        return $akun->toArray();
     }
 
     private function assignLogin($username, $password, $jenis)
@@ -72,7 +72,7 @@ class AuthController
     {
         $list = Group::getAllGroupJoinedByUser($username, $limit, $offset, $keyword);
         foreach ($list as $key => $value) {
-            $list[$key] = $value->getArray();
+            $list[$key] = $value->toArray();
         }
         return $list;
     }
@@ -81,7 +81,7 @@ class AuthController
     {
         $list = EVent::getAllUserEvent($username, $keyword, $limit, $offset);
         foreach ($list as $key => $value) {
-            $list[$key] = $value->getArray();
+            $list[$key] = $value->toArray();
         }
         return $list;
     }

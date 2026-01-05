@@ -163,7 +163,7 @@ class Group extends DatabaseConnection
         return $g;
     }
 
-    public function getArray()
+    public function toArray()
     {
         return array(
             "id" => $this->getId(),

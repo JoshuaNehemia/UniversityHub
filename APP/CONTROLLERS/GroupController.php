@@ -15,7 +15,7 @@ class GroupController
     {
         $group = Group::readArray($group);
         $group->setKode($this->randomString());
-        return $group->create()->getArray();
+        return $group->create()->toArray();
     }
 
     public function editGroup(array $arr_group)
@@ -25,19 +25,19 @@ class GroupController
         $group->setNama($arr_group['nama']);
         $group->setDeskripsi($arr_group['deskripsi']);
         $group->setJenis($arr_group['jenis']);
-        return $group->update()->getArray();
+        return $group->update()->toArray();
     }
 
     public function getSingleGroup($id)
     {
-        return Group::getGroupById($id)->getArray();
+        return Group::getGroupById($id)->toArray();
     }
 
     public function getListGroupByName($limit, $offset, $keyword)
     {
         $list = Group::getAllGroupByName($limit, $offset, $keyword);
         foreach ($list as $key => $value) {
-            $list[$key] = $value->getArray();
+            $list[$key] = $value->toArray();
         }
         return $list;
     }
@@ -46,7 +46,7 @@ class GroupController
     {
         $list = Group::getAllGroupByNameForMahasiswa($limit, $offset, $keyword);
         foreach ($list as $key => $value) {
-            $list[$key] = $value->getArray();
+            $list[$key] = $value->toArray();
         }
         return $list;
     }

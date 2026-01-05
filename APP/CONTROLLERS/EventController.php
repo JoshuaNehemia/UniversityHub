@@ -20,20 +20,20 @@ class EventController
         $event->setKeterangan($arr_event['keterangan']);
         $event->setJenis($arr_event['jenis']);
         $event->setPosterExtension($arr_event['poster_extention']);
-        return $event->create($idgroup)->getArray();
+        return $event->create($idgroup)->toArray();
     }
 
     public function getGroupEvent($groupid,$keyword,int $limit,int $offset)
     {
         $list = Event::getAllGroupEvent($groupid,$keyword,$limit,$offset);
         foreach ($list as $key => $mhs) {
-            $list[$key] = $mhs->getArray();
+            $list[$key] = $mhs->toArray();
         }
         return $list;
     }
 
     public function getEventById($eventid){
-        return Event::getEvent($eventid)->getArray();
+        return Event::getEvent($eventid)->toArray();
     }
 
     public function updateEvent(array $arr_event)

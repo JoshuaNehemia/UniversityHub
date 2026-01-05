@@ -129,7 +129,7 @@ class Event extends DatabaseConnection
         $this->posterExtension = $posterExtension;
     }
 
-    function getArray(){
+    function toArray(){
         return array(
             "id"=>$this->getId(),
             "judul"=>$this->getJudul(),

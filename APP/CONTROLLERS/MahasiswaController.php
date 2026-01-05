@@ -15,7 +15,7 @@ class MahasiswaController
     {
         $list = Mahasiswa::mahasiswaGetAllByName($limit, $offset, $keyword);
         foreach ($list as $key => $mhs) {
-            $list[$key] = $mhs->getArray();
+            $list[$key] = $mhs->toArray();
         }
         return $list;
     }
@@ -23,26 +23,26 @@ class MahasiswaController
     {
         $list = Mahasiswa::mahasiswaGetAllByNRP($limit, $offset, $keyword);
         foreach ($list as $key => $mhs) {
-            $list[$key] = $mhs->getArray();
+            $list[$key] = $mhs->toArray();
         }
         return $list;
     }
     
     public function getSingleMahasiswaByUsername($username): array
     {
-        return Mahasiswa::mahasiswaGetByUsername($username)->getArray();
+        return Mahasiswa::mahasiswaGetByUsername($username)->toArray();
     }
 
     public function updateMahasiswa(array $mahasiswa): array
     {
         $mahasiswa = Mahasiswa::readArray($mahasiswa);
-        return $mahasiswa->mahasiswaUpdate()->getArray();
+        return $mahasiswa->mahasiswaUpdate()->toArray();
     }
 
     public function createMahasiswa(array $arr_mahasiswa): array
     {
         $mahasiswa = Mahasiswa::readArray($arr_mahasiswa);
-        return $mahasiswa->mahasiswaCreate($arr_mahasiswa['password'])->getArray();
+        return $mahasiswa->mahasiswaCreate($arr_mahasiswa['password'])->toArray();
     }
 
     public function deleteMahasiswa(array $mahasiswa)

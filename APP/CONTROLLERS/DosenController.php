@@ -15,26 +15,26 @@ class DosenController
     {
         $list = Dosen::dosenGetAllByName($limit, $offset,$keyword);
         foreach ($list as $key => $mhs) {
-            $list[$key] = $mhs->getArray();
+            $list[$key] = $mhs->toArray();
         }
         return $list;
     }
 
     public function getSingleDosenByUsername($username): array
     {
-        return Dosen::dosenGetByUsername($username)->getArray();
+        return Dosen::dosenGetByUsername($username)->toArray();
     }
 
     public function updateDosen(array $dosen): array
     {
         $dosen = Dosen::readArray($dosen);
-        return $dosen->dosenUpdate()->getArray();
+        return $dosen->dosenUpdate()->toArray();
     }
 
     public function createDosen(array $arr_dosen): array
     {
         $dosen = Dosen::readArray($arr_dosen);
-        return $dosen->dosenCreate($arr_dosen['password'])->getArray();
+        return $dosen->dosenCreate($arr_dosen['password'])->toArray();
     }
 
     public function deleteDosen(array $dosen)
