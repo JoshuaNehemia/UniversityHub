@@ -1,5 +1,6 @@
 <?php
-//VALUE
+
+#region VALUE
 define("CURRENT_ACCOUNT","currentAccount");
 define("ACCOUNT_ROLE",array("MAHASISWA","DOSEN","ADMIN"));
 define("GENDER",array("Pria","Wanita"));
@@ -9,8 +10,14 @@ define("DATE_REGEX","/^\d{4}-\d{2}-\d{2}$/");
 define("API_ADDRESS","http://localhost/universityhub/APP/");
 define("UPLOAD_DATABASE","../DATABASE/");
 define("CODE_LENGTH",6);
+#endregion
 
-//MEDIA
+#region MEDIA
 define("MEDIA_TYPE",array("PROFILE_PICTURE","EVENT_POSTER"));
 define("MAX_IMAGE_SIZE",2000); //In mega bytes
 define("ALLOWED_PICTURE_EXTENSION",array("jpg","jpeg","png","webp"));
+#endregion
+
+#region REGEX
+
+#endregion

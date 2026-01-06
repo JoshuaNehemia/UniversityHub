@@ -99,15 +99,7 @@ class RepoGroup
             if (!$row)
                 throw new Exception("Group not found");
 
-            return new Group(
-                $row['idgrup'],
-                $row['username_pembuat'],
-                $row['nama'],
-                $row['deskripsi'],
-                $row['tanggal_pembentukan'],
-                $row['jenis'],
-                $row['kode_pendaftaran']
-            );
+            return $this->groupMapper($row);
         } catch (Exception $e) {
             throw $e;
         } finally {
@@ -120,7 +112,7 @@ class RepoGroup
 
     public function findAllGroupByName(string $name, int $limit, int $page, $is_mahasiswa = true): array
     {
-        $mahasiswa_display = $is_mahasiswa ? "AND jenis = 'Publik'":"";
+        $mahasiswa_display = $is_mahasiswa ? "AND jenis = 'Publik'" : "";
         $sql = "SELECT * FROM grup WHERE nama  {$mahasiswa_display} IS LIKE ? LIMIT ? OFFSET ?";
 
         $nama = "%{$name}%";
@@ -142,15 +134,7 @@ class RepoGroup
             $result = $stmt->get_result();
             $groups = [];
             while ($row = $result->fetch_assoc()) {
-                $groups[] = new Group(
-                    $row['idgrup'],
-                    $row['username_pembuat'],
-                    $row['nama'],
-                    $row['deskripsi'],
-                    $row['tanggal_pembentukan'],
-                    $row['jenis'],
-                    $row['kode_pendaftaran']
-                );
+                $groups[] = $this->groupMapper($row);
             }
 
 
@@ -186,15 +170,7 @@ class RepoGroup
             $result = $stmt->get_result();
             $groups = [];
             while ($row = $result->fetch_assoc()) {
-                $groups[] = new Group(
-                    $row['idgrup'],
-                    $row['username_pembuat'],
-                    $row['nama'],
-                    $row['deskripsi'],
-                    $row['tanggal_pembentukan'],
-                    $row['jenis'],
-                    $row['kode_pendaftaran']
-                );
+                $groups[] = $this->groupMapper($row);
             }
 
 
@@ -281,6 +257,21 @@ class RepoGroup
             if ($conn)
                 $conn->close();
         }
+    }
+    #endregion
+
+    #region MAPPER
+    private function groupMapper(array $row): Group
+    {
+        $group = new Group();
+        $group->setId($row["id"]);
+        $group->setPembuat($row['username_pembuat']);
+        $group->setNama($row['nama']);
+        $group->setDeskripsi($row['deskripsi']);
+        $group->setTanggalDibuat($row['tanggal_pembentukan']);
+        $group->setJenis($row['jenis']);
+        $group->setKode($row['kode_pendaftaran']);
+        return $group;
     }
     #endregion
 

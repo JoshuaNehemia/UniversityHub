@@ -26,21 +26,7 @@ class Group
 
     #region CONSTRUCTOR
     public function __construct(
-        $id = null,
-        $pembuat = null,
-        $nama = null,
-        $deskripsi = null,
-        $tanggalDibuat = null,
-        $jenis = null,
-        $kode = null
     ) {
-        $this->id = $id;
-        $this->pembuat = $pembuat;
-        $this->nama = $nama;
-        $this->deskripsi = $deskripsi;
-        $this->tanggalDibuat = $tanggalDibuat;
-        $this->jenis = $jenis;
-        $this->kode = $kode;
     }
     #endregion
 
@@ -117,12 +103,11 @@ class Group
         $this->deskripsi = $deskripsi;
     }
 
-    public function setTanggalDibuat()
+    public function setTanggalDibuat($tanggalDibuat)
     {
-        if (empty($tanggal)) {
-            $this->tanggalDibuat = date("Y-m-d H:i:s");
-            return;
-        }
+        if (empty(trim($tanggalDibuat))) throw new Exception("Group tanggal dibuat can't be empty");
+        if(!(preg_match_all(DATETIME_REGEX, $tanggalDibuat)))throw new Exception("Group tanggal dibuat is not in correct format YYYY-MM-DD HH:mm:SS");
+        $this->tanggalDibuat = $tanggalDibuat;
     }
 
     public function setJenis($jenis)
