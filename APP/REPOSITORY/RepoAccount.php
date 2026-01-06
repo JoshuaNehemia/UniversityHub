@@ -782,10 +782,11 @@ class RepoAccount
             return $d;
         }
 
-        if ((int) $row['is_admin'] === 1) {
+        if ((int) $row['isadmin'] === 1) {
             $a = new Akun();
             $a->setUsername($row['username']);
             $a->setJenis(ACCOUNT_ROLE[2]);
+            $a->setNama("ADMIN");
             return $a;
         }
 

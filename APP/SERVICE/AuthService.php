@@ -29,8 +29,9 @@ class AuthService{
     #endregion
 
     #region FUNCTION
-    public function login($username, $password): Akun|Dosen|Mahasiswa{
-        return $this->repo_account->login($username, $password);
+    public function login($username, $password):array{
+        $account = $this->repo_account->login($username, $password);
+        return $account->toArray();
     }
     #endregion
 }

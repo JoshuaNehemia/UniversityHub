@@ -39,7 +39,7 @@ class AuthController
             throw new Exception("There are no account found");
         }
         AuthMiddleware::setLoggedInAccount($account);
-        return $account->toArray();
+        return $account;
     }
 
     public function logout()

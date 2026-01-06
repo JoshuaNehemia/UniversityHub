@@ -10,6 +10,7 @@ use CONTROLLERS\AuthController;
 #region REQUEST METHOD
 $method = $_SERVER['REQUEST_METHOD'];
 $controller = new AuthController;
+$response = null;
 switch ($method) {
     case "POST":
         $response = login($controller);
@@ -25,12 +26,30 @@ switch ($method) {
 
 function login($controller)
 {
-    $response = $controller->login($_POST);
+    $account = $controller->login($_POST);
+    if (!$account)
+        throw new Exception("Failed to login");
+    return array(
+        "status" => "success",
+        "data" => $account,
+        "message" => "Log in successful"
+    );
 }
-function logout($controller){
-    $response = $controller->logout();
+function logout($controller)
+{
+    $controller->logout();
+    return array(
+        "status" => "success",
+        "message" => "Log out successful"
+    );
 }
 
-function get($controller){
-    $response = $controller->getLoggedInAccount();
+function get($controller)
+{
+    $account = $controller->getLoggedInAccount();
+    return array(
+        "status" => "success",
+        "data" => $account,
+        "message" => "Retrieve account successful"
+    );
 }
