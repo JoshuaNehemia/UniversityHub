@@ -38,7 +38,7 @@ class AccountService
         if ($akun instanceof Dosen) {
             // create dosen account
             $result = $this->repo_account->createDosen($akun, $hashed);
-        } elseif ($akun instanceof Mahasiswa) {
+        } else if ($akun instanceof Mahasiswa) {
             // create mahasiswa account
             $result = $this->repo_account->createMahasiswa($akun, $hashed);
         }

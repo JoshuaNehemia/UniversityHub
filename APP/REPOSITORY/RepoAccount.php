@@ -33,18 +33,20 @@ class RepoAccount
         string $username,
         string $password,
         ?string $nrp = null,
-        ?string $npk = null
+        ?string $npk = null,
+        $conn = null
     ): bool {
         $sql = "
-            INSERT INTO akun (username, password, nrp_mahasiswa, npk_dosen, is_admin)
+            INSERT INTO akun (username, password, nrp_mahasiswa, npk_dosen, isadmin)
             VALUES (?, ?, ?, ?, ?)
         ";
 
         $stmt = null;
-        $conn = null;
 
         try {
-            $conn = $this->db->connect();
+            if (!$conn) {
+                $conn = $this->db->connect();
+            }
             $stmt = $conn->prepare($sql);
             if (!$stmt) {
                 throw new Exception("Failed to prepare create akun statement: " . $conn->error);
@@ -67,11 +69,16 @@ class RepoAccount
             }
 
             return $stmt->affected_rows === 1;
+        } catch (Exception $e) {
+            if ($conn)
+                $conn->rollback();
+            if ($e->getCode() === 1062) {
+                throw new Exception("This username already exists");
+            }
+            throw $e;
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
         }
     }
 
@@ -87,7 +94,7 @@ class RepoAccount
 
         try {
             $conn = $this->db->connect();
-
+            $conn->begin_transaction();
             $stmt = $conn->prepare($sql);
             if (!$stmt) {
                 throw new Exception("Failed to prepare create mahasiswa statement");
@@ -109,11 +116,17 @@ class RepoAccount
                 throw new Exception($stmt->error);
             }
 
-            $this->createAkun($data['username'], $password, $data['nrp']);
+            $this->createAkun($data['username'], $password, $data['nrp'], null, $conn);
+
+            $conn->commit();
             return true;
         } catch (Exception $e) {
             if ($conn)
                 $conn->rollback();
+
+            if ($e->getCode() === 1062) {
+                throw new Exception("This NRP already exists");
+            }
             throw $e;
         } finally {
             if ($stmt)
@@ -132,7 +145,7 @@ class RepoAccount
 
         try {
             $conn = $this->db->connect();
-
+            $conn->begin_transaction();
             $stmt = $conn->prepare($sql);
             if (!$stmt) {
                 throw new Exception("Failed to prepare create dosen statement");
@@ -144,7 +157,7 @@ class RepoAccount
                 "sss",
                 $data['npk'],
                 $data['nama'],
-                $data['foto_extension']
+                $data['foto_extention']
             );
 
             if (!$stmt->execute()) {
@@ -155,13 +168,20 @@ class RepoAccount
                 $data['username'],
                 $password,
                 null,
-                $data['npk']
+                $data['npk'],
+                $conn
             );
+            $conn->commit();
             return $stmt->affected_rows === 1;
 
         } catch (Exception $e) {
             if ($conn)
-                throw $e;
+                $conn->rollback();
+
+            if ($e->getCode() === 1062) {
+                throw new Exception("This NRP already exists");
+            }
+            throw $e;
         } finally {
             if ($stmt)
                 $stmt->close();
@@ -719,8 +739,9 @@ class RepoAccount
         }
     }
 
-    public function deleteDosen(string $npk): bool{
-        
+    public function deleteDosen(string $npk): bool
+    {
+
         $sql = "DELETE FROM dosen WHERE npk = ?";
 
         $stmt = null;

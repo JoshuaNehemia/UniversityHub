@@ -11,6 +11,9 @@ switch ($resource) {
     case "AUTH":
         require_once("$routesPath/API/AUTH/" . $index);
         break;
+    case "ACCOUNT":
+        require_once("$routesPath/API/ACCOUNT/" . $index);
+        break;
     case "MEDIA":
         require_once("$routesPath/API/MEDIA/" . $index);
         break;
