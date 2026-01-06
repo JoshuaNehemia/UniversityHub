@@ -147,7 +147,7 @@ class RepoAccount
                 $data['foto_extension']
             );
 
-            if (!$stmt->execute() ) {
+            if (!$stmt->execute()) {
                 throw new Exception($stmt->error);
             }
 
@@ -161,7 +161,7 @@ class RepoAccount
 
         } catch (Exception $e) {
             if ($conn)
-            throw $e;
+                throw $e;
         } finally {
             if ($stmt)
                 $stmt->close();
@@ -215,9 +215,6 @@ class RepoAccount
             }
 
             $result = $stmt->get_result();
-            if (!$result || $result->num_rows === 0) {
-                throw new Exception("Account not found");
-            }
 
             return $result->fetch_assoc();
         } finally {
@@ -542,7 +539,7 @@ class RepoAccount
         }
     }
 
-    public function updateMahasiswa(Mahasiswa $mahasiswa): Mahasiswa
+    public function updateMahasiswa(Mahasiswa $mahasiswa): bool
     {
         $sql = "UPDATE mahasiswa
                 SET 
@@ -564,7 +561,6 @@ class RepoAccount
 
         try {
             $conn = $this->db->connect();
-            $conn->begin_transaction();
 
             $stmt = $conn->prepare($sql);
             if (!$stmt) {
@@ -592,14 +588,62 @@ class RepoAccount
                 throw new Exception("No mahasiswa data was updated");
             }
 
-            $conn->commit();
-            return $mahasiswa;
+            return $stmt->affected_rows === 1;
 
         } catch (Exception $e) {
-            if ($conn) {
-                $conn->rollback();
+            throw $e;
+        } finally {
+            if ($stmt) {
+                $stmt->close();
             }
-            throw new Exception("Failed to update mahasiswa: " . $e->getMessage());
+            if ($conn) {
+                $conn->close();
+            }
+        }
+    }
+    public function updateDosen(Dosen $dosen): bool
+    {
+        $sql = "UPDATE dosen
+                SET 
+                    npk = ?, 
+                    nama = ?, 
+                    foto_extension = ?
+                WHERE nrp = (
+                    SELECT npk_dosen 
+                    FROM akun 
+                    WHERE username = ?
+                )
+            ";
+
+        $stmt = null;
+        $conn = null;
+
+        try {
+            $conn = $this->db->connect();
+
+            $stmt = $conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("Failed to prepare update dosen statement");
+            }
+
+            $data = $dosen->toArray();
+
+            $stmt->bind_param(
+                "ssssiss",
+                $data['npk'],
+                $data['nama'],
+                $data['foto_extension'],
+                $data['username']
+            );
+
+            if (!$stmt->execute()) {
+                throw new Exception($stmt->error);
+            }
+
+            return $stmt->affected_rows === 1;
+
+        } catch (Exception $e) {
+            throw $e;
         } finally {
             if ($stmt) {
                 $stmt->close();
@@ -664,7 +708,7 @@ class RepoAccount
             return $stmt->affected_rows === 1;
 
         } catch (Exception $e) {
-            throw new Exception("Gagal menghapus mahasiswa: " . $e->getMessage());
+            throw $e;
         } finally {
             if ($stmt) {
                 $stmt->close();
@@ -675,11 +719,45 @@ class RepoAccount
         }
     }
 
+    public function deleteDosen(string $npk): bool{
+        
+        $sql = "DELETE FROM dosen WHERE npk = ?";
+
+        $stmt = null;
+        $conn = null;
+
+        try {
+            $conn = $this->db->connect();
+            $stmt = $conn->prepare($sql);
+
+            if (!$stmt) {
+                throw new Exception("Failed to prepare delete dosen statement");
+            }
+
+            $stmt->bind_param("s", $npk);
+
+            if (!$stmt->execute()) {
+                throw new Exception($stmt->error);
+            }
+
+            return $stmt->affected_rows === 1;
+
+        } catch (Exception $e) {
+            throw $e;
+        } finally {
+            if ($stmt) {
+                $stmt->close();
+            }
+            if ($conn) {
+                $conn->close();
+            }
+        }
+    }
     #endregion
 
     #region MAPPER
 
-    private function mapAccountObject(array $row)
+    private function mapAccountObject(array $row): Akun|Dosen|Mahasiswa
     {
         if (!empty($row['nrp'])) {
             $m = new Mahasiswa();
