@@ -38,7 +38,7 @@ class Event extends DatabaseConnection
 
         if ($id !== null) $this->setId($id);
         if ($judul !== null) $this->setJudul($judul);
-        if ($slug !== null) $this->setSlug($slug);
+        if ($slug !== null) $this->setSlug();
         if ($tanggal !== null) $this->setTanggal($tanggal);
         if ($keterangan !== null) $this->setKeterangan($keterangan);
         if ($jenis !== null) $this->setJenis($jenis);
