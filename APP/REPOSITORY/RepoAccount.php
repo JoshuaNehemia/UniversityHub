@@ -47,7 +47,7 @@ class RepoAccount
             $conn = $this->db->connect();
             $stmt = $conn->prepare($sql);
             if (!$stmt) {
-                throw new Exception("Failed to prepare create akun statement");
+                throw new Exception("Failed to prepare create akun statement: " . $conn->error);
             }
 
             $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
