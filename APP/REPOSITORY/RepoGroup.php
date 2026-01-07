@@ -68,8 +68,9 @@ class RepoGroup
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -105,18 +106,20 @@ class RepoGroup
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
 
-    public function findAllGroupByName(string $name, int $limit, int $page, $is_mahasiswa = true): array
+    public function findAllGroupByName(string $name, int $limit, int $page, $is_mahasiswa): array
     {
         $mahasiswa_display = $is_mahasiswa ? "AND jenis = 'Publik'" : "";
-        $sql = "SELECT * FROM grup WHERE nama  {$mahasiswa_display} IS LIKE ? LIMIT ? OFFSET ?";
+        $sql = "SELECT * FROM grup WHERE nama LIKE ? {$mahasiswa_display} LIMIT ? OFFSET ?;";
 
-        $nama = "%{$name}%";
+        $name = "%{$name}%";
         $offset = $page * $limit;
+        $stmt = null;
         try {
             $conn = $this->db->connect();
             $stmt = $conn->prepare($sql);
@@ -144,8 +147,9 @@ class RepoGroup
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
 
@@ -180,8 +184,9 @@ class RepoGroup
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -223,8 +228,9 @@ class RepoGroup
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -254,8 +260,9 @@ class RepoGroup
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -264,7 +271,7 @@ class RepoGroup
     private function groupMapper(array $row): Group
     {
         $group = new Group();
-        $group->setId($row["id"]);
+        $group->setId($row["idgrup"]);
         $group->setPembuat($row['username_pembuat']);
         $group->setNama($row['nama']);
         $group->setDeskripsi($row['deskripsi']);

@@ -15,11 +15,14 @@ switch ($method) {
     case "POST":
         $response = post($controller);
         break;
+    case "GET":
+        $response = get($controller);
+        break;
     case "DELETE":
         $response = delete($controller);
         break;
-    case "GET":
-        $response = get($controller);
+    case "PUT":
+        $response = put($controller);
         break;
 }
 #endregion
@@ -35,25 +38,31 @@ function post($controller)
         "message" => "Create account successful"
     );
 }
+function get()
+{
+    return array(
+        "status" => "failed",
+        "message" => "No api exists"
+    );
+}
 function delete($controller)
 {
-    $controller->logout();
+    $data = json_decode(file_get_contents("php://input"), true);
+    $res = $controller->deleteAccount($data);
     return array(
         "status" => "success",
-        "message" => "Log out successful"
+        "data" => $res,
+        "message" => "Delete account successful"
     );
 }
 
-function put(){
-    
-}
-
-function get($controller)
+function put($controller)
 {
-    $account = $controller->getLoggedInAccount();
+    $data = json_decode(file_get_contents("php://input"), true);
+    $res = $controller->updateAccount($data);
     return array(
         "status" => "success",
-        "data" => $account,
-        "message" => "Retrieve account successful"
+        "data" => $res,
+        "message" => "Update account successful"
     );
 }

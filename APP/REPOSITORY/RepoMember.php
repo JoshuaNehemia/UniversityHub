@@ -50,8 +50,9 @@ class RepoGroup
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -116,8 +117,9 @@ class RepoGroup
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -148,8 +150,9 @@ class RepoGroup
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
 

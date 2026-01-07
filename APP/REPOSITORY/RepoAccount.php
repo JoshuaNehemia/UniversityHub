@@ -51,14 +51,12 @@ class RepoAccount
             if (!$stmt) {
                 throw new Exception("Failed to prepare create akun statement: " . $conn->error);
             }
-
-            $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
             $isAdmin = ($nrp === null && $npk === null) ? 1 : 0;
 
             $stmt->bind_param(
                 'ssssi',
                 $username,
-                $hashedPassword,
+                $password,
                 $nrp,
                 $npk,
                 $isAdmin
@@ -131,8 +129,9 @@ class RepoAccount
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
 
@@ -185,8 +184,9 @@ class RepoAccount
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -211,7 +211,7 @@ class RepoAccount
     private function fetchAccountRow(string $username): array
     {
         $sql = "
-            SELECT a.*, m.*, d.*
+            SELECT a.*, m.*, d.*,m.nama AS 'm_nama', d.nama AS 'd_nama'
             FROM akun a
             LEFT JOIN mahasiswa m ON a.nrp_mahasiswa = m.nrp
             LEFT JOIN dosen d ON a.npk_dosen = d.npk
@@ -235,13 +235,14 @@ class RepoAccount
             }
 
             $result = $stmt->get_result();
-
-            return $result->fetch_assoc();
+            $row = $result->fetch_assoc();
+            return $row;
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
 
@@ -303,8 +304,9 @@ class RepoAccount
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
 
@@ -366,8 +368,9 @@ class RepoAccount
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
 
@@ -426,8 +429,9 @@ class RepoAccount
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -475,8 +479,9 @@ class RepoAccount
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     public function findAllDosenByName(int $limit, int $offset, string $keyword): array
@@ -524,8 +529,9 @@ class RepoAccount
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
 
@@ -542,9 +548,7 @@ class RepoAccount
         try {
             $conn = $this->db->connect();
             $stmt = $conn->prepare($sql);
-
-            $hashed = password_hash($newPassword, PASSWORD_BCRYPT);
-            $stmt->bind_param('ss', $hashed, $username);
+            $stmt->bind_param('ss', $newPassword, $username);
 
             if (!$stmt->execute()) {
                 throw new Exception($stmt->error);
@@ -554,8 +558,9 @@ class RepoAccount
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
 
@@ -617,7 +622,7 @@ class RepoAccount
                 $stmt->close();
             }
             if ($conn) {
-                $conn->close();
+                $this->db->close();
             }
         }
     }
@@ -669,7 +674,7 @@ class RepoAccount
                 $stmt->close();
             }
             if ($conn) {
-                $conn->close();
+                $this->db->close();
             }
         }
     }
@@ -700,8 +705,67 @@ class RepoAccount
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
+        }
+    }
+    public function deleteAkunByNRP(string $nrp): bool
+    {
+        $sql = "DELETE FROM akun WHERE nrp_mahasiswa = ?";
+
+        $stmt = null;
+        $conn = null;
+
+        try {
+            $conn = $this->db->connect();
+            $stmt = $conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("Failed to prepare delete akun statement");
+            }
+
+            $stmt->bind_param('s', $nrp);
+
+            if (!$stmt->execute()) {
+                throw new Exception($stmt->error);
+            }
+
+            return $stmt->affected_rows === 1;
+        } finally {
+            if ($stmt)
+                $stmt->close();
+            if ($conn) {
+                $this->db->close();
+            }
+        }
+    }
+    public function deleteAkunByNPK(string $npk): bool
+    {
+        $sql = "DELETE FROM akun WHERE npk_dosen = ?";
+
+        $stmt = null;
+        $conn = null;
+
+        try {
+            $conn = $this->db->connect();
+            $stmt = $conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("Failed to prepare delete akun statement");
+            }
+
+            $stmt->bind_param('s', $npk);
+
+            if (!$stmt->execute()) {
+                throw new Exception($stmt->error);
+            }
+
+            return $stmt->affected_rows === 1;
+        } finally {
+            if ($stmt)
+                $stmt->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     public function deleteMahasiswa(string $nrp): bool
@@ -734,7 +798,7 @@ class RepoAccount
                 $stmt->close();
             }
             if ($conn) {
-                $conn->close();
+                $this->db->close();
             }
         }
     }
@@ -770,7 +834,7 @@ class RepoAccount
                 $stmt->close();
             }
             if ($conn) {
-                $conn->close();
+                $this->db->close();
             }
         }
     }
@@ -783,7 +847,7 @@ class RepoAccount
         if (!empty($row['nrp'])) {
             $m = new Mahasiswa();
             $m->setUsername($row['username']);
-            $m->setNama($row['nama']);
+            $m->setNama($row['m_nama']);
             $m->setJenis(ACCOUNT_ROLE[0]);
             $m->setNRP($row['nrp']);
             $m->setTanggalLahir($row['tanggal_lahir']);
@@ -796,7 +860,7 @@ class RepoAccount
         if (!empty($row['npk'])) {
             $d = new Dosen();
             $d->setUsername($row['username']);
-            $d->setNama($row['nama']);
+            $d->setNama($row['d_nama']);
             $d->setJenis(ACCOUNT_ROLE[1]);
             $d->setNPK($row['npk']);
             $d->setFotoExtention($row['foto_extension']);

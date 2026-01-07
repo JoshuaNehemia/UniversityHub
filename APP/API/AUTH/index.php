@@ -21,6 +21,9 @@ switch ($method) {
     case "GET":
         $response = get($controller);
         break;
+    case "PUT":
+        $response = put();
+        break;
 }
 #endregion
 
@@ -51,5 +54,12 @@ function get($controller)
         "status" => "success",
         "data" => $account,
         "message" => "Retrieve account successful"
+    );
+}
+
+function put(){
+    return array(
+        "status" => "failed",
+        "message" => "No api exists"
     );
 }

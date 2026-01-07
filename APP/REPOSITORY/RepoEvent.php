@@ -57,8 +57,9 @@ class RepoEvent
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
 
@@ -99,6 +100,9 @@ class RepoEvent
         } finally {
             if ($stmt)
                 $stmt->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
 
@@ -136,6 +140,9 @@ class RepoEvent
         } finally {
             if ($stmt)
                 $stmt->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -185,8 +192,9 @@ class RepoEvent
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -246,8 +254,9 @@ class RepoEvent
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -284,8 +293,9 @@ class RepoEvent
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion

@@ -67,8 +67,9 @@ class RepoThread
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -111,8 +112,9 @@ class RepoThread
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -156,8 +158,9 @@ class RepoThread
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -188,8 +191,9 @@ class RepoThread
         } finally {
             if ($stmt)
                 $stmt->close();
-            if ($conn)
-                $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion

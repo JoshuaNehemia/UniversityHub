@@ -67,7 +67,9 @@ class RepoChat
 
         } finally {
             if ($stmt) $stmt->close();
-            if ($conn) $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
 
@@ -116,7 +118,9 @@ class RepoChat
 
         } finally {
             if ($stmt) $stmt->close();
-            if ($conn) $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion
@@ -159,7 +163,9 @@ class RepoChat
 
         } finally {
             if ($stmt) $stmt->close();
-            if ($conn) $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
 
@@ -189,7 +195,9 @@ class RepoChat
 
         } finally {
             if ($stmt) $stmt->close();
-            if ($conn) $conn->close();
+            if ($conn) {
+                $this->db->close();
+            }
         }
     }
     #endregion

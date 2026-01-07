@@ -25,7 +25,7 @@ class DatabaseConnection
 
     public function connect()
     {
-        if ($this->conn == null) {
+        if ($this->conn == null || !$this->conn->ping()) {
             $this->conn = new mysqli(
                 DATABASE_ADDRESS,
                 DATABASE_USERNAME,
@@ -40,11 +40,12 @@ class DatabaseConnection
         return $this->conn;
     }
 
-    public function close()
+        public function close(): void
     {
         if ($this->conn !== null) {
             $this->conn->close();
             $this->conn = null;
         }
     }
+
 }

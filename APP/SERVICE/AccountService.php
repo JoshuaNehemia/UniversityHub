@@ -15,6 +15,7 @@ use MODELS\Akun;
 use MODELS\Dosen;
 use MODELS\Mahasiswa;
 use REPOSITORY\RepoAccount;
+use Exception;
 #endregion
 
 class AccountService
@@ -47,10 +48,8 @@ class AccountService
     #endregion
 
     #region UPDATE   
-    public function updateAccount($akun, string $raw_password)
+    public function updateAccount($akun)
     {
-        $hashed = password_hash($raw_password, PASSWORD_DEFAULT);
-
         if ($akun instanceof Dosen) {
             // create dosen account
             $result = $this->repo_account->updateDosen($akun);
@@ -69,18 +68,20 @@ class AccountService
     #endregion
 
     #region DELETE
-    public function deleteAccount($akun, string $raw_password)
+    public function deleteMahasiswa($nrp)
     {
-        $hashed = password_hash($raw_password, PASSWORD_DEFAULT);
-
-        $result = $this->repo_account->deleteAkun($akun->getUsername());
-        if ($akun instanceof Dosen) {
-            // delete dosen account
-            $result = $this->repo_account->deleteDosen($akun->getNPK());
-        } else if ($akun instanceof Mahasiswa) {
-            // delete mahasiswa account
-            $result = $this->repo_account->deleteMahasiswa($akun->getNRP());
-        }
+        $result = $this->repo_account->deleteAkunByNRP($nrp);
+        if (!$result)
+            throw new Exception("Failed to delete: No Account Found");
+        $result = $this->repo_account->deleteMahasiswa($nrp);
+        return $result;
+    }
+    public function deleteDosen($npk)
+    {
+        $result = $this->repo_account->deleteAkunByNPK($npk);
+        if (!$result)
+            throw new Exception("Failed to delete: No Account Found");
+        $result = $this->repo_account->deleteDosen($npk);
         return $result;
     }
     #endregion

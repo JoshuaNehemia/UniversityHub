@@ -73,7 +73,7 @@ class Group
         if (!is_numeric($id) || $id <= 0) {
             throw new Exception("ID harus berupa angka positif lebih dari 0.");
         }
-        $this->id = (int)$id;
+        $this->id = (int) $id;
     }
 
     public function setPembuat($pembuat)
@@ -105,8 +105,10 @@ class Group
 
     public function setTanggalDibuat($tanggalDibuat)
     {
-        if (empty(trim($tanggalDibuat))) throw new Exception("Group tanggal dibuat can't be empty");
-        if(!(preg_match_all(DATETIME_REGEX, $tanggalDibuat)))throw new Exception("Group tanggal dibuat is not in correct format YYYY-MM-DD HH:mm:SS");
+        if (empty(trim($tanggalDibuat)))
+            throw new Exception("Group tanggal dibuat can't be empty");
+        if (!(preg_match_all(DATETIME_REGEX, $tanggalDibuat)))
+            throw new Exception("Group tanggal dibuat is not in correct format YYYY-MM-DD HH:mm:SS");
         $this->tanggalDibuat = $tanggalDibuat;
     }
 
@@ -119,13 +121,14 @@ class Group
         $this->jenis = $normalized;
     }
 
-    public function setKode($kode)
+    public function setKode($kode, $create_new = false)
     {
-        if (empty(trim($kode))) {
-            $this->kode = "0000";
-        } else {
-            $this->kode = $kode;
+        if($create_new){
+            $kode = $this->randomString();
         }
+        if (empty(trim($kode)))
+            throw new Exception("Group code can't be empty");
+        $this->kode = $kode;
     }
     #endregion
 
@@ -141,6 +144,19 @@ class Group
             "jenis" => $this->getJenis(),
             "kode" => $this->getKode()
         );
+    }
+
+    private function randomString($length = CODE_LENGTH)
+    {
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $result = '';
+        $maxIndex = strlen($characters) - 1;
+
+        for ($i = 0; $i < $length; $i++) {
+            $result .= $characters[random_int(0, $maxIndex)];
+        }
+
+        return $result;
     }
     #endregion
 }

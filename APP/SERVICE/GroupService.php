@@ -4,50 +4,55 @@ namespace SERVICE;
 
 #region REQUIRE
 require_once(__DIR__ . "/../config.php");
-require_once(__DIR__ . "/../MODELS/Akun.php");
-require_once(__DIR__ . "/../MODELS/Mahasiswa.php");
-require_once(__DIR__ . "/../MODELS/Dosen.php");
-require_once(__DIR__ . "/../REPOSITORY/RepoAccount.php");
+require_once(__DIR__ . "/../MODELS/Group.php");
+require_once(__DIR__ . "/../REPOSITORY/RepoGroup.php");
 #endregion
 
 #region USE
-use MODELS\Akun;
-use MODELS\Dosen;
-use MODELS\Mahasiswa;
-use REPOSITORY\RepoAccount;
+use MODELS\Group;
+use REPOSITORY\RepoGroup;
 #endregion
 
-class UserService
+class GroupService
 {
     #region FIELDS
-    private $repo_account;
+    private $repo;
     #endregion
 
     #region CONSTRUCTOR
     public function __construct()
     {
-        $this->repo_account = new RepoAccount();
+        $this->repo = new RepoGroup();
     }
     #endregion
 
     #region FUNCTION
-    public function addGroup($group)
+    public function createGroup(Group $group): bool
     {
-
+        return $this->repo->createGroup($group);
     }
 
-    public function getGroup($group_id)
+    public function getGroupById(int $group_id): array
     {
-
+        return $this->repo->findGroupById($group_id)->toArray();
     }
-
+    public function getGroupByName(string $name, int $limit, int $page, bool $is_mahasiswa): array
+    {
+        $arr = $this->repo->findAllGroupByName($name, $limit, $page, $is_mahasiswa);
+        $res = [];
+        foreach ($arr as $key => $value) {
+            $res[] = $value->toArray();
+        }
+        return $res;
+    }
     public function updateGroup($group)
     {
-
+        return $this->repo->updateGroup($group);
     }
-    public function deleteGroup($group)
-    {
 
+    public function deleteGroup($id_group)
+    {
+        return $this->repo->deleteGroup($id_group);
     }
     #endregion
 }
