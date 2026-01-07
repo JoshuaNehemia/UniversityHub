@@ -29,8 +29,16 @@ class UserService{
     #endregion
 
     #region FUNCTION
-    public function login($username, $password){
-        return $this->repo_account->login($username, $password);
+    public function getUserGroup($username){
+
+    }
+
+    public function getUserEvent($username){
+
+    }
+
+    public function getUserThread($username){
+        
     }
     #endregion
 }

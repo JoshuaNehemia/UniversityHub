@@ -31,19 +31,34 @@ class UserService
     #endregion
 
     #region FUNCTION
-    public function addGroupEvent($group_id, $event)
+    public function saveProfilePicture($file, $code)
     {
 
     }
-    public function getGroupEvent($group_id)
+
+    public function updateProfilePicture($file, $code)
     {
 
     }
-    public function updateGroupEvent($group_id, $event)
+
+    public function deleteProfilePicture($file, $code)
     {
 
     }
-    public function deleteGroupEvent($group_id, $event_id)
+
+    public function saveEventPoster($file, $event_id)
+    {
+    }
+    public function updateEventPoster($file, $event_id)
+    {
+    }
+
+    public function deleteEventPoster($file, $event_id)
+    {
+
+    }
+
+    private function savePicture($file, $address)
     {
 
     }
