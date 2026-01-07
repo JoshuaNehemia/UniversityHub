@@ -26,12 +26,12 @@ class RepoThread
     }
     #endregion
     #region CREATE
-    public function create(Thread $thread, int $idgrup): Thread
+    public function create(int $idgrup, Thread $thread): bool
     {
         $sql = "
             INSERT INTO thread
             (username_pembuat, idgrup, tanggal_pembuatan, status)
-            VALUES (?, ?, ?, ?)
+            VALUES (?, ?, CURRENT_TIMESTAMP, ?)
         ";
 
         $conn = null;
@@ -46,14 +46,12 @@ class RepoThread
             }
 
             $pembuat = $thread->getPembuat();
-            $tanggal = $thread->getTanggalPembuatan();
             $status = $thread->getStatus();
 
             $stmt->bind_param(
-                "siss",
+                "sis",
                 $pembuat,
                 $idgrup,
-                $tanggal,
                 $status
             );
 
@@ -61,8 +59,7 @@ class RepoThread
                 throw new Exception("Failed to execute CREATE thread: " . $stmt->error);
             }
 
-            $thread->setId($conn->insert_id);
-            return $thread;
+            return $stmt->affected_rows === 1;
 
         } finally {
             if ($stmt)
@@ -117,13 +114,57 @@ class RepoThread
             }
         }
     }
+    public function findByGroupId(int $id_group): array
+    {
+        $sql = "SELECT * FROM thread WHERE idgrup = ?";
+
+        $conn = null;
+        $stmt = null;
+
+        try {
+            $conn = $this->db->connect();
+            $stmt = $conn->prepare($sql);
+
+            if (!$stmt) {
+                throw new Exception("Failed to prepare RETRIEVE thread: " . $conn->error);
+            }
+
+            $stmt->bind_param("i", $id_group);
+
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to execute RETRIEVE thread: " . $stmt->error);
+            }
+
+            $result = $stmt->get_result();
+            $threads = [];
+            while ($row = $result->fetch_assoc()) {
+
+                $thread = new Thread();
+                $thread->setId($row['idthread']);
+                $thread->setPembuat($row['username_pembuat']);
+                $thread->setTanggalPembuatan($row['tanggal_pembuatan']);
+                $thread->setStatus($row['status']);
+
+                $threads[]= $thread;
+            }
+
+            return $threads;
+
+        } finally {
+            if ($stmt)
+                $stmt->close();
+            if ($conn) {
+                $this->db->close();
+            }
+        }
+    }
     #endregion
     #region UPDATE
     public function update(Thread $thread): bool
     {
         $sql = "
             UPDATE thread
-            SET status = ?, tanggal_pembuatan = ?
+            SET status = ?
             WHERE idthread = ?
         ";
 
@@ -139,13 +180,11 @@ class RepoThread
             }
 
             $status = $thread->getStatus();
-            $tanggal = $thread->getTanggalPembuatan();
             $id = $thread->getId();
 
             $stmt->bind_param(
-                "ssi",
+                "si",
                 $status,
-                $tanggal,
                 $id
             );
 

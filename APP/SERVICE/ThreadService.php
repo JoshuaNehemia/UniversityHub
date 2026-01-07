@@ -4,50 +4,49 @@ namespace SERVICE;
 
 #region REQUIRE
 require_once(__DIR__ . "/../config.php");
-require_once(__DIR__ . "/../MODELS/Akun.php");
-require_once(__DIR__ . "/../MODELS/Mahasiswa.php");
-require_once(__DIR__ . "/../MODELS/Dosen.php");
-require_once(__DIR__ . "/../REPOSITORY/RepoAccount.php");
+require_once(__DIR__ . "/../MODELS/Thread.php");
+require_once(__DIR__ . "/../REPOSITORY/RepoThread.php");
 #endregion
 
 #region USE
-use MODELS\Akun;
-use MODELS\Dosen;
-use MODELS\Mahasiswa;
-use REPOSITORY\RepoAccount;
+use MODELS\Thread;
+use REPOSITORY\RepoThread;
 #endregion
 
-class UserService
+class ThreadService
 {
     #region FIELDS
-    private $repo_account;
+    private $repo;
     #endregion
 
     #region CONSTRUCTOR
     public function __construct()
     {
-        $this->repo_account = new RepoAccount();
+        $this->repo = new RepoThread();
     }
     #endregion
 
     #region FUNCTION
-    public function addGroupThread($group_id, $thread)
+    public function createThread(int $group_id, Thread $thread)
     {
-
+        return $this->repo->create($group_id,thread: $thread);
     }
-    public function getAllGroupThread($group_id)
+    public function getThread(int $group_id)
     {
-
+        $arr = $this->repo->findByGroupId($group_id);
+        $res = [];
+        foreach( $arr as $thread ){
+            $res[] = $thread->toArray();
+        }
+        return $res;
     }
-
-    public function updateGroupThread($group_id, $thread)
+    public function updateThread(Thread $thread)
     {
-
+        return $this->repo->update($thread);
     }
-
-    public function deleteGroupThread($group_id, $thread_id)
+    public function deleteThread(int $thread_id)
     {
-
+        return $this->repo->delete($thread_id);
     }
     #endregion
 }

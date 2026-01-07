@@ -16,7 +16,7 @@ switch ($method) {
     case "POST":
         $response = post($controller);
         break;
-    case "DEFAULT":
+    default:
         $response = notfound();
 }
 #endregion

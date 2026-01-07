@@ -26,6 +26,9 @@ switch ($resource) {
     case "JOIN":
         require_once("$routesPath/API/JOIN/" . $index);
         break;
+    case "THREAD":
+        require_once("$routesPath/API/THREAD/" . $index);
+        break;
     default:
         throw new Exception("No API Found");
 }

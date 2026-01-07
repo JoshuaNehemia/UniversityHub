@@ -11,7 +11,6 @@ require_once(__DIR__ . "/../config.php");
 #region USE
 use SERVICE\JoinService;
 use Exception;
-
 #endregion
 
 class JoinController
