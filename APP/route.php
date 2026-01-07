@@ -8,6 +8,9 @@ $routesPath = __DIR__;
 $index = "index.php";
 
 switch ($resource) {
+    case "CHAT":
+        require_once("$routesPath/API/CHAT/" . $index);
+        break;
     case "AUTH":
         require_once("$routesPath/API/AUTH/" . $index);
         break;
@@ -28,6 +31,9 @@ switch ($resource) {
         break;
     case "THREAD":
         require_once("$routesPath/API/THREAD/" . $index);
+        break;
+    case "IMAGE":
+        require_once("$routesPath/API/IMAGE/" . $index);
         break;
     default:
         throw new Exception("No API Found");

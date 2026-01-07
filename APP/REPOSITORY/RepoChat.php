@@ -32,7 +32,7 @@ class RepoChat
         $sql = "
             INSERT INTO chat
             (idthread, username_pembuat, isi, tanggal_pembuatan)
-            VALUES (?, ?, ?, ?)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
         ";
 
         $conn = null;
@@ -48,14 +48,12 @@ class RepoChat
 
             $pengirim = $chat->getPengirim();
             $isi      = $chat->getIsi();
-            $tanggal  = $chat->getTanggalPembuatan();
 
             $stmt->bind_param(
-                "isss",
+                "iss",
                 $idThread,
                 $pengirim,
-                $isi,
-                $tanggal
+                $isi
             );
 
             if (!$stmt->execute()) {
@@ -130,7 +128,7 @@ class RepoChat
     {
         $sql = "
             UPDATE chat
-            SET isi = ?, tanggal_pembuatan = ?
+            SET isi = ?
             WHERE idchat = ?
         ";
 
@@ -145,13 +143,11 @@ class RepoChat
                 throw new Exception("Failed to prepare UPDATE chat: " . $conn->error);
             }
             $isi     = $chat->getIsi();
-            $tanggal = $chat->getTanggalPembuatan();
             $id      = $chat->getId();
 
             $stmt->bind_param(
-                "ssi",
+                "si",
                 $isi,
-                $tanggal,
                 $id
             );
 
@@ -159,7 +155,7 @@ class RepoChat
                 throw new Exception("Failed to execute UPDATE chat: " . $stmt->error);
             }
 
-            return $stmt->affected_rows > 0;
+            return $stmt->affected_rows === 1;
 
         } finally {
             if ($stmt) $stmt->close();

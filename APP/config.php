@@ -12,7 +12,7 @@ define("CODE_LENGTH",6);
 
 #region MEDIA
 define("MEDIA_TYPE",array("PROFILE_PICTURE","EVENT_POSTER"));
-define("MAX_IMAGE_SIZE",2000); //In mega bytes
+define("MAX_IMAGE_SIZE",2 * 1024 * 1024); 
 define("ALLOWED_PICTURE_EXTENSION",array("jpg","jpeg","png","webp"));
 #endregion
 

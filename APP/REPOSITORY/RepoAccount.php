@@ -311,7 +311,7 @@ class RepoAccount
     }
 
 
-    public function findAllMahasiswaByNRP(int $limit, int $offset, string $keyword): array
+    public function findMahasiswaByNRP(string $nrp): Mahasiswa
     {
         $sql = "
         SELECT 
@@ -324,8 +324,7 @@ class RepoAccount
             m.foto_extention
         FROM mahasiswa m
         INNER JOIN akun a ON m.nrp = a.nrp_mahasiswa
-        WHERE m.nrp LIKE ?
-        LIMIT ? OFFSET ?
+        WHERE m.nrp = ?
     ";
 
         $stmt = null;
@@ -338,31 +337,28 @@ class RepoAccount
                 throw new Exception("Failed to prepare find mahasiswa by NRP statement");
             }
 
-            $keyword = "%{$keyword}%";
-            $offset = $offset * $limit;
-
-            $stmt->bind_param("sii", $keyword, $limit, $offset);
+            $stmt->bind_param("s", $nrp);
 
             if (!$stmt->execute()) {
                 throw new Exception($stmt->error);
             }
 
             $result = $stmt->get_result();
-            $list = [];
-
-            while ($row = $result->fetch_assoc()) {
-                $list[] = new Mahasiswa(
-                    $row["username"],
-                    $row["nama"],
-                    $row["nrp"],
-                    $row["tanggal_lahir"],
-                    $row["gender"],
-                    $row["angkatan"],
-                    $row["foto_extention"]
-                );
+            $row = null;
+            if (!($row = $result->fetch_assoc())) {
+                throw new Exception("Failed to retrieve Mahasiswa: Not Found");
             }
+            return new Mahasiswa(
+                $row["username"],
+                $row["nama"],
+                $row["nrp"],
+                $row["tanggal_lahir"],
+                $row["gender"],
+                $row["angkatan"],
+                $row["foto_extention"]
+            );
 
-            return $list;
+
         } catch (Exception $e) {
             throw $e;
         } finally {
@@ -457,6 +453,54 @@ class RepoAccount
             }
 
             $stmt->bind_param("s", $username);
+
+            if (!$stmt->execute()) {
+                throw new Exception($stmt->error);
+            }
+
+            $result = $stmt->get_result();
+            if ($result->num_rows === 0) {
+                throw new Exception("Dosen tidak ditemukan");
+            }
+
+            $row = $result->fetch_assoc();
+            $dosen = new Dosen();
+            $dosen->setUsername($row['username']);
+            $dosen->setNama($row['nama']);
+            $dosen->setNPK($row['npk']);
+            $dosen->setFotoExtention($row['foto_extension']);
+            return $dosen;
+        } catch (Exception $e) {
+            throw $e;
+        } finally {
+            if ($stmt)
+                $stmt->close();
+            if ($conn) {
+                $this->db->close();
+            }
+        }
+    }
+    public function findDosenByNPK(string $npk): Dosen
+    {
+        $sql = "
+        SELECT a.username, d.npk, d.nama, d.foto_extension
+        FROM akun a
+        INNER JOIN dosen d ON a.npk_dosen = d.npk
+        WHERE a.npk_dosen = ?
+    ";
+
+        $stmt = null;
+        $conn = null;
+
+        try {
+            $conn = $this->db->connect();
+            $stmt = $conn->prepare($sql);
+
+            if (!$stmt) {
+                throw new Exception("Failed to prepare get dosen by username statement");
+            }
+
+            $stmt->bind_param("s", $npk);
 
             if (!$stmt->execute()) {
                 throw new Exception($stmt->error);

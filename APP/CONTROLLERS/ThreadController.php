@@ -32,8 +32,8 @@ class ThreadController
     {
         if (!isset($data['idgrup']))
             throw new Exception("Data incomplete missing group id");
-        if (!isset($data['pembuat']))
-            throw new Exception("Data incomplete missing username pembuat");
+        if (!isset($data['username']))
+            throw new Exception("Data incomplete missing username username");
         $thread = $this->mapDataToThread($data);
         return $this->service->createThread($data['idgrup'], $thread);
     }
@@ -93,8 +93,8 @@ class ThreadController
         if (array_key_exists('tanggal_pembuatan', $data) && $data['tanggal_pembuatan'] !== null) {
             $thread->setTanggalPembuatan((int) $data['tanggal_pembuatan']);
         }
-        if (array_key_exists('pembuat', $data) && $data['pembuat'] !== null) {
-            $thread->setTanggalPembuatan((int) $data['pembuat']);
+        if (array_key_exists('username', $data) && $data['username'] !== null) {
+            $thread->setPembuat((int) $data['username']);
         }
 
         $thread->setStatus($data['status']);

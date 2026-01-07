@@ -62,6 +62,41 @@ class RepoEvent
             }
         }
     }
+    public function findEventBySlug(string $slug)
+    {
+        $sql = "SELECT * FROM event WHERE idevent = ?";
+        try {
+            $conn = $this->db->connect();
+            $stmt = $conn->prepare($sql);
+
+            if (!$stmt) {
+                throw new Exception("Failed to prepare retrieve event statement: " . $conn->error);
+            }
+
+            $stmt->bind_param("i", $slug);
+
+            if (!$stmt->execute()) {
+                throw new Exception($stmt->error);
+            }
+
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+
+            if (!$row) {
+                throw new Exception("No Event found");
+            }
+
+            return $this->mapper($row);
+        } catch (Exception $e) {
+            throw $e;
+        } finally {
+            if ($stmt)
+                $stmt->close();
+            if ($conn) {
+                $this->db->close();
+            }
+        }
+    }
 
     public function findAllEventByGroupId(int $idgroup, $keyword, int $limit, int $page): array
     {
