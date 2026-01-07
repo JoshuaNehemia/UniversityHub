@@ -20,6 +20,12 @@ switch ($resource) {
     case "EVENT":
         require_once("$routesPath/API/EVENT/" . $index);
         break;
+    case "MEMBER":
+        require_once("$routesPath/API/MEMBER/" . $index);
+        break;
+    case "JOIN":
+        require_once("$routesPath/API/JOIN/" . $index);
+        break;
     default:
         throw new Exception("No API Found");
 }

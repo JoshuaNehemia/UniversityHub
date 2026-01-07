@@ -3,42 +3,35 @@
 namespace SERVICE;
 
 #region REQUIRE
-require_once(__DIR__ ."/../config.php");
-require_once(__DIR__ ."/../MODELS/Akun.php");
-require_once(__DIR__ ."/../MODELS/Mahasiswa.php");
-require_once(__DIR__ ."/../MODELS/Dosen.php");
-require_once(__DIR__ ."/../REPOSITORY/RepoAccount.php");
+require_once(__DIR__ ."/../REPOSITORY/RepoMember.php");
 #endregion
 
 #region USE
-use MODELS\Akun;
-use MODELS\Dosen;
-use MODELS\Mahasiswa;
-use REPOSITORY\RepoAccount;
+use REPOSITORY\RepoMember;
 #endregion
 
-class UserService{
+class MemberService{
     #region FIELDS
-    private $repo_account;
+    private $repo;
     #endregion
 
     #region CONSTRUCTOR
     public function __construct(){
-        $this->repo_account = new RepoAccount();
+        $this->repo = new RepoMember();
     }
     #endregion
 
     #region FUNCTION
     public function getGroupMember($group_id){
-
+        return $this->repo->findGroupMember($group_id);
     }
 
-    public function addGroupMember($group_id){
-
+    public function addGroupMember($group_id,$username){
+        return $this->repo->addMember($group_id,$username);
     }
 
     public function deleteGroupMember($group_id,$username){
-        
+        return $this->repo->deleteMember($group_id,$username);
     }
     #endregion
 }

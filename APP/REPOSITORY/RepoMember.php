@@ -12,7 +12,7 @@ use MODELS\Group;
 use Exception;
 #endregion
 
-class RepoGroup
+class RepoMember
 {
     #region FIELDS
     private DatabaseConnection $db;
@@ -46,6 +46,9 @@ class RepoGroup
             return $stmt->affected_rows === 1;
 
         } catch (Exception $e) {
+            if ($e->getCode() === 1062) {
+                throw new Exception("Account is already a member");
+            }
             throw $e;
         } finally {
             if ($stmt)
