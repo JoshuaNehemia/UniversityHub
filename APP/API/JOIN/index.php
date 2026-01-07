@@ -1,86 +1,42 @@
 <?php
+#region REQUIRE
+require_once(__DIR__ . "/../../CONTROLLERS/JoinController.php");
+#endregion
 
-require_once(__DIR__ . "/../../auth.php");
-require_once(__DIR__ . "/../../boot.php");
-require_once(__DIR__ . "/../../config.php");
-require_once(__DIR__ . "/../../CONTROLLERS/JoinGroupController.php");
+#region USE
+use CONTROLLERS\JoinController;
 
-use CONTROLLERS\JoinGroupController;
+#endregion
 
-// =============================================================================================
-// RUN
-// =============================================================================================
-main();
+#region REQUEST METHOD
+$method = $_SERVER['REQUEST_METHOD'];
+$controller = new JoinController();
+$response = null;
+switch ($method) {
+    case "POST":
+        $response = post($controller);
+        break;
+    default:
+        $response = notfound();
+}
+#endregion
 
-
-// =============================================================================================
-// FUNCTION
-// =============================================================================================
-function main()
+function post($controller)
 {
-    requireRole(ACCOUNT_ROLE);
-    $method = $_SERVER['REQUEST_METHOD'];
-    $controller = new JoinGroupController();
-    switch ($method) {
-        case "POST":
-            post($controller);
-            break;
-        case "GET":
-            get($controller);
-            break;
-        default:
-            http_response_code(404);
-            echo json_encode(
-                array(
-                    "status" => "error",
-                    "message" => "API not found"
-                )
-            );
-    }
+    $res = $controller->join($_POST);
+    if (!$res)
+        throw new Exception("Failed to join group.");
+    return array(
+        "status" => "success",
+        "data" => $res,
+        "message" => "Joining group as a member is successful"
+    );
 }
 
-function post(JoinGroupController $controller)
+function notfound()
 {
-    $response = null;
-    try {
-        if (!((isset($_GET['idgroup'])) && ($_GET['idgroup'] > 0))) throw new Exception("Id group tidak ada atau tidak valid.");
-        if (!isset($_POST['kode'])) throw new Exception("Kode tidak ada.");
-        $idgroup = $_GET['idgroup'];
-        $username = $_SESSION[CURRENT_ACCOUNT]['username'];
-        $kode = $_POST['kode'];
-        $controller->joinGroup($idgroup, $username, $kode);
-        $response = [
-            "status"  => "success",
-            "message" => "Berhasil masuk sebagai anggota kedalam group"
-        ];
-    } catch (Exception $e) {
-        $response = [
-            "status"  => "error",
-            "message" => $e->getMessage()
-        ];
-    } finally {
-        echo json_encode($response);
-    }
-}
-
-function get(JoinGroupController $controller)
-{
-    $response = null;
-    try {
-        if (!((isset($_GET['idgroup'])) && ($_GET['idgroup'] > 0))) throw new Exception("Id group tidak ada atau tidak valid.");
-        $idgroup = $_GET['idgroup'];
-        $username = $_GET['username'];
-        $result = $controller->checkUserJoined($idgroup,$username);
-        $response = [
-            "status"  => "success",
-            "data" => $result
-        ];
-    } catch (Exception $e) {
-        $response = [
-            "status"  => "error",
-            "message" => $e->getMessage()
-        ];
-    } finally {
-        echo json_encode($response);
-    }
+    return array(
+        "status" => "failed",
+        "message" => "API does not exists"
+    );
 }

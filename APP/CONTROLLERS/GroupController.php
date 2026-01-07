@@ -2,72 +2,114 @@
 
 namespace CONTROLLERS;
 
+#region REQUIRE
 require_once(__DIR__ . "/../MODELS/Group.php");
+require_once(__DIR__ . "/../SERVICE/GroupService.php");
 require_once(__DIR__ . "/../config.php");
 
+#endregion
+
+#region USE
 use MODELS\Group;
+use SERVICE\GroupService;
+use MIDDLEWARE\AuthMiddleware;
+use Exception;
+
+#endregion
 
 class GroupController
 {
-    public function __construct() {}
+    #region FIELDS
+    private $service;
+    #endregion
 
-    public function createGroup(array $group)
+    #region CONSTRUCTOR
+    public function __construct()
     {
-        $group = Group::readArray($group);
-        $group->setKode($this->randomString());
-        return $group->create()->getArray();
+        $this->service = new GroupService();
+    }
+    #endregion
+
+    public function createGroup($group): bool
+    {
+        $this->assertKeysExist($group, array("pembuat", "nama", "deskripsi", "pembuat", "tnggal_dibuat", "jenis"), "Create group");
+        $group = $this->mapToGroup($group);
+        $group->setKode("", true);
+        return $this->service->createGroup($group);
     }
 
-    public function editGroup(array $arr_group)
+    public function getGroup($data)
     {
-        $group = new Group();
-        $group->setId($arr_group['id']);
-        $group->setNama($arr_group['nama']);
-        $group->setDeskripsi($arr_group['deskripsi']);
-        $group->setJenis($arr_group['jenis']);
-        return $group->update()->getArray();
+        if (isset($data['id']))
+            return $this->service->getGroupById($data['id']);
+        if (isset($data['name']))
+            if (!isset($data['limit']))
+                throw new Exception("Data is incomplete, no limit");
+        if (!isset($data['page']))
+            throw new Exception("Data is incomplete, no page");
+        return $this->service->getGroupByName($data['name'], $data['limit'], $data['page'], (AuthMiddleware::getLoggedInAccount()['jenis'] == ACCOUNT_ROLE[0]));
     }
 
-    public function getSingleGroup($id)
+    public function updateGroup($data)
     {
-        return Group::getGroupById($id)->getArray();
+        $this->assertKeysExist($data, array("nama", "deskripsi","jenis", "id"), "Create group");
+        $group = $this->mapToGroup($data);
+        return $this->service->updateGroup($group);
     }
 
-    public function getListGroupByName($limit, $offset, $keyword)
-    {
-        $list = Group::getAllGroupByName($limit, $offset, $keyword);
-        foreach ($list as $key => $value) {
-            $list[$key] = $value->getArray();
-        }
-        return $list;
+    public function deleteGroup($data){
+        $this->assertKeysExist($data, array("id"));
+        return $this->service->deleteGroup($data["id"]);
     }
 
-    public function getListGroupByNameForMahasiswa($limit, $offset, $keyword)
+    private function assertKeysExist(array $data, array $keys, string $context = 'Mapper'): void
     {
-        $list = Group::getAllGroupByNameForMahasiswa($limit, $offset, $keyword);
-        foreach ($list as $key => $value) {
-            $list[$key] = $value->getArray();
-        }
-        return $list;
-    }
-    
-    public function deleteGroup($id)
-    {
-        $g = new Group();
-        $g->setId($id);
-        return $g->delete();
-    }
+        $missing = [];
 
-    private function randomString($length = CODE_LENGTH)
-    {
-        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $result = '';
-        $maxIndex = strlen($characters) - 1;
-
-        for ($i = 0; $i < $length; $i++) {
-            $result .= $characters[random_int(0, $maxIndex)];
+        foreach ($keys as $key) {
+            if (!array_key_exists($key, $data)) {
+                $missing[] = $key;
+            }
         }
 
-        return $result;
+        if (!empty($missing)) {
+            throw new Exception(
+                $context . ' missing required keys: ' . implode(', ', $missing)
+            );
+        }
+    }
+    private function mapToGroup(array $data): Group
+    {
+        $obj = new Group();
+
+        if (array_key_exists('id', $data)) {
+            $obj->setId($data['id']);
+        }
+
+        if (array_key_exists('pembuat', $data)) {
+            $obj->setPembuat($data['pembuat']);
+        }
+
+        if (array_key_exists('nama', $data)) {
+            $obj->setNama($data['nama']);
+        }
+
+        if (array_key_exists('deskripsi', $data)) {
+            $obj->setDeskripsi($data['deskripsi']);
+        }
+
+        if (array_key_exists('tanggal_dibuat', $data)) {
+            $obj->setTanggalDibuat($data['tanggal_dibuat']);
+        }
+
+        if (array_key_exists('jenis', $data)) {
+            $obj->setJenis($data['jenis']);
+        }
+
+        if (array_key_exists('kode', $data)) {
+            $obj->setKode($data['kode']);
+        }
+
+        return $obj;
     }
 }

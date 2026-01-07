@@ -2,87 +2,55 @@
 
 namespace CONTROLLERS;
 
-require_once(__DIR__ . "/../MODELS/Akun.php");
-require_once(__DIR__ . "/../MODELS/Dosen.php");
-require_once(__DIR__ . "/../MODELS/Mahasiswa.php");
-require_once(__DIR__ . "/../MODELS/Group.php");
-require_once(__DIR__ . "/../MODELS/Event.php");
-require_once(__DIR__ . "/../config.php");
+#region REQUIRE
+require_once(__DIR__ . "/../SERVICE/AuthService.php");
+#endregion
 
-use MODELS\Akun;
-use MODELS\Mahasiswa;
-use MODELS\Dosen;
-use MODELS\Group;
-use MODELS\Event;
+#region USE
+use MIDDLEWARE\AuthMiddleware;
+use SERVICE\AuthService;
 use Exception;
+
+#endregion
 
 class AuthController
 {
-    public function __construct() {}
+    #region FIELDS
+    private $authService;
+    #endregion
 
-    public function login($username, $password): array
+    #region CONSTRUCTOR
+    public function __construct()
     {
+        $this->authService = new AuthService();
+    }
+    #endregion
 
-        $jenis = Akun::akunRetrieveRole($username);
-        if (!isset($jenis)) {
-            throw new Exception("Akun anda tidak tercatat di database, mohon hubungi admin untuk pembuatan akun anda");
+    #region LOGIN & LOGOUT
+    public function login(array $data): array
+    {
+        if (!(isset($data['username']) && isset($data['password']))) {
+            throw new Exception("Data is incomplete");
         }
-        $akun = $this->assignLogin($username, $password, $jenis);
-        return $akun->getArray();
-    }
-
-    private function assignLogin($username, $password, $jenis)
-    {
-        switch ($jenis) {
-            case ACCOUNT_ROLE[0]:
-                return Mahasiswa::mahasiswaLogin($username, $password);
-                break;
-            case ACCOUNT_ROLE[1]:
-                return Dosen::dosenLogin($username, $password);
-                break;
-            case ACCOUNT_ROLE[2]:
-                return Akun::akunLogin($username, $password);
-                break;
-            default:
-                throw new Exception("Terjadi kesalahan dengan akun anda, mohon hubungi admin");
-                break;
+        $username = $data['username'];
+        $password = $data['password'];
+        $account = $this->authService->login($username, $password);
+        if (!$account) {
+            throw new Exception("There are no account found");
         }
+        AuthMiddleware::setLoggedInAccount($account);
+        return $account;
     }
 
-    public function accountChangePassword($username, $old_password, $new_password, $confim_password)
+    public function logout()
     {
-        try {
-            $akun = Akun::akunLogin($username, $old_password);
-        } catch (Exception $e) {
-            throw new Exception("Password lama salah");
-        };
-        if ($confim_password != $new_password) throw new Exception("Password konfirm dan password baru harus sama");
-        return $akun->akunUpdatePassword($new_password);
+        AuthMiddleware::setLoggedInAccount(null);
     }
+    #endregion
 
-    public function adminChangePassword($username, $new_password, $confim_password)
-    {
-        $akun = Akun::akunGetByUsername($username);
-        if ($confim_password != $new_password) throw new Exception("Password konfirm dan password baru harus sama");
-        return $akun->akunUpdatePassword($new_password);
+    #region RETRIEVE
+    public function getLoggedInAccount(){
+        return AuthMiddleware::getLoggedInAccount();
     }
-
-
-    public function getAllGroupJoinedByUser($username, $limit, $offset, $keyword = "")
-    {
-        $list = Group::getAllGroupJoinedByUser($username, $limit, $offset, $keyword);
-        foreach ($list as $key => $value) {
-            $list[$key] = $value->getArray();
-        }
-        return $list;
-    }
-
-    public function getAllUserEvent($username, $keyword = "", $limit, $offset)
-    {
-        $list = EVent::getAllUserEvent($username, $keyword, $limit, $offset);
-        foreach ($list as $key => $value) {
-            $list[$key] = $value->getArray();
-        }
-        return $list;
-    }
+    #endregion
 }

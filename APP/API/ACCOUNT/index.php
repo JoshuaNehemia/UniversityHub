@@ -1,16 +1,15 @@
 <?php
 #region REQUIRE
-require_once(__DIR__ . "/../../CONTROLLERS/MemberController.php");
+require_once(__DIR__ . "/../../CONTROLLERS/AccountController.php");
 #endregion
 
 #region USE
-use CONTROLLERS\MemberController;
-
+use CONTROLLERS\AccountController;
 #endregion
 
 #region REQUEST METHOD
 $method = $_SERVER['REQUEST_METHOD'];
-$controller = new MemberController();
+$controller = new AccountController;
 $response = null;
 switch ($method) {
     case "POST":
@@ -30,41 +29,40 @@ switch ($method) {
 
 function post($controller)
 {
-    $res = $controller->addMember($_POST);
+    $res = $controller->createAccount($_POST);
     if (!$res)
-        throw new Exception("Failed to create group member.");
+        throw new Exception("Failed to create");
     return array(
         "status" => "success",
         "data" => $res,
-        "message" => "Create group member successful"
+        "message" => "Create account successful"
     );
 }
-function get($controller)
+function get()
 {
-    $res = $controller->getMember($_GET);
-    if (!$res)
-        throw new Exception("Failed to retrieve group member.");
     return array(
-        "status" => "success",
-        "data" => $res,
-        "message" => "Retrieve group member successful"
+        "status" => "failed",
+        "message" => "No api exists"
     );
 }
 function delete($controller)
 {
     $data = json_decode(file_get_contents("php://input"), true);
-    $res = $controller->deleteMember($data);
+    $res = $controller->deleteAccount($data);
     return array(
         "status" => "success",
         "data" => $res,
-        "message" => "Delete group member successful"
+        "message" => "Delete account successful"
     );
 }
 
 function put($controller)
 {
+    $data = json_decode(file_get_contents("php://input"), true);
+    $res = $controller->updateAccount($data);
     return array(
-        "status" => "failed",
-        "message" => "API does not exists"
+        "status" => "success",
+        "data" => $res,
+        "message" => "Update account successful"
     );
 }

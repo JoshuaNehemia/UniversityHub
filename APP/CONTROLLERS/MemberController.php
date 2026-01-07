@@ -2,50 +2,51 @@
 
 namespace CONTROLLERS;
 
-require_once(__DIR__ . "/../MODELS/Group.php");
+#region REQUIRE
+require_once(__DIR__ . "/../SERVICE/MemberService.php");
 require_once(__DIR__ . "/../config.php");
 
-use MODELS\Group;
+#endregion
+
+#region USE
+use SERVICE\MemberService;
+use Exception;
+
+#endregion
 
 class MemberController
 {
-    public function __construct() {}
+    #region FIELDS
+    private $service;
+    #endregion
 
-    public function getAllGroupJoinedByUser($username, $limit, $offset, $keyword = "")
+    #region CONSTRUCTOR
+    public function __construct()
     {
-        $list = Group::getAllGroupJoinedByUser($username, $limit, $offset, $keyword);
+        $this->service = new MemberService();
+    }
+    #endregion
 
-        foreach ($list as $key => $value) {
-            $list[$key] = $value->getArray();
-        }
-
-        return $list;
+    public function getMember($data)
+    {
+        $this->checkData($data);
+        return $this->service->getGroupMember($data['idgrup']);
     }
 
-    public function addMemberToGroup($idgrup, $username)
+    public function addMember($data)
     {
-        $g = new Group();
-        $g->setId($idgrup);
-        return $g->addMember($username);
+        $this->checkData($data);
+        return $this->service->addGroupMember($data['idgrup'], $data['username']);
     }
 
-    public function removeMemberFromGroup($idgrup, $username)
+    public function deleteMember($data)
     {
-        $g = new Group();
-        $g->setId($idgrup);
-        return $g->deleteMember($username);
+        $this->checkData($data);
+        return $this->service->deleteGroupMember($data['idgrup'], $data['username']);
     }
 
-    public function getAllMemberOfGroup($idgrup)
-    {
-        $g = new Group();
-        $g->setId($idgrup);
-        return $g->getAllMember();
+    private function checkData($data){
+        if(!isset($data['idgrup'])) throw new Exception("Data incomplete: No group data sent to add member");
+        if(!isset($data['username'])) throw new Exception("Data incomplete: No account data sent to add member");
     }
-
-    public function checkGroupMember($idgrup, $username)
-    {
-        return Group::isMember($idgrup, $username);
-    }
-    
 }
