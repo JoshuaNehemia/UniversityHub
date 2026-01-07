@@ -3,49 +3,49 @@
 namespace SERVICE;
 
 #region REQUIRE
-require_once(__DIR__ . "/../config.php");
-require_once(__DIR__ . "/../MODELS/Akun.php");
-require_once(__DIR__ . "/../MODELS/Mahasiswa.php");
-require_once(__DIR__ . "/../MODELS/Dosen.php");
-require_once(__DIR__ . "/../REPOSITORY/RepoAccount.php");
+require_once(__DIR__ . "/../MODELS/Event.php");
+require_once(__DIR__ . "/../REPOSITORY/RepoEvent.php");
 #endregion
 
 #region USE
-use MODELS\Akun;
-use MODELS\Dosen;
-use MODELS\Mahasiswa;
-use REPOSITORY\RepoAccount;
+use MODELS\Event;
+use REPOSITORY\RepoEvent;
 #endregion
 
-class UserService
+class EventService
 {
     #region FIELDS
-    private $repo_account;
+    private $repo;
     #endregion
 
     #region CONSTRUCTOR
     public function __construct()
     {
-        $this->repo_account = new RepoAccount();
+        $this->repo = new RepoEvent();
     }
     #endregion
 
     #region FUNCTION
-    public function addGroupEvent($group_id, $event)
+    public function createEvent($group_id, $event): bool
     {
-
+        return $this->repo->createEvent($group_id, $event);
     }
-    public function getGroupEvent($group_id)
+    public function getGroupEvent($group_id, $keyword, $limit, $page)
     {
-
+        $arr =  $this->repo->findAllEventByGroupId($group_id, $keyword, $limit, $page);
+        $res = [];
+        foreach( $arr as $event ){
+            $res[] = $event->toArray();
+        }
+        return $res;
     }
-    public function updateGroupEvent($group_id, $event)
+    public function updateEvent($event)
     {
-
+        return $this->repo->updateEvent($event);
     }
-    public function deleteGroupEvent($group_id, $event_id)
+    public function deleteEvent($event_id)
     {
-
+        return $this->repo->delete($event_id);
     }
     #endregion
 }

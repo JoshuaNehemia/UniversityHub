@@ -4,13 +4,13 @@ require_once(__DIR__ . "/../../CONTROLLERS/EventController.php");
 #endregion
 
 #region USE
-use CONTROLLERS\GroupController;
+use CONTROLLERS\EventController;
 
 #endregion
 
 #region REQUEST METHOD
 $method = $_SERVER['REQUEST_METHOD'];
-$controller = new GroupController;
+$controller = new EventController();
 $response = null;
 switch ($method) {
     case "POST":
@@ -30,44 +30,44 @@ switch ($method) {
 
 function post($controller)
 {
-    $res = $controller->createGroup($_POST);
+    $res = $controller->createEvent($_POST);
     if (!$res)
-        throw new Exception("Failed to create group.");
+        throw new Exception("Failed to create event.");
     return array(
         "status" => "success",
         "data" => $res,
-        "message" => "Create group successful"
+        "message" => "Create event successful"
     );
 }
 function get($controller)
 {
-    $res = $controller->getGroup($_GET);
+    $res = $controller->getEvent($_GET);
     if (!$res)
-        throw new Exception("Failed to retrieve group.");
+        throw new Exception("Failed to retrieve event.");
     return array(
         "status" => "success",
         "data" => $res,
-        "message" => "Retrieve group successful"
+        "message" => "Retrieve event successful"
     );
 }
 function delete($controller)
 {
     $data = json_decode(file_get_contents("php://input"), true);
-    $res = $controller->deleteGroup($data);
+    $res = $controller->deleteEvent($data);
     return array(
         "status" => "success",
         "data" => $res,
-        "message" => "Delete group successful"
+        "message" => "Delete event successful"
     );
 }
 
 function put($controller)
 {
     $data = json_decode(file_get_contents("php://input"), true);
-    $res = $controller->updateGroup($data);
+    $res = $controller->updateEvent($data);
     return array(
         "status" => "success",
         "data" => $res,
-        "message" => "Update group successful"
+        "message" => "Update event successful"
     );
 }

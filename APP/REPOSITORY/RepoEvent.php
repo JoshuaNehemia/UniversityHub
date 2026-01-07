@@ -106,7 +106,7 @@ class RepoEvent
         }
     }
 
-    public function getAllEventByUsername(string $username, $keyword, $limit, $page): array
+    public function findAllEventByUsername(string $username, $keyword, $limit, $page): array
     {
         $sql = "SELECT e.* FROM event e
                     JOIN member_grup mg ON e.idgrup = mg.idgrup
@@ -149,7 +149,7 @@ class RepoEvent
 
     #region CREATE
     #region CREATE
-    public function createEvent(int $idgroup, Event $event): Event
+    public function createEvent(int $idgroup, Event $event): bool
     {
         $sql = "INSERT INTO event 
             (idgrup, judul, `judul-slug`, tanggal, keterangan, jenis, poster_extension)
@@ -166,26 +166,29 @@ class RepoEvent
                 throw new Exception("Failed to prepare create event statement: " . $conn->error);
             }
 
-            $eve = $event->toArray();
+            $judul = $event->getJudul();
+            $slug = $event->getSlug();
+            $tanggal = $event->getTanggal();
+            $keterangan = $event->getKeterangan();
+            $jenis = $event->getJenis();
+            $posterExt = $event->getPosterExtension();
 
             $stmt->bind_param(
                 "issssss",
                 $idgroup,
-                $eve['judul'],
-                $eve['judul-slug'],
-                $eve['slug'],
-                $eve['tanggal'],
-                $eve['keterangan'],
-                $eve['jenis'],
-                $eve['poster_extention']
+                $judul,
+                $slug,
+                $tanggal,
+                $keterangan,
+                $jenis,
+                $posterExt
             );
 
             if (!$stmt->execute()) {
                 throw new Exception($stmt->error);
             }
 
-            $event->setId((int) $conn->insert_id);
-            return $event;
+            return $stmt->affected_rows === 1;
 
         } catch (Exception $e) {
             throw new Exception("Error creating event: " . $e->getMessage());
@@ -202,8 +205,7 @@ class RepoEvent
     #endregion
 
     #region UPDATE
-#region UPDATE
-    public function update(Event $event): bool
+    public function updateEvent(Event $event): bool
     {
         $sql = "UPDATE event SET
                 judul = ?,
@@ -232,9 +234,8 @@ class RepoEvent
             $eve = $event->toArray();
 
             $stmt->bind_param(
-                "ssssss",
+                "ssssssi",
                 $eve['judul'],
-                $eve['judul-slug'],
                 $eve['slug'],
                 $eve['tanggal'],
                 $eve['keterangan'],

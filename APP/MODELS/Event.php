@@ -22,6 +22,7 @@ class Event extends DatabaseConnection
     private string $keterangan;
     private string $jenis;
     private string $posterExtension;
+    private string $posterAddress;
     #endregion 
 
     #region CONSTRUCTOR
@@ -34,18 +35,25 @@ class Event extends DatabaseConnection
         ?string $jenis = null,
         ?string $posterExtension = null
     ) {
-        parent::__construct(); 
+        parent::__construct();
 
-        if ($id !== null) $this->setId($id);
-        if ($judul !== null) $this->setJudul($judul);
-        if ($slug !== null) $this->setSlug();
-        if ($tanggal !== null) $this->setTanggal($tanggal);
-        if ($keterangan !== null) $this->setKeterangan($keterangan);
-        if ($jenis !== null) $this->setJenis($jenis);
-        if ($posterExtension !== null) $this->setPosterExtension($posterExtension);
+        if ($id !== null)
+            $this->setId($id);
+        if ($judul !== null)
+            $this->setJudul($judul);
+        if ($slug !== null)
+            $this->setSlug();
+        if ($tanggal !== null)
+            $this->setTanggal($tanggal);
+        if ($keterangan !== null)
+            $this->setKeterangan($keterangan);
+        if ($jenis !== null)
+            $this->setJenis($jenis);
+        if ($posterExtension !== null)
+            $this->setPosterExtension($posterExtension);
     }
     #endregion
-    
+
     #region GETTER
     public function getId(): int
     {
@@ -75,20 +83,28 @@ class Event extends DatabaseConnection
     {
         return $this->posterExtension;
     }
+
+    public function getPosterAddress(): string
+    {
+        return $this->posterAddress;
+    }
     #endregion
 
     #region SETTER
     public function setId(int $id): void
     {
-        if ($id < 0) throw new Exception("Id tidak boleh negative.");
+        if ($id < 0)
+            throw new Exception("Id tidak boleh negative.");
         $this->id = $id;
     }
 
     public function setJudul(string $judul): void
     {
         $judul = trim($judul);
-        if (empty($judul)) throw new Exception("Judul tidak bisa kosong.");
-        if (strlen($judul) > 45) throw new Exception("Judul tidak bisa melebihi 45 characters.");
+        if (empty($judul))
+            throw new Exception("Judul tidak bisa kosong.");
+        if (strlen($judul) > 45)
+            throw new Exception("Judul tidak bisa melebihi 45 characters.");
         $this->judul = $judul;
     }
 
@@ -125,22 +141,31 @@ class Event extends DatabaseConnection
 
     public function setPosterExtension(string $posterExtension): void
     {
-        if (empty($posterExtension)) throw new Exception("Extention tidak dapat kosong");
-        if (!in_array($posterExtension, ALLOWED_PICTURE_EXTENSION)) throw new Exception("Extention illegal, Upload file berupa: " . implode(', ', ALLOWED_PICTURE_EXTENSION));
+        if (empty($posterExtension))
+            throw new Exception("Extention tidak dapat kosong");
+        if (!in_array($posterExtension, ALLOWED_PICTURE_EXTENSION))
+            throw new Exception("Extention illegal, Upload file berupa: " . implode(', ', ALLOWED_PICTURE_EXTENSION));
         $this->posterExtension = $posterExtension;
     }
+    public function setPosterAddress(string $posterAddress): void
+    {
+        $this->posterAddress = trim($posterAddress);
+    }
+    #endregion
 
-    function toArray(){
+    #region UTILITIES
+    function toArray()
+    {
         return array(
-            "id"=>$this->getId(),
-            "judul"=>$this->getJudul(),
-            "slug"=>$this->getSlug(),
-            "tanggal"=>$this->getTanggal(),
-            "keterangan"=>$this->getKeterangan(),
-            "jenis"=>$this->getJenis(),
-            "poster_extention"=>$this->getPosterExtension()
+            "id" => $this->getId(),
+            "judul" => $this->getJudul(),
+            "slug" => $this->getSlug(),
+            "tanggal" => $this->getTanggal(),
+            "keterangan" => $this->getKeterangan(),
+            "jenis" => $this->getJenis(),
+            "poster_extention" => $this->getPosterExtension()
         );
     }
     #endregion
-    
+
 }

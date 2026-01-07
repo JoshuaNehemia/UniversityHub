@@ -17,6 +17,9 @@ switch ($resource) {
     case "GROUP":
         require_once("$routesPath/API/GROUP/" . $index);
         break;
+    case "EVENT":
+        require_once("$routesPath/API/EVENT/" . $index);
+        break;
     default:
         throw new Exception("No API Found");
 }
