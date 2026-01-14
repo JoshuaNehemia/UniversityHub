@@ -47,7 +47,7 @@ class RepoChat
             }
 
             $pengirim = $chat->getPengirim();
-            $isi      = $chat->getIsi();
+            $isi = $chat->getIsi();
 
             $stmt->bind_param(
                 "iss",
@@ -64,7 +64,8 @@ class RepoChat
             return $chat;
 
         } finally {
-            if ($stmt) $stmt->close();
+            if ($stmt)
+                $stmt->close();
             if ($conn) {
                 $this->db->close();
             }
@@ -76,10 +77,19 @@ class RepoChat
     public function findByThreadId(int $idThread): array
     {
         $sql = "
-            SELECT *
-            FROM chat
-            WHERE idthread = ?
-            ORDER BY tanggal_pembuatan ASC
+            SELECT
+                c.idchat,
+                c.username_pembuat,
+                c.isi,
+                c.tanggal_pembuatan,
+                m.nama AS nama_mahasiswa,
+                d.nama AS nama_dosen
+            FROM chat c
+            JOIN akun a ON a.username = c.username_pembuat
+            LEFT JOIN mahasiswa m ON m.nrp = a.nrp_mahasiswa
+            LEFT JOIN dosen d ON d.npk = a.npk_dosen
+            WHERE c.idthread = ?
+            ORDER BY c.tanggal_pembuatan ASC
         ";
 
         $conn = null;
@@ -101,13 +111,23 @@ class RepoChat
             }
 
             $result = $stmt->get_result();
+
             while ($row = $result->fetch_assoc()) {
+                $nama = null;
+                if (!empty($row["nama_mahasiswa"])) {
+                    $nama = $row["nama_mahasiswa"];
+                } elseif (!empty($row["nama_dosen"])) {
+                    $nama = $row["nama_dosen"];
+                } else {
+                    $nama = $row["username_pembuat"]; 
+                }
 
                 $chat = new Chat();
                 $chat->setId($row["idchat"]);
-                $chat->setPengirim($row["username_pembuat"]);
-                $chat->setTanggalPembuatan($row["tanggal_pembuatan"]);
+                $chat->setPengirim($row["username_pembuat"]); 
+                $chat->setNamaPengirim($nama);                
                 $chat->setIsi($row["isi"]);
+                $chat->setTanggalPembuatan($row["tanggal_pembuatan"]);
 
                 $chats[] = $chat;
             }
@@ -115,10 +135,10 @@ class RepoChat
             return $chats;
 
         } finally {
-            if ($stmt) $stmt->close();
-            if ($conn) {
+            if ($stmt)
+                $stmt->close();
+            if ($conn)
                 $this->db->close();
-            }
         }
     }
     #endregion
@@ -142,8 +162,8 @@ class RepoChat
             if (!$stmt) {
                 throw new Exception("Failed to prepare UPDATE chat: " . $conn->error);
             }
-            $isi     = $chat->getIsi();
-            $id      = $chat->getId();
+            $isi = $chat->getIsi();
+            $id = $chat->getId();
 
             $stmt->bind_param(
                 "si",
@@ -158,7 +178,8 @@ class RepoChat
             return $stmt->affected_rows === 1;
 
         } finally {
-            if ($stmt) $stmt->close();
+            if ($stmt)
+                $stmt->close();
             if ($conn) {
                 $this->db->close();
             }
@@ -190,7 +211,8 @@ class RepoChat
             return $stmt->affected_rows > 0;
 
         } finally {
-            if ($stmt) $stmt->close();
+            if ($stmt)
+                $stmt->close();
             if ($conn) {
                 $this->db->close();
             }

@@ -42,8 +42,7 @@ function post($controller)
 function get($controller)
 {
     $res = $controller->getGroup($_GET);
-    if (!$res)
-        throw new Exception("Failed to retrieve group.");
+    
     return array(
         "status" => "success",
         "data" => $res,
@@ -71,3 +70,5 @@ function put($controller)
         "message" => "Update group successful"
     );
 }
+
+echo json_encode($response);

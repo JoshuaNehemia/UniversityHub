@@ -76,10 +76,6 @@ $(document).ready(function() {
 });
 
 
-// ===========================================================
-// TAMBAH DOSEN
-// POST /DOSEN/
-// ===========================================================
 function tambahDosen() {
 
     const npk = $("#dsn-npk").val().trim();

@@ -1,242 +1,134 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Edit Event | University Hub</title>
-
+    <title>Edit Group | University Hub</title>
+    <link rel="stylesheet" href="STYLES/root.css">
+    <link rel="stylesheet" href="STYLES/main.css">
+    <link rel="stylesheet" href="STYLES/form.css">
     <script src="SCRIPTS/jquery_3_7_1.js"></script>
     <script src="SCRIPTS/config.js"></script>
     <script src="SCRIPTS/auth.js"></script>
-
-    <link rel="stylesheet" href="STYLES/main.css">
 </head>
-
 <body>
+    <header class="top-bar">
+        <div class="brand"><h1>University Hub</h1></div>
+        <div class="user-menu"><span>Halo, <strong id="display-name">User</strong></span></div>
+    </header>
 
-<header>
-    <h1>Edit Event</h1>
-</header>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="index.php" class="nav-link active" style="padding-left: 50px;">Group Saya</a>
+            </nav>
+        </aside>
 
-<div class="container-layout">
+        <main class="main-content">
+            <div style="margin-bottom: 20px;">
+                <a id="btn-back" href="#" style="color:var(--text-secondary); text-decoration:none;">&larr; Kembali</a>
+            </div>
 
-    <aside>
-        <nav>
-            <a href="profil.php">Profil</a>
-            <a href="group.php">Group</a>
-            <a href="thread.php">Thread</a>
-            <a href="event.php">Event</a>
-        </nav>
-    </aside>
+            <div class="content-header">
+                <h2>Edit Group</h2>
+                <p class="text-muted">Perbarui informasi komunitas Anda.</p>
+            </div>
 
-    <main>
+            <div class="card" style="max-width: 600px; padding:30px;">
+                <div id="loading-form" style="text-align:center; padding:20px;">Memuat data...</div>
 
-        <h2>Form Edit Event</h2>
+                <form id="form-edit-group" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">Nama Group <span style="color:red">*</span></label>
+                        <input type="text" id="nama" class="form-control" required>
+                    </div>
 
-        <div class="card" style="padding:20px; max-width:500px;">
+                    <div class="form-group">
+                        <label class="form-label">Deskripsi</label>
+                        <textarea id="deskripsi" class="form-control" rows="3"></textarea>
+                    </div>
 
-            <input type="hidden" id="event-id">
+                    <div class="form-group">
+                        <label class="form-label">Jenis Group</label>
+                        <select id="jenis" class="form-control">
+                            <option value="Publik">Publik</option>
+                            <option value="Privat">Privat</option>
+                        </select>
+                    </div>
 
-            <label>Judul Event</label>
-            <input type="text" id="event-judul" required>
-
-            <label>Keterangan Event</label>
-            <textarea id="event-keterangan" rows="3" required></textarea>
-
-            <label>Tanggal Event</label>
-            <input type="datetime-local" id="event-tanggal" required>
-
-            <label>Jenis Event</label>
-            <select id="event-jenis">
-                <option value="Publik">Publik</option>
-                <option value="Privat">Privat</option>
-            </select>
-
-            <div id="poster-preview" style="margin-top:15px;"></div>
-
-            <button id="btn-update-event" style="margin-top:20px;">
-                Simpan Perubahan
-            </button>
-
-        </div>
-
-        <div id="status-message" style="margin-top:20px;"></div>
-
-    </main>
-
-</div>
-
+                    <div style="margin-top: 30px; display:flex; justify-content:flex-end; gap:10px;">
+                        <button type="button" id="btn-cancel" class="btn btn-outline">Batal</button>
+                        <button type="submit" id="btn-save" class="btn btn-primary">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
 </body>
 
-
-<!-- ============================================================
-     JAVASCRIPT
-=============================================================== -->
 <script>
-$(document).ready(function () {
+    $(document).ready(function() {
+        checkLoggedIn();
+        const urlParams = new URLSearchParams(window.location.search);
+        const groupId = urlParams.get('id');
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const idevent = urlParams.get("idevent");
-    const idgroup = urlParams.get("idgroup");
+        if (!groupId) { window.location.href = "index.php"; return; }
 
-    if (!idevent || !idgroup) {
-        $("#status-message").html("Data event tidak lengkap.");
-        return;
-    }
+        $("#btn-back").attr("href", "detail-group.php?id=" + groupId);
+        $("#btn-cancel").click(() => window.location.href = "detail-group.php?id=" + groupId);
 
-    checkLoggedIn();
-
-    $("#event-id").val(idevent);
-
-    loadEventDetail(idgroup, idevent);
-
-    $("#btn-update-event").on("click", function () {
-        updateEvent(idgroup, idevent);
-    });
-});
-
-
-// ========================================================
-// LOAD EVENT DETAIL
-// GET EVENT/{idgroup}/?idevent=
-// ========================================================
-function loadEventDetail(idgroup, idevent) {
-
-    const url = API_ADDRESS + "EVENT/" + idgroup + "/";
-
-    console.group("LOAD EVENT DETAIL - START");
-    console.group("REQUEST INFO");
-    console.log("URL:", url);
-    console.log("Method:", "GET");
-    console.log("Params:", { idevent });
-    console.groupEnd();
-
-    $.ajax({
-        url: url,
-        type: "GET",
-        data: { idevent: idevent },
-        dataType: "json",
-
-        success: function(res) {
-
-            console.group("RESPONSE");
-            console.log("SUCCESS:", res);
-            console.groupEnd();
-
-            if (res.status !== "success") {
-                $("#status-message").text(res.message);
-                return;
+        $.ajax({
+            url: API_ADDRESS + "GROUP/?id=" + groupId,
+            type: "GET",
+            dataType: "json",
+            success: function(res) {
+                if (res.status === "success" && res.data) {
+                    const g = Array.isArray(res.data) ? res.data[0] : res.data;
+                    $("#nama").val(g.nama);
+                    $("#deskripsi").val(g.deskripsi);
+                    $("#jenis").val(g.jenis);
+                    $("#loading-form").hide();
+                    $("#form-edit-group").fadeIn();
+                } else {
+                    alert("Gagal memuat data.");
+                    window.location.href = "index.php";
+                }
             }
+        });
 
-            const d = res.data;
+        $("#form-edit-group").submit(function(e) {
+            e.preventDefault();
+            const btn = $("#btn-save");
+            btn.prop("disabled", true).text("Menyimpan...");
 
-            $("#event-judul").val(d.judul);
-            $("#event-keterangan").val(d.keterangan);
+            const payload = {
+                id: groupId, 
+                idgrup: groupId, 
+                nama: $("#nama").val().trim(),
+                deskripsi: $("#deskripsi").val().trim(),
+                jenis: $("#jenis").val()
+            };
 
-            const tgl = d.tanggal.replace(" ", "T").slice(0, 16);
-            $("#event-tanggal").val(tgl);
-
-            $("#event-jenis").val(d.jenis);
-
-            // Jika kamu punya poster extension, tampilkan:
-            if (d.poster_extention) {
-                $("#poster-preview").html(`
-                    <p>Poster Saat Ini:</p>
-                    <img src="http://localhost/UniversityHub/APP/DATABASE/EVENT/${d.id}.${d.poster_extention}" 
-                         style="width:200px; border-radius:10px;">
-                `);
-            }
-        },
-
-        error: function(xhr) {
-            console.group("ERROR");
-            console.error(xhr);
-            console.groupEnd();
-
-            $("#status-message").text("Gagal memuat data event.");
-        },
-
-        complete: function () {
-            console.groupEnd();
-        }
+            $.ajax({
+                url: API_ADDRESS + "GROUP/",
+                type: "PUT",
+                data: JSON.stringify(payload),
+                contentType: "application/json",
+                success: function(res) {
+                    if (res.status === "success") {
+                        alert("Perubahan disimpan.");
+                        window.location.href = "detail-group.php?id=" + groupId;
+                    } else {
+                        alert("Gagal: " + res.message);
+                        btn.prop("disabled", false).text("Simpan Perubahan");
+                    }
+                },
+                error: function(xhr) {
+                    alert("Error: " + (xhr.responseJSON?.message || "Server Error"));
+                    btn.prop("disabled", false).text("Simpan Perubahan");
+                }
+            });
+        });
     });
-}
-
-
-// ========================================================
-// UPDATE EVENT (PUT) — JSON OBJECT
-// ========================================================
-function updateEvent(idgroup, idevent) {
-
-    const judul = $("#event-judul").val();
-    const ket = $("#event-keterangan").val();
-    const tgl = $("#event-tanggal").val();
-    const jenis = $("#event-jenis").val();
-
-    if (!judul || !ket || !tgl || !jenis) {
-        $("#status-message").css("color", "red").text("Semua field wajib diisi.");
-        return;
-    }
-
-    const tanggalFinal = tgl.replace("T", " ") + ":00";
-
-    const payload = {
-        idevent: idevent,
-        judul: judul,
-        keterangan: ket,
-        tanggal: tanggalFinal,
-        jenis: jenis
-    };
-
-    const url = API_ADDRESS + "EVENT/" + idgroup + "/";
-
-    console.group("UPDATE EVENT - START");
-    console.group("REQUEST INFO");
-    console.log("URL:", url);
-    console.log("Method:", "PUT");
-    console.log("Payload:", payload);
-    console.groupEnd();
-
-    $.ajax({
-        url: url,
-        type: "PUT",
-        contentType: "application/json",
-        data: JSON.stringify(payload),
-        dataType: "json",
-
-        success: function (res) {
-
-            console.group("RESPONSE");
-            console.log("SUCCESS:", res);
-            console.groupEnd();
-
-            if (res.status === "success") {
-                $("#status-message").css("color", "green").text("Event berhasil diperbarui!");
-
-                setTimeout(() => {
-                    window.location.href = "detail-group.php?idgroup=" + idgroup;
-                }, 1500);
-            } else {
-                $("#status-message").css("color", "red").text(res.message);
-            }
-        },
-
-        error: function(xhr) {
-            console.group("ERROR");
-            console.error(xhr);
-            console.groupEnd();
-
-            $("#status-message").css("color", "red")
-                .text(xhr.responseJSON?.message || "Gagal update event.");
-        },
-
-        complete: function () {
-            console.groupEnd();
-        }
-    });
-}
 </script>
-
 </html>

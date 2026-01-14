@@ -47,5 +47,10 @@ class EventService
     {
         return $this->repo->delete($event_id);
     }
+    
+    public function getLastInsertedId()
+    {
+        return $this->repo->getLastInsertedId();
+    }
     #endregion
 }

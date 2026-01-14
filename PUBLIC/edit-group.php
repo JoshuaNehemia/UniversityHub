@@ -4,54 +4,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Edit Group | University Hub</title>
+
+    <link rel="stylesheet" href="STYLES/root.css">
+    <link rel="stylesheet" href="STYLES/main.css">
+    <link rel="stylesheet" href="STYLES/form.css">
 
     <script src="SCRIPTS/jquery_3_7_1.js"></script>
     <script src="SCRIPTS/config.js"></script>
     <script src="SCRIPTS/auth.js"></script>
-
-    <link rel="stylesheet" href="STYLES/main.css">
 </head>
+<style>
+/* =====================================================
+   HARD RWD OVERRIDE — EDIT GROUP PAGE
+   Layout & flow only (safe override)
+===================================================== */
+
+/* ---------- Global Safety ---------- */
+* {
+    box-sizing: border-box !important;
+}
+
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+    margin: 0;
+}
+
+/* ---------- Header ---------- */
+.top-bar {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+}
+
+.top-bar .brand h1 {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.user-menu {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* ---------- Layout ---------- */
+.dashboard-wrapper {
+    display: flex !important;
+    width: 100%;
+    min-height: calc(100vh - 60px);
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+    width: 240px;
+    min-width: 240px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-nav .nav-link {
+    padding: 12px 16px !important;
+}
+
+/* ---------- Main Content ---------- */
+.main-content {
+    flex: 1;
+    padding: 20px;
+    min-width: 0;
+}
+
+.content-header h2 {
+    font-size: 1.4rem;
+    margin-bottom: 6px;
+}
+
+/* ---------- Card & Form ---------- */
+.card {
+    width: 100% !important;
+    max-width: 600px;
+}
+
+#loading-form {
+    font-size: 0.95rem;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-control {
+    width: 100%;
+}
+
+/* ---------- Buttons ---------- */
+form div[style*="justify-content:flex-end"] {
+    flex-wrap: wrap;
+}
+
+form button {
+    min-width: 130px;
+}
+
+/* =====================================================
+   TABLET & BELOW (≤ 992px)
+===================================================== */
+@media (max-width: 992px) {
+
+    .dashboard-wrapper {
+        flex-direction: column !important;
+    }
+
+    .sidebar {
+        width: 100% !important;
+        min-width: 0;
+        order: 1;
+    }
+
+    .sidebar-nav {
+        flex-direction: row !important;
+        overflow-x: auto;
+    }
+
+    .sidebar-nav .nav-link {
+        white-space: nowrap;
+        flex: 1;
+        text-align: center;
+    }
+
+    .main-content {
+        order: 2;
+        padding: 16px;
+    }
+
+    .card {
+        max-width: 100%;
+    }
+}
+
+/* =====================================================
+   MOBILE (≤ 576px)
+===================================================== */
+@media (max-width: 576px) {
+
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .user-menu {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .content-header h2 {
+        font-size: 1.2rem;
+    }
+
+    .content-header p {
+        font-size: 0.9rem;
+    }
+
+    /* Stack action buttons */
+    form div[style*="justify-content:flex-end"] {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    form button {
+        width: 100%;
+    }
+
+    #status-message {
+        max-width: 100% !important;
+    }
+}
+</style>
 
 <body>
 
-    <header>
-        <h1>Edit Group</h1>
+    <header class="top-bar">
+        <div class="brand">
+            <h1>University Hub</h1>
+        </div>
+        <div class="user-menu">
+            <button id="themeToggle" onclick="toggleTheme()" class="btn-theme" title="Ganti Tema">🌙</button>
+            <span>Halo, <strong id="display-name">User</strong></span>
+            <button onclick="logout()" class="btn-logout">Keluar</button>
+        </div>
     </header>
 
-    <div class="container-layout">
-        <aside>
-            <nav>
-                <a href="profil.php">Profil</a>
-                <a href="group.php">Group</a>
-                <a href="thread.php">Thread</a>
-                <a href="event.php">Event</a>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="index.php" class="nav-link active" style="padding-left: 50px;">Group Saya</a>
+                <a href="group.php" class="nav-link" style="padding-left: 50px;">Cari Group</a>
+                <a href="profil.php" class="nav-link" style="padding-left: 50px;">Profil Akun</a>
             </nav>
         </aside>
 
-        <main>
-            <h2>Edit Informasi Group</h2>
+        <main class="main-content">
+            <div style="margin-bottom: 20px;">
+                <a id="btn-back" href="#" style="display:inline-flex; align-items:center; gap:5px; color:var(--text-secondary);">
+                    <span>&larr;</span> Kembali
+                </a>
+            </div>
 
-            <form id="edit-group-form">
+            <div class="content-header">
+                <h2>Edit Group</h2>
+                <p class="text-muted">Perbarui informasi komunitas Anda.</p>
+            </div>
 
-                <label>Nama Group</label>
-                <input type="text" id="nama-group" required>
+            <div class="card" style="max-width: 600px;">
+                <div id="loading-form" style="text-align:center; padding:20px;">
+                    Memuat data group...
+                </div>
 
-                <label>Jenis Group</label>
-                <select id="jenis-group" required>
-                    <option value="Privat">Privat</option>
-                    <option value="Publik">Publik</option>
-                </select>
+                <form id="form-edit-group" style="display:none;">
+                    
+                    <input type="hidden" id="idgrup" name="idgrup">
 
-                <label>Deskripsi Group</label>
-                <textarea id="deskripsi-group" rows="4" required></textarea>
+                    <div class="form-group">
+                        <label for="nama" class="form-label">Nama Group <span style="color:red">*</span></label>
+                        <input type="text" id="nama" name="nama" class="form-control" required>
+                    </div>
 
-                <button type="submit">Simpan Perubahan</button>
-            </form>
+                    <div class="form-group">
+                        <label for="deskripsi" class="form-label">Deskripsi Singkat</label>
+                        <textarea id="deskripsi" name="deskripsi" class="form-control" rows="3"></textarea>
+                    </div>
 
+                    <div class="form-group">
+                        <label for="jenis" class="form-label">Jenis Group <span style="color:red">*</span></label>
+                        <select id="jenis" name="jenis" class="form-control" required>
+                            <option value="Publik">Publik</option>
+                            <option value="Privat">Privat</option>
+                        </select>
+                        <small class="text-muted">Mengubah ke 'Privat' akan otomatis membuat kode akses baru jika belum ada.</small>
+                    </div>
 
-            <div id="status-message" style="margin-top:20px;"></div>
+                    <div style="margin-top: 30px; display:flex; justify-content:flex-end; gap:10px;">
+                        <button type="button" id="btn-cancel" class="btn btn-outline">Batal</button>
+                        <button type="submit" id="btn-save" class="btn btn-primary">Simpan Perubahan</button>
+                    </div>
+
+                </form>
+            </div>
+            <div id="status-message" style="margin-top:20px; max-width:600px;"></div>
         </main>
     </div>
 
@@ -59,134 +266,96 @@
 
 <script>
     $(document).ready(function() {
+        checkLoggedIn();
 
         const urlParams = new URLSearchParams(window.location.search);
-        const idgroup = urlParams.get("idgroup");
+        const groupId = urlParams.get('id');
 
-        if (!idgroup) {
-            $("#status-message").html("ID Group tidak ditemukan.");
+        if (!groupId) {
+            alert("ID Group tidak ditemukan.");
+            window.location.href = "index.php";
             return;
         }
 
-        loadGroupData(idgroup);
-        checkLoggedIn();
+        $("#btn-back").attr("href", "detail-group.php?id=" + groupId);
+        $("#btn-cancel").click(function(){
+            window.location.href = "detail-group.php?id=" + groupId;
+        });
 
-        $("#edit-group-form").on("submit", function(e) {
+        loadGroupData(groupId);
+
+        $("#form-edit-group").on("submit", function(e) {
             e.preventDefault();
-            saveGroupEdit(idgroup);
+            updateGroup(groupId);
         });
     });
 
-    function loadGroupData(idgroup) {
 
-        console.group("LOAD GROUP DATA - START");
-
-        console.group("REQUEST INFO");
-        console.log("URL:", API_ADDRESS + "GROUP/");
-        console.log("Method: GET");
-        console.log("Parameter:", {
-            id: idgroup
-        });
-        console.groupEnd();
-
+    function loadGroupData(id) {
         $.ajax({
-            url: API_ADDRESS + "GROUP/",
+            url: API_ADDRESS + "GROUP/?id=" + id, 
             type: "GET",
             dataType: "json",
-            data: {
-                id: idgroup
-            },
-
             success: function(res) {
-                console.group("RESPONSE");
-                console.log("Status:", res.status);
-                console.log("Data:", res.data);
-                console.groupEnd();
+                if (res.status === "success" && res.data) {
+                    const g = Array.isArray(res.data) ? res.data[0] : res.data;
+                    
+                    $("#idgrup").val(g.idgrup);
+                    $("#nama").val(g.nama);
+                    $("#deskripsi").val(g.deskripsi);
+                    $("#jenis").val(g.jenis);
 
-                if (res.status === "success") {
-                    $("#nama-group").val(res.data.nama);
-                    $("#deskripsi-group").val(res.data.deskripsi);
+                    $("#loading-form").hide();
+                    $("#form-edit-group").fadeIn();
                 } else {
-                    $("#status-message").text(res.message);
+                    alert("Gagal memuat data group.");
+                    window.location.href = "index.php";
                 }
             },
-
-            error: function(xhr) {
-                console.group("ERROR");
-                console.log("Status Code:", xhr.status);
-                console.log("Response:", xhr.responseJSON);
-                console.groupEnd();
-
-                let msg = xhr.responseJSON?.message || "Gagal mengambil data group.";
-                $("#status-message").text(msg);
-            },
-
-            complete: function() {
-                console.groupEnd(); // END OF MAIN GROUP
+            error: function(err) {
+                console.error(err);
+                alert("Terjadi kesalahan koneksi.");
             }
         });
     }
 
-    function saveGroupEdit(idgroup) {
 
+    function updateGroup(id) {
         const payload = {
-            nama: $("#nama-group").val(),
-            deskripsi: $("#deskripsi-group").val(),
-            jenis: $("#jenis-group").val(),
-            id: idgroup
+            id: id, 
+            nama: $("#nama").val().trim(),
+            deskripsi: $("#deskripsi").val().trim(),
+            jenis: $("#jenis").val()
         };
 
-        console.group("EDIT GROUP - START");
-
-        console.group("REQUEST INFO");
-        console.log("URL:", API_ADDRESS + "GROUP/");
-        console.log("Method: PUT");
-        console.groupEnd();
-
-        console.group("PAYLOAD");
-        console.log(payload);
-        console.groupEnd();
+        const btn = $("#btn-save");
+        btn.prop("disabled", true).text("Menyimpan...");
+        $("#status-message").html("");
 
         $.ajax({
-            url: API_ADDRESS + "GROUP/",
-            type: "PUT",
-            data: JSON.stringify(payload),
+            url: API_ADDRESS + "GROUP/", 
+            type: "PUT",                 
+            data: JSON.stringify(payload), 
             contentType: "application/json",
             dataType: "json",
-
             success: function(res) {
-                console.group("RESPONSE");
-                console.log("Status:", res.status);
-                console.log("Data:", res.data);
-                console.groupEnd();
-
                 if (res.status === "success") {
-                    $("#status-message").text("Berhasil mengupdate group!");
-
-                    setTimeout(() => {
-                        window.location.href = "detail-group.php?idgroup=" + idgroup;
-                    }, 1500);
-
+                    alert("Perubahan berhasil disimpan!");
+                    window.location.href = "detail-group.php?id=" + id;
                 } else {
-                    $("#status-message").css("color", "red").text(res.message);
+                    $("#status-message").html(`<div class="alert alert-danger">${res.message}</div>`);
+                    btn.prop("disabled", false).text("Simpan Perubahan");
                 }
             },
-
             error: function(xhr) {
-                console.group("ERROR");
-                console.log("Status Code:", xhr.status);
-                console.log("Response:", xhr.responseJSON);
-                console.groupEnd();
-
-                let msg = xhr.responseJSON?.message || "Terjadi kesalahan saat mengupdate.";
-                $("#status-message").css("color", "red").text(msg);
-            },
-
-            complete: function() {
-                console.groupEnd(); // END MAIN GROUP
+                console.error(xhr);
+                let msg = "Gagal menyimpan perubahan.";
+                if(xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                
+                $("#status-message").html(`<div class="alert alert-danger">${msg}</div>`);
+                btn.prop("disabled", false).text("Simpan Perubahan");
             }
         });
     }
 </script>
-
 </html>

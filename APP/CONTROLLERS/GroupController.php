@@ -6,7 +6,8 @@ namespace CONTROLLERS;
 require_once(__DIR__ . "/../MODELS/Group.php");
 require_once(__DIR__ . "/../SERVICE/GroupService.php");
 require_once(__DIR__ . "/../config.php");
-
+// --- PERBAIKAN 1: Tambahkan Require AuthMiddleware ---
+require_once(__DIR__ . "/../MIDDLEWARE/AuthMiddleware.php"); 
 #endregion
 
 #region USE
@@ -32,27 +33,38 @@ class GroupController
 
     public function createGroup($group): bool
     {
-        $this->assertKeysExist($group, array("pembuat", "nama", "deskripsi", "pembuat", "tnggal_dibuat", "jenis"), "Create group");
-        $group = $this->mapToGroup($group);
-        $group->setKode("", true);
-        return $this->service->createGroup($group);
+        $this->assertKeysExist($group, array("nama", "deskripsi", "jenis"), "Create group");
+
+        $group['pembuat'] = AuthMiddleware::getLoggedInAccount()['username']; 
+        $group['tanggal_dibuat'] = date("Y-m-d H:i:s"); 
+
+        $groupObj = $this->mapToGroup($group);
+        
+        $groupObj->setKode("", true); 
+
+        return $this->service->createGroup($groupObj);
     }
 
     public function getGroup($data)
     {
         if (isset($data['id']))
-            return $this->service->getGroupById($data['id']);
-        if (isset($data['name']))
-            if (!isset($data['limit']))
-                throw new Exception("Data is incomplete, no limit");
-        if (!isset($data['page']))
-            throw new Exception("Data is incomplete, no page");
-        return $this->service->getGroupByName($data['name'], $data['limit'], $data['page'], (AuthMiddleware::getLoggedInAccount()['jenis'] == ACCOUNT_ROLE[0]));
+            return $this->service->getGroupById((int)$data['id']);
+
+        if (!isset($data['limit']) || !isset($data['page'])) {
+            $data['limit'] = 100; $data['page'] = 0;
+        }
+        if (isset($data['mine']) && $data['mine'] == 'true') {
+            $username = AuthMiddleware::getLoggedInAccount()['username'];
+            return $this->service->getGroupByUsername($username, $data['limit'], $data['page']);
+        }
+        $name = $data['name'] ?? '';
+        $isMahasiswa = (AuthMiddleware::getLoggedInAccount()['jenis'] == 'MAHASISWA');
+        return $this->service->getGroupByName($name, $data['limit'], $data['page'], $isMahasiswa);
     }
 
     public function updateGroup($data)
     {
-        $this->assertKeysExist($data, array("nama", "deskripsi","jenis", "id"), "Create group");
+        $this->assertKeysExist($data, array("nama", "deskripsi","jenis", "id"), "Update group");
         $group = $this->mapToGroup($data);
         return $this->service->updateGroup($group);
     }

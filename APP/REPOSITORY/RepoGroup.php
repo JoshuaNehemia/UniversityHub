@@ -28,19 +28,22 @@ class RepoGroup
     #region CREATE
     public function createGroup(Group $group): bool
     {
-        $sql = "INSERT INTO grup 
+        $sqlGroup = "INSERT INTO grup 
             (username_pembuat, nama, deskripsi, tanggal_pembentukan, jenis, kode_pendaftaran)
             VALUES (?, ?, ?, ?, ?, ?);";
-        $stmt = null;
+        
+        $sqlMember = "INSERT INTO member_grup (idgrup, username) VALUES (?, ?)";
+
+        $stmtGroup = null;
+        $stmtMember = null;
+        $conn = null;
 
         try {
             $conn = $this->db->connect();
-            $stmt = $conn->prepare($sql);
+            
+            $conn->begin_transaction();
 
-            if (!$stmt) {
-                throw new Exception("Failed to prepare createGroup statement: " . $conn->error);
-            }
-
+            $stmtGroup = $conn->prepare($sqlGroup);
             $pembuat = $group->getPembuat();
             $nama = $group->getNama();
             $deskripsi = $group->getDeskripsi();
@@ -48,29 +51,23 @@ class RepoGroup
             $jenis = $group->getJenis();
             $kode = $group->getKode();
 
-            $stmt->bind_param(
-                "ssssss",
-                $pembuat,
-                $nama,
-                $deskripsi,
-                $tanggal,
-                $jenis,
-                $kode
-            );
+            $stmtGroup->bind_param("ssssss", $pembuat, $nama, $deskripsi, $tanggal, $jenis, $kode);
 
-            if (!$stmt->execute()) {
-                throw new Exception($stmt->error);
-            }
-            return $stmt->affected_rows === 1;
+            if (!$stmtGroup->execute()) throw new Exception($stmtGroup->error);
+            $newGroupId = $conn->insert_id;
+            $stmtMember = $conn->prepare($sqlMember);
+            $stmtMember->bind_param("is", $newGroupId, $pembuat);
+            if (!$stmtMember->execute()) throw new Exception("Gagal set owner sebagai member");
+            $conn->commit();
+            return true;
 
         } catch (Exception $e) {
+            if ($conn) $conn->rollback();
             throw $e;
         } finally {
-            if ($stmt)
-                $stmt->close();
-            if ($conn) {
-                $this->db->close();
-            }
+            if ($stmtGroup) $stmtGroup->close();
+            if ($stmtMember) $stmtMember->close();
+            if ($conn) $this->db->close();
         }
     }
     #endregion
@@ -114,8 +111,7 @@ class RepoGroup
 
     public function findAllGroupByName(string $name, int $limit, int $page, $is_mahasiswa): array
     {
-        $mahasiswa_display = $is_mahasiswa ? "AND jenis = 'Publik'" : "";
-        $sql = "SELECT * FROM grup WHERE nama LIKE ? {$mahasiswa_display} LIMIT ? OFFSET ?;";
+        $sql = "SELECT * FROM grup WHERE nama LIKE ? AND jenis = 'Publik' LIMIT ? OFFSET ?;";
 
         $name = "%{$name}%";
         $offset = $page * $limit;
@@ -282,4 +278,44 @@ class RepoGroup
     }
     #endregion
 
+    #region FindAllAvaiable
+    public function findAvailableGroups(string $keyword, string $username, int $limit, int $page): array
+    {
+        $sql = "SELECT * FROM grup 
+                WHERE nama LIKE ? 
+                AND jenis = 'Publik'
+                AND idgrup NOT IN (
+                    SELECT idgrup FROM member_grup WHERE username = ?
+                )
+                ORDER BY tanggal_pembentukan DESC 
+                LIMIT ? OFFSET ?";
+
+        $keyword = "%{$keyword}%";
+        $offset = $page * $limit;
+
+        try {
+            $conn = $this->db->connect();
+            $stmt = $conn->prepare($sql);
+
+            if (!$stmt) throw new Exception("Failed to prepare statement: " . $conn->error);
+
+            $stmt->bind_param("ssii", $keyword, $username, $limit, $offset);
+
+            if (!$stmt->execute()) throw new Exception($stmt->error);
+
+            $result = $stmt->get_result();
+            $groups = [];
+            while ($row = $result->fetch_assoc()) {
+                $groups[] = $this->groupMapper($row);
+            }
+            return $groups;
+
+        } catch (Exception $e) {
+            throw $e;
+        } finally {
+            if (isset($stmt)) $stmt->close();
+            if (isset($conn)) $this->db->close();
+        }
+    }
+    #endregion
 }

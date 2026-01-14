@@ -69,10 +69,6 @@ class Dosen extends Akun
     #endregion
 
     #region UTILITIES
-    /**
-     * Merubah data object class Akun dari serializable object menjadi PHP Array
-     * @return array data kelas dalam array.
-     */
     public function toArray(): array
     {
         return array_merge(

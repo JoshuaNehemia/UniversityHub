@@ -91,10 +91,6 @@ $(document).ready(function () {
 });
 
 
-// ===========================================================
-// LOAD DATA MAHASISWA
-// GET /MAHASISWA/?username=
-// ===========================================================
 function loadMahasiswa(username) {
 
     const url = API_ADDRESS + "MAHASISWA/";

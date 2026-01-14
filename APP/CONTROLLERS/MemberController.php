@@ -29,8 +29,11 @@ class MemberController
 
     public function getMember($data)
     {
-        $this->checkData($data);
-        return $this->service->getGroupMember($data['idgrup']);
+        $groupId = $data['idgrup'] ?? $data['idgroup'] ?? null;
+        if (!$groupId) {
+            throw new Exception("Data incomplete: No group data sent");
+        }
+        return $this->service->getGroupMember($groupId);
     }
 
     public function addMember($data)
@@ -41,8 +44,11 @@ class MemberController
 
     public function deleteMember($data)
     {
-        $this->checkData($data);
-        return $this->service->deleteGroupMember($data['idgrup'], $data['username']);
+        $groupId = $data['idgrup'] ?? $data['idgroup'] ?? null;
+        if (!$groupId || !isset($data['username'])) {
+            throw new Exception("Data incomplete: Missing required fields");
+        }
+        return $this->service->deleteGroupMember($groupId, $data['username']);
     }
 
     private function checkData($data){

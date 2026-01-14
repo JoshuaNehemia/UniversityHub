@@ -63,3 +63,8 @@ function put(){
         "message" => "No api exists"
     );
 }
+
+// Echo response
+if ($response !== null) {
+    echo json_encode($response);
+}

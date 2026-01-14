@@ -4,337 +4,529 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cari Group | University Hub</title>
 
-    <title>Cari Grup | University Hub</title>
+    <link rel="stylesheet" href="STYLES/root.css">
+    <link rel="stylesheet" href="STYLES/main.css">
+    <link rel="stylesheet" href="STYLES/form.css">
+    <link rel="stylesheet" href="STYLES/mobile-fix.css">
 
     <script src="SCRIPTS/jquery_3_7_1.js"></script>
     <script src="SCRIPTS/config.js"></script>
     <script src="SCRIPTS/auth.js"></script>
-
-    <link rel="stylesheet" href="STYLES/main.css">
 </head>
+<style>
+/* =====================================================
+   INTERNAL RWD OVERRIDES — SIZE & FLOW ONLY
+   No color, no design, no JS dependency
+===================================================== */
+
+/* =====================
+   TABLET & BELOW
+===================== */
+@media (max-width: 992px) {
+
+    /* Layout becomes vertical */
+    .dashboard-wrapper {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Sidebar becomes top navigation */
+    .sidebar {
+        width: 100%;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-nav {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-link {
+        padding: 12px 20px !important;
+        white-space: nowrap;
+        border-right: none;
+        border-bottom: 3px solid transparent;
+    }
+
+    .nav-link.active {
+        border-bottom-color: var(--first-color);
+    }
+
+    /* Main content reset */
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 16px;
+    }
+
+    /* Search bar stack */
+    .form-group[style*="display:flex"] {
+        display: flex !important;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .form-group input,
+    .form-group button {
+        width: 100%;
+    }
+
+    /* Grid: 2 columns */
+    .group-card {
+        width: calc(50% - 16px);
+        max-width: 100%;
+        min-width: 0;
+    }
+}
+
+/* =====================
+   MOBILE
+===================== */
+@media (max-width: 768px) {
+
+    /* Header resize */
+    .top-bar {
+        height: 50px;
+        padding: 0 12px;
+    }
+
+    .top-bar .user-menu span {
+        display: none;
+    }
+
+    /* Grid: 1 column */
+    .group-card {
+        width: 100%;
+    }
+
+    /* 🔒 CARD STRUCTURE RESET (CRITICAL) */
+    .group-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .group-card-body {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+    }
+
+    /* 🔑 MEMBER / JOIN / OWNER ALWAYS VISIBLE */
+    .group-card-action {
+        display: flex !important;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: auto !important;
+        padding-top: 10px;
+    }
+
+    .group-card-action > * {
+        display: block !important;
+        width: 100% !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* Buttons sizing */
+    .group-card-action .btn {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+
+    /* Pagination stack */
+    #pagination {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    #pagination button {
+        width: 100%;
+    }
+}
+
+/* =====================
+   SMALL PHONES
+===================== */
+@media (max-width: 480px) {
+
+    .main-content {
+        padding: 10px;
+    }
+
+    .group-card-header {
+        height: 100px;
+    }
+
+    .group-card-title {
+        font-size: 1.05rem;
+    }
+
+    .group-card-desc {
+        font-size: 0.9rem;
+    }
+}
+</style>
 
 <body>
 
-    <header>
-        <h1>Pencarian Group</h1>
+    <header class="top-bar">
+        <div class="brand">
+            <h1>University Hub</h1>
+        </div>
+        <div class="user-menu">
+            <button id="themeToggle" onclick="toggleTheme()" class="btn-theme" title="Ganti Tema">🌙</button>
+            <span>Halo, <strong id="display-name">User</strong></span>
+            <button onclick="logout()" class="btn-logout">Keluar</button>
+        </div>
     </header>
 
-    <div class="container-layout">
+    <div class="dashboard-wrapper">
 
-        <aside>
-            <nav>
-                <a href="profil.php">Profil</a>
-                <a href="group.php">Group Saya</a>
-                <a href="thread.php">Thread</a>
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="index.php" class="nav-link" style="padding-left: 50px;">Group Saya</a>
+                <a href="group.php" class="nav-link active" style="padding-left: 50px;">Cari Group</a>
+                <a href="profil.php" class="nav-link" style="padding-left: 50px;">Profil Akun</a>
             </nav>
         </aside>
 
-        <main>
+        <main class="main-content">
 
-            <h2>Cari Group</h2>
-
-            <!-- FORM PENCARIAN -->
-            <div class="card" style="padding:20px; max-width:500px;">
-                <label>Kata Kunci</label>
-                <input type="text" id="search-keyword" placeholder="nama grup...">
-
-                <button id="btn-search-group" style="margin-top:15px;">
-                    Cari Group
-                </button>
+            <div class="content-header">
+                <h2>Pencarian Group</h2>
+                <p class="text-muted">Temukan dan bergabung dengan komunitas baru.</p>
             </div>
 
-            <!-- PAGINATION -->
-            <div id="pagination" style="margin-top:20px; margin-bottom:20px;">
-                <button id="page-prev">Prev</button>
-                <span id="page-number" style="margin:0 10px;">0</span>
-                <button id="page-next">Next</button>
+            <div class="card" style="margin-bottom: 30px;">
+                <div class="form-group" style="margin-bottom:0; display:flex; gap:10px;">
+                    <input type="text" id="search-keyword" class="form-control" placeholder="Masukkan nama atau topik group..." style="flex:1;">
+                    <button id="btn-search-group" class="btn btn-primary">
+                        Cari
+                    </button>
+                </div>
             </div>
 
-            <!-- LIST GRUP -->
-            <div id="group-result-list"></div>
+            <div id="group-result-list" class="grid-container"></div>
 
-            <div id="status-message" style="margin-top:20px;"></div>
+            <div id="status-message" class="mt-4 text-center text-muted"></div>
+
+            <div id="pagination" style="margin-top:40px; display:none; justify-content:center; align-items:center; gap:15px;">
+                <button id="page-prev" class="btn btn-outline">Previous</button>
+                <span style="font-weight:bold; color:var(--text-secondary);">Halaman <span id="page-number">0</span></span>
+                <button id="page-next" class="btn btn-outline">Next</button>
+            </div>
 
         </main>
 
     </div>
 
 
-    <!-- POPUP MASUKKAN KODE -->
     <div id="kode-popup"
         style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+            background:rgba(0,0,0,0.5); z-index:var(--z-modal); justify-content:center; align-items:center;">
 
-        <div class="card" style="padding:20px; width:300px; background:white;">
-            <h3>Masukkan Kode Group</h3>
+        <div class="card" style="width:100%; max-width:400px; animation: fadeIn 0.3s;">
+            <h3 style="margin-bottom:20px;">🔒 Masukkan Kode Akses</h3>
+            <p class="text-muted" style="font-size:0.9rem;">Silakan masukkan kode pendaftaran untuk bergabung ke group ini.</p>
 
-            <input type="text" id="kode-input" placeholder="Kode pendaftaran">
+            <div class="form-group">
+                <label class="form-label">Kode Pendaftaran</label>
+                <input type="text" id="kode-input" class="form-control" placeholder="Contoh: A1B2C3">
+            </div>
 
-            <button id="btn-submit-kode" style="margin-top:15px;">Submit</button>
-            <button id="btn-close-popup" style="margin-top:10px;">Batal</button>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button id="btn-close-popup" class="btn btn-outline">Batal</button>
+                <button id="btn-submit-kode" class="btn btn-primary">Gabung Sekarang</button>
+            </div>
         </div>
 
     </div>
 
-
 </body>
 
 <script>
+    var currentUser = "";
+    var joinedGroupIds = []; 
+
     $(document).ready(function() {
 
-        checkLoggedIn();
+        window.logout = function() {
+            if(confirm("Apakah Anda yakin ingin keluar?")) {
+                $.ajax({
+                    url: API_ADDRESS + "AUTH/",
+                    type: "DELETE",
+                    success: function() {
+                        window.location.href = 'login.php'; 
+                    }
+                });
+            }
+        };
+
+        initPage();
 
         let offset = 0;
+        window.selectedGroupId = null;
 
-        console.group("INIT PAGE");
-        console.log("Page:", "search-group.php loaded");
-        console.log("Default offset:", offset);
-        console.groupEnd();
-
-        // ===============================================
-        // AUTO LOAD DATA AWAL
-        // ===============================================
-        searchGroup("", offset);
-
-        // ------------------------------------
-        // SEARCH BUTTON
-        // ------------------------------------
         $("#btn-search-group").on("click", function() {
-            console.group("SEARCH BUTTON CLICKED");
             offset = 0;
-            console.log("Keyword:", $("#search-keyword").val());
-            console.log("Offset reset:", offset);
-            console.groupEnd();
-
             searchGroup($("#search-keyword").val(), offset);
         });
 
-        // ------------------------------------
-        // PAGINATION PREV
-        // ------------------------------------
         $("#page-prev").on("click", function() {
-            console.group("PAGE PREV CLICKED");
             if (offset > 0) {
                 offset--;
-                console.log("New offset:", offset);
                 searchGroup($("#search-keyword").val(), offset);
-            } else {
-                console.log("Offset sudah 0, tidak bisa mundur");
             }
-            console.groupEnd();
         });
 
-        // ------------------------------------
-        // PAGINATION NEXT
-        // ------------------------------------
         $("#page-next").on("click", function() {
-            console.group("PAGE NEXT CLICKED");
             offset++;
-            console.log("New offset:", offset);
-            console.groupEnd();
-
             searchGroup($("#search-keyword").val(), offset);
         });
 
-        // ------------------------------------
-        // CLOSE POPUP
-        // ------------------------------------
         $("#btn-close-popup").on("click", function() {
-            console.group("POPUP CLOSED");
-            console.log("Popup ditutup oleh user");
-            console.groupEnd();
-
-            $("#kode-popup").hide();
+            $("#kode-popup").fadeOut(200);
             $("#kode-input").val("");
-            selectedGroupId = null;
+            window.selectedGroupId = null;
         });
 
-        // ------------------------------------
-        // SUBMIT KODE BUTTON
-        // ------------------------------------
         $("#btn-submit-kode").on("click", function() {
             const kode = $("#kode-input").val().trim();
-
-            console.group("SUBMIT KODE CLICKED");
-            console.log("Kode input:", kode);
-            console.log("Selected Group ID:", selectedGroupId);
-
-            if (!selectedGroupId) {
-                console.error("selectedGroupId is NULL");
-                alert("Group ID tidak ditemukan!");
-                console.groupEnd();
-                return;
-            }
-
-            if (kode.length === 0) {
-                console.error("Kode kosong");
-                alert("Kode tidak boleh kosong!");
-                console.groupEnd();
-                return;
-            }
-
-            console.groupEnd(); 
-
-            joinGroup(selectedGroupId, kode);
+            if (!window.selectedGroupId) { alert("Error: Group ID hilang."); return; }
+            if (kode.length === 0) { alert("Kode wajib diisi!"); return; }
+            joinGroup(window.selectedGroupId, kode);
         });
-
     });
 
 
-    // ====================================================================
-    // GET GROUP LIST LOGGING
-    // ====================================================================
-    function searchGroup(keyword, offset) {
+    function initPage() {
+        $.ajax({
+            url: API_ADDRESS + "AUTH/",
+            type: "GET",
+            data: { jenis: "account" },
+            dataType: "json",
+            success: function(res) {
+                if (res.status === "success") {
+                    currentUser = res.data.username;
+                    $("#display-name").text(res.data.nama);
+                    
+                    window.SESSION = res.data;
 
-        const url = API_ADDRESS + "GROUP/";
+                    fetchJoinedGroups().then(function() {
+                        searchGroup("", 0);
+                    });
 
-        console.group("SEARCH GROUP - START");
+                } else {
+                    window.location.href = "login.php";
+                }
+            },
+            error: function() {
+                window.location.href = "login.php";
+            }
+        });
+    }
 
-        console.group("REQUEST INFO");
-        console.log("URL:", url);
-        console.log("Method:", "GET");
-        console.log("Keyword:", keyword);
-        console.log("Offset:", offset);
-        console.groupEnd();
+
+    function fetchJoinedGroups() {
+        return $.ajax({
+            url: API_ADDRESS + "AUTH/",
+            type: "GET",
+            data: {
+                jenis: "group",
+                limit: 1000, 
+                offset: 0
+            },
+            dataType: "json",
+            success: function(res) {
+                if (res.status === "success" && res.data) {
+                    joinedGroupIds = res.data.map(g => g.id || g.idgrup);
+                }
+            }
+        });
+    }
+
+
+    function searchGroup(keyword, offsetInput) {
+        let baseUrl = API_ADDRESS;
+        if(baseUrl.endsWith("/")) baseUrl = baseUrl.slice(0, -1);
+        const url = baseUrl + "/GROUP/";
+        
+        const limit = 6; 
+
+        $("#status-message").html("Sedang memuat data...");
+        $("#group-result-list").css("opacity", "0.5");
 
         $.ajax({
             url: url,
             type: "GET",
             dataType: "json",
             data: {
-                keyword: keyword,
-                offset: offset,
-                limit: 5
+                name: keyword, 
+                page: offsetInput, 
+                limit: limit
             },
-
             success: function(res) {
-                console.group("RESPONSE");
-                console.log("SUCCESS:", res);
-                console.groupEnd();
-
                 const container = $("#group-result-list");
                 container.empty();
+                $("#status-message").empty();
+                $("#group-result-list").css("opacity", "1");
 
-                $("#page-number").text(offset);
+                $("#page-number").text(offsetInput + 1);
 
-                if (res.status !== "success" || res.data.length === 0) {
-                    console.warn("Tidak ada group ditemukan.");
-                    container.html("<p>Tidak ada group ditemukan.</p>");
-                    return;
+                if (res.data && (res.data.length > 0 || offsetInput > 0)) {
+                    $("#pagination").css("display", "flex");
+                } else {
+                    $("#pagination").hide();
                 }
 
-                res.data.forEach(g => {
+                if (res.status !== "success" || !res.data || res.data.length === 0) {
+                    container.html("");
+                    let pesan = res.message || "Tidak ada group yang ditemukan.";
+                    
+                    if(offsetInput === 0) {
+                        $("#status-message").html(`
+                            <div style="text-align:center; padding:40px;">
+                                <img src="IMAGES/warning.svg" style="width:60px; opacity:0.5; margin-bottom:15px;">
+                                <p>${pesan}</p>
+                            </div>
+                        `);
+                    } else {
+                        $("#status-message").text("Akhir dari daftar group.");
+                    }
+                    
+                    $("#page-next").prop('disabled', true);
+                    return;
+                } 
 
-                    console.group("RENDER GROUP CARD");
-                    console.log("Group:", g);
-                    console.groupEnd();
+                if(res.data.length < limit) {
+                    $("#page-next").prop('disabled', true);
+                } else {
+                    $("#page-next").prop('disabled', false);
+                }
+
+
+                res.data.forEach(g => {
+                    const groupID = g.id || g.idgrup; 
+
+                    let badgeClass = g.jenis === 'Privat' ? 
+                        'background-color:var(--status-waiting-bg); color:var(--status-waiting);' : 
+                        'background-color:var(--status-success-bg); color:var(--status-success);';
+
+                    let actionButton = "";
+                    
+                    if (g.pembuat === currentUser) {
+                        actionButton = `
+                            <span style="display:block; text-align:center; color:var(--text-secondary); font-size:0.85rem; padding:10px; background:#f5f5f5; border-radius:4px; border:1px solid #eee;">
+                                 Milik Anda
+                            </span>
+                        `;
+                    } 
+                    else if (joinedGroupIds.includes(groupID)) {
+                        actionButton = `
+                            <span style="display:block; text-align:center; color:var(--status-success); font-size:0.85rem; padding:10px; background:var(--status-success-bg); border-radius:4px; font-weight:bold;">
+                                ✓ Telah Bergabung
+                            </span>
+                        `;
+                    } 
+                    else {
+                        actionButton = `
+                            <button class="btn btn-primary btn-join-group" 
+                                    style="width:100%; padding:8px;"
+                                    data-id="${groupID}">
+                                Gabung Group
+                            </button>
+                        `;
+                    }
 
                     const card = `
-                    <div class="card"
-                         style="margin-top:10px; padding:15px; max-width:450px;">
-
-                        <h3>${g.nama}</h3>
-                        <p>Jenis: ${g.jenis}</p>
-                        <p>${g.deskripsi}</p>
-
-                        <button class="btn-join-group"
-                                data-id="${g.id}"
-                                style="margin-top:10px;">
-                            Join Group
-                        </button>
+                    <div class="group-card">
+                        <div class="group-card-header" style="background-image: url('IMAGES/ubaya.jpg'); position:relative;">
+                             <span style="position:absolute; top:10px; right:10px; padding:4px 10px; border-radius:15px; font-size:0.75rem; font-weight:bold; ${badgeClass}">
+                                ${g.jenis}
+                             </span>
+                        </div>
+                        
+                        <div class="group-card-body">
+                            <h3 class="group-card-title">
+                                <a href="detail-group.php?id=${groupID}" style="text-decoration:none; color:inherit;">
+                                    ${g.nama}
+                                </a>
+                            </h3>
+                            <p class="group-card-desc">${g.deskripsi || 'Tidak ada deskripsi group.'}</p>
+                            
+                            <div class="group-card-action" style="display:flex; flex-direction:column; gap:5px;">
+                                <a href="detail-group.php?id=${groupID}" class="btn btn-outline" style="text-align:center; padding:8px;">
+                                    Lihat Detail
+                                </a>
+                                ${actionButton}
+                            </div>
+                        </div>
                     </div>
                 `;
-
                     container.append(card);
                 });
 
-                // CLICK JOIN GROUP
                 $(".btn-join-group").on("click", function() {
                     const gid = $(this).data("id");
-                    selectedGroupId = gid;
-
-                    console.group("JOIN GROUP CLICKED");
-                    console.log("Selected Group ID:", selectedGroupId);
-                    console.groupEnd();
-
-                    $("#kode-popup").css("display", "flex");
+                    window.selectedGroupId = gid; 
+                    $("#kode-popup").css("display", "flex").hide().fadeIn(200);
+                    $("#kode-input").focus();
                 });
-
-
             },
-
             error: function(xhr) {
-                console.group("ERROR");
+                $("#status-message").text("Gagal memuat data group. Server Error.");
+                $("#group-result-list").css("opacity", "1");
                 console.error(xhr);
-                console.groupEnd();
-
-                $("#status-message").text("Gagal memuat data group.");
-            },
-
-            complete: function() {
-                console.groupEnd();
             }
         });
-
     }
 
 
-    // ====================================================================
-    // JOIN GROUP - POST /JOIN/{idgroup}/
-    // ====================================================================
     function joinGroup(idgroup, kode) {
-
-        const url = API_ADDRESS + "JOIN/" + idgroup + "/";
-
-        const payload = {
-            kode: kode
+        let baseUrl = API_ADDRESS;
+        if(baseUrl.endsWith("/")) baseUrl = baseUrl.slice(0, -1);
+        
+        const url = baseUrl + "/JOIN/"; 
+        const payload = { 
+            idgrup: idgroup, 
+            kode: kode,
+            username: currentUser 
         };
-
-        console.group("JOIN GROUP - START");
-
-        console.group("REQUEST INFO");
-        console.log("URL:", url);
-        console.log("Method:", "POST");
-        console.log("Payload:", payload);
-        console.groupEnd();
 
         $.ajax({
             url: url,
             type: "POST",
-            data: payload,
+            data: payload, 
             dataType: "json",
-
             success: function(res) {
-
-                console.group("RESPONSE");
-                console.log("SUCCESS:", res);
-                console.groupEnd();
-
                 if (res.status === "success") {
-                    console.log("JOIN SUCCESS - CODE VALID");
                     alert("Berhasil bergabung ke group!");
-                    $("#kode-popup").hide();
+                    $("#kode-popup").fadeOut();
                     $("#kode-input").val("");
+                    
+                    initPage(); 
                 } else {
-                    console.warn("JOIN FAILED:", res.message);
-                    alert("Gagal join: " + res.message);
+                    alert("Gagal join: " + (res.message || "Kode salah atau error lain."));
                 }
             },
-
             error: function(xhr) {
-                console.group("ERROR");
-                console.error("Join group error:", xhr);
-                console.groupEnd();
-
-                alert(xhr.responseJSON?.message || "Gagal join group.");
-            },
-
-            complete: function() {
-                console.groupEnd();
+                console.error(xhr); 
+                let msg = "Terjadi kesalahan koneksi/server.";
+                if(xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                }
+                alert(msg);
             }
         });
     }
 </script>
-
 </html>

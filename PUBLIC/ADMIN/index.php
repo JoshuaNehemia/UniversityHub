@@ -107,9 +107,6 @@
     });
 
 
-    // ==========================================================
-    // LOAD AKUN (MAHASISWA / DOSEN)
-    // ==========================================================
     function loadAkun(jenis, keyword, offset) {
 
         const url = API_ADDRESS + jenis + "/";
@@ -228,10 +225,7 @@
 
     }
 
-
-    // ==========================================================
-    // DELETE AKUN
-    // ==========================================================
+    
     function deleteAkun(jenis, username) {
 
         const url = API_ADDRESS + jenis + "/";

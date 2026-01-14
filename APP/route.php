@@ -35,6 +35,12 @@ switch ($resource) {
     case "IMAGE":
         require_once("$routesPath/API/IMAGE/" . $index);
         break;
+    case "MAHASISWA":
+        require_once("$routesPath/API/MAHASISWA/" . $index);
+        break;
+    case "DOSEN":
+        require_once("$routesPath/API/DOSEN/" . $index);
+        break;
     default:
         throw new Exception("No API Found");
 }

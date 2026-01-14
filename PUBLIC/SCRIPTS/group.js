@@ -1,11 +1,12 @@
-function getGroupDetail(id) {
+let IS_OWNER = false;
+
+function getGroupDetail(id, callback = null) {
   console.group("GET GROUP DETAIL - START");
   const data = { id: id };
 
   const method = "GET";
   const url = API_ADDRESS + "GROUP/";
 
-  // --- Logging Request ---
   console.group("GET GROUP DETAIL - Sending Request");
   console.log("Method :", method);
   console.log("URL    :", url);
@@ -13,7 +14,7 @@ function getGroupDetail(id) {
   console.groupEnd();
 
   $.ajax({
-    url: url, // FIXED: this was missing in your code
+    url: url, 
     type: method,
     data: data,
     dataType: "json",
@@ -32,6 +33,24 @@ function getGroupDetail(id) {
         $("#deskripsi-group").text(g.deskripsi);
         $("#pembuat-group").text(g.pembuat);
         $("#tanggal-pembentukan-group").text("Tanggal: " + g.tanggal_dibuat);
+        
+        const currentUser = SESSION.username;
+        const currentRole = SESSION.jenis;
+        IS_OWNER = (currentUser === g.pembuat) || currentRole === "ADMIN";
+
+        if (IS_OWNER) {
+            $(".dosen_only").show();
+            $("#kode-group-wrapper").removeClass("hidden");
+            $("#kode-group").text(g.kode);
+            $("#member-action").addClass("hidden");
+        } else {
+            $(".dosen_only").hide();
+            $("#kode-group-wrapper").addClass("hidden");
+            $("#member-action").removeClass("hidden");
+          }
+
+        if (callback) callback(g);
+
       } else {
         $("#nama-group").text("Group tidak ditemukan");
       }
@@ -49,7 +68,7 @@ function getGroupDetail(id) {
     },
 
     complete: function () {
-      console.groupEnd(); // END AJAX log group
+      console.groupEnd(); 
     },
   });
   console.groupEnd();
@@ -81,6 +100,12 @@ function getGroupMember(id) {
 
       if (res.status === "success") {
         list.empty();
+
+        if (IS_OWNER) {
+          $(".dosen_only").show();
+        } else {
+          $(".dosen_only").hide();
+        }
 
         // DOSEN
         res.data.DOSEN.forEach((d) => {
@@ -127,11 +152,11 @@ function getGroupMember(id) {
     },
 
     complete: function () {
-      console.groupEnd(); // AJAX group
+      console.groupEnd();
     },
   });
 
-  console.groupEnd(); // START group
+  console.groupEnd();
 }
 
 function getGroupEvent(id, offset = 0, keyword = "") {
@@ -166,6 +191,13 @@ function getGroupEvent(id, offset = 0, keyword = "") {
       if (res.status === "success") {
         list.empty();
 
+        if (IS_OWNER) {
+          $(".dosen_only").show();
+        } else {
+          $(".dosen_only").hide();
+        }
+
+
         // DOSEN
         res.data.forEach((d) => {
           const row = `
@@ -198,12 +230,13 @@ function getGroupEvent(id, offset = 0, keyword = "") {
     },
 
     complete: function () {
-      console.groupEnd(); // AJAX group
+      console.groupEnd(); 
     },
   });
 
-  console.groupEnd(); // START group
+  console.groupEnd(); 
 }
+
 function removeMember(idgroup, username) {
   console.group("REMOVE MEMBER - START");
 
@@ -293,9 +326,148 @@ function removeEvent(idgroup, idevent) {
     },
 
     complete: function () {
-      console.groupEnd(); // AJAX
+      console.groupEnd(); 
     },
   });
 
-  console.groupEnd(); // START
+  console.groupEnd(); 
 }
+
+function removeGroup(idgroup) {
+  console.group("REMOVE GROUP - START");
+
+  const method = "DELETE";
+  const url = API_ADDRESS + "GROUP/";
+  const data = JSON.stringify({ id: idgroup });
+
+  console.group("REMOVE GROUP - Sending Request");
+  console.log("Method :", method);
+  console.log("URL    :", url);
+  console.log("Payload:", data);
+  console.groupEnd();
+
+  console.group("REMOVE GROUP - AJAX");
+
+  $.ajax({
+    url: url,
+    type: method,
+    data: data,
+    contentType: "application/json",
+    dataType: "json",
+
+    success: function (res) {
+      console.log("SUCCESS:", res);
+
+      if (res.status === "success") {
+        alert("Group berhasil dihapus.");
+        window.location.href = "index.php";
+      } else {
+        $("#status-message").text(res.message || "Gagal menghapus group.");
+      }
+    },
+
+    error: function (xhr, status, error) {
+      console.error("ERROR:", { xhr, status, error });
+      let msg = xhr.responseJSON?.message || "Terjadi kesalahan server";
+      $("#status-message").text(msg);
+    },
+
+    complete: function () {
+      console.groupEnd(); 
+    },
+  });
+
+  console.groupEnd();
+}
+
+function leaveGroup(idgroup) {
+  console.group("LEAVE GROUP - START");
+
+  const method = "DELETE";
+  const url = API_ADDRESS + "MEMBER/" + idgroup + "/?action=leave";
+  const data = JSON.stringify({});
+
+  console.group("LEAVE GROUP - Sending Request");
+  console.log("Method :", method);
+  console.log("URL    :", url);
+  console.log("Payload:", data);
+  console.groupEnd();
+
+  console.group("LEAVE GROUP - AJAX");
+
+  $.ajax({
+    url: url,
+    type: method,
+    data: data,
+    dataType: "json",
+
+    success: function (res) {
+      console.log("SUCCESS:", res);
+
+      if (res.status === "success") {
+
+        alert("Anda telah keluar dari group.");
+        window.location.href = "index.php";
+      } else {
+        $("#status-message").text(res.message || "Gagal keluar dari group.");
+      }
+    },
+
+    error: function (xhr) {
+      console.error("ERROR:", xhr);
+      let msg = xhr.responseJSON?.message || "Terjadi kesalahan server";
+      $("#status-message").text(msg);
+    },
+
+    complete: function () {
+      console.groupEnd();
+    }
+  });
+
+  console.groupEnd();
+}
+
+$('#search-mhs').on('keyup', function() {
+    let keyword = $(this).val();
+    if(keyword.length < 3) return; 
+
+    $.ajax({
+        url: '../API/MEMBER/index.php', 
+        method: 'GET',
+        data: { search: keyword }, 
+        success: function(response) {
+            let rows = '';
+            response.data.forEach(mhs => {
+                rows += `
+                    <tr>
+                        <td>${mhs.nrp}</td>
+                        <td>${mhs.nama}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary btn-add-member" 
+                                data-nrp="${mhs.nrp}">
+                                Tambah
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            $('#result-mhs').html(rows);
+        }
+    });
+});
+
+// Event klik tombol Tambah
+$(document).on('click', '.btn-add-member', function() {
+    let nrp = $(this).data('nrp');
+    let idgrup = $('#idgrup').val(); 
+
+    $.post('../API/JOIN/index.php', { nrp: nrp, idgrup: idgrup }, function(res) {
+        alert('Berhasil menambahkan anggota!');
+        location.reload();
+    }).fail(function() {
+        alert('Gagal menambahkan anggota.');
+    });
+});
+
+
+

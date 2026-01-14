@@ -8,6 +8,7 @@ class Thread
 {
     #region FIELDS
     private int $id;
+    private int $idgrup;
     private string $pembuat;
     private string $tanggalPembuatan;
     private string $status;
@@ -35,6 +36,11 @@ class Thread
         return $this->tanggalPembuatan;
     }
 
+    public function getIdgrup(): int
+    {
+        return $this->idgrup;
+    }
+
     public function getStatus(): string
     {
         return $this->status;
@@ -48,6 +54,14 @@ class Thread
             throw new Exception("Thread ID must be a positive integer.");
         }
         $this->id = $id;
+    }
+
+    public function setIdgrup(int $idgrup): void
+    {
+        if ($idgrup <= 0) {
+            throw new Exception("Group ID must be a positive integer.");
+        }
+        $this->idgrup = $idgrup;
     }
 
     public function setPembuat(string $pembuat): void
@@ -87,6 +101,10 @@ class Thread
 
         if (isset($this->id)) {
             $data['id'] = $this->id;
+        }
+
+        if (isset($this->idgrup)) {
+            $data['idgrup'] = $this->idgrup;
         }
 
         if (isset($this->pembuat)) {

@@ -8,8 +8,9 @@ class Chat
     private $pengirim;
     private $isi;
     private $tanggalPembuatan;
+    private $namaPengirim;
     #endregion
-    
+
     #region CONSTRUCTOR
     public function __construct()
     {
@@ -36,6 +37,11 @@ class Chat
     {
         return $this->tanggalPembuatan;
     }
+
+    public function getNamaPengirim(): string
+    {
+        return $this->namaPengirim;
+    }
     #endregion
     #region SETTER
     public function setId(int $id)
@@ -61,6 +67,11 @@ class Chat
             $this->tanggalPembuatan = date("Y-m-d-H-i-s");
         $this->tanggalPembuatan = $tanggalPembuatan;
     }
+
+    public function setNamaPengirim(string $nama): void
+    {
+        $this->namaPengirim = $nama;
+    }
     #endregion
     #region UTILITIES
     public function toArray(): array
@@ -73,6 +84,10 @@ class Chat
 
         if (isset($this->pengirim)) {
             $data['pengirim'] = $this->pengirim;
+        }
+
+        if (isset($this->namaPengirim)) {
+            $data['nama_pengirim'] = $this->namaPengirim;
         }
 
         if (isset($this->isi)) {

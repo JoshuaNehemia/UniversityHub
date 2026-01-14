@@ -53,6 +53,9 @@ function get($controller)
 function delete($controller)
 {
     $data = json_decode(file_get_contents("php://input"), true);
+    if (!is_array($data)) $data = [];
+    // Merge query parameters for compatibility (some requests send idgroup in URL)
+    $data = array_merge($_GET, $data);
     $res = $controller->deleteMember($data);
     return array(
         "status" => "success",
@@ -67,4 +70,9 @@ function put($controller)
         "status" => "failed",
         "message" => "API does not exists"
     );
+}
+
+// Echo response
+if ($response !== null) {
+    echo json_encode($response);
 }

@@ -75,3 +75,4 @@ function delete($controller)
     );
 }
 
+echo json_encode($response);

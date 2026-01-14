@@ -40,3 +40,5 @@ function notfound()
         "message" => "API does not exists"
     );
 }
+
+echo json_encode($response);

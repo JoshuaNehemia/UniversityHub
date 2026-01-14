@@ -17,6 +17,7 @@ class RepoEvent
 {
     #region FIELDS
     private DatabaseConnection $db;
+    private int $lastInsertId = 0;
     #endregion
 
     #region CONSTRUCTOR
@@ -223,6 +224,8 @@ class RepoEvent
                 throw new Exception($stmt->error);
             }
 
+            $this->lastInsertId = $conn->insert_id;
+
             return $stmt->affected_rows === 1;
 
         } catch (Exception $e) {
@@ -235,8 +238,11 @@ class RepoEvent
             }
         }
     }
-    #endregion
-
+    
+    public function getLastInsertedId(): int
+    {
+        return $this->lastInsertId;
+    }
     #endregion
 
     #region UPDATE

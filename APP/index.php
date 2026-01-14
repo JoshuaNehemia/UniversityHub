@@ -14,11 +14,11 @@ require_once(__DIR__ . "/MIDDLEWARE/AuthMiddleware.php");
 try {
     require_once(__DIR__ . "/route.php");
 } catch (Exception $e) {
-    $response = array(
+    echo json_encode(array(
         "status" => "failed",
-        "message" => $e->getMessage());
-
-} finally {
-    echo json_encode($response);
+        "message" => $e->getMessage()
+    ));
 }
 #endregion
+
+

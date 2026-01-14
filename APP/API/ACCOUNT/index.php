@@ -66,3 +66,5 @@ function put($controller)
         "message" => "Update account successful"
     );
 }
+
+echo json_encode($response);

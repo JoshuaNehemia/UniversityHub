@@ -141,8 +141,11 @@ class Event extends DatabaseConnection
 
     public function setPosterExtension(string $posterExtension): void
     {
-        if (empty($posterExtension))
-            throw new Exception("Extention tidak dapat kosong");
+        if (empty($posterExtension)) {
+            $this->posterExtension = '';
+            return;
+        }
+        
         if (!in_array($posterExtension, ALLOWED_PICTURE_EXTENSION))
             throw new Exception("Extention illegal, Upload file berupa: " . implode(', ', ALLOWED_PICTURE_EXTENSION));
         $this->posterExtension = $posterExtension;

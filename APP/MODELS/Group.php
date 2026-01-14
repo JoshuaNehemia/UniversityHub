@@ -144,7 +144,7 @@ class Group
             "jenis" => $this->getJenis(),
             "kode" => $this->getKode()
         );
-    }
+    }   
 
     private function randomString($length = CODE_LENGTH)
     {

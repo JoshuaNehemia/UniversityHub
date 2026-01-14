@@ -17,6 +17,7 @@ class RepoThread
 {
     #region FIELDS
     private DatabaseConnection $db;
+    private int $lastInsertId = 0;
     #endregion
 
     #region CONSTRUCTOR
@@ -59,6 +60,8 @@ class RepoThread
                 throw new Exception("Failed to execute CREATE thread: " . $stmt->error);
             }
 
+            $this->lastInsertId = $conn->insert_id;
+
             return $stmt->affected_rows === 1;
 
         } finally {
@@ -68,6 +71,11 @@ class RepoThread
                 $this->db->close();
             }
         }
+    }
+    
+    public function getLastInsertedId(): int
+    {
+        return $this->lastInsertId;
     }
     #endregion
     #region RETRIEVE
@@ -97,6 +105,7 @@ class RepoThread
 
                 $thread = new Thread();
                 $thread->setId($row['idthread']);
+                $thread->setIdgrup($row['idgrup']);
                 $thread->setPembuat($row['username_pembuat']);
                 $thread->setTanggalPembuatan($row['tanggal_pembuatan']);
                 $thread->setStatus($row['status']);
@@ -190,6 +199,38 @@ class RepoThread
 
             if (!$stmt->execute()) {
                 throw new Exception("Failed to execute UPDATE thread: " . $stmt->error);
+            }
+
+            return $stmt->affected_rows > 0;
+
+        } finally {
+            if ($stmt)
+                $stmt->close();
+            if ($conn) {
+                $this->db->close();
+            }
+        }
+    }
+    
+    public function updateStatus(int $id, string $status): bool
+    {
+        $sql = "UPDATE thread SET status = ? WHERE idthread = ?";
+
+        $conn = null;
+        $stmt = null;
+
+        try {
+            $conn = $this->db->connect();
+            $stmt = $conn->prepare($sql);
+
+            if (!$stmt) {
+                throw new Exception("Failed to prepare UPDATE thread status: " . $conn->error);
+            }
+
+            $stmt->bind_param("si", $status, $id);
+
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to execute UPDATE thread status: " . $stmt->error);
             }
 
             return $stmt->affected_rows > 0;

@@ -30,6 +30,11 @@ switch ($method) {
 
 function post($controller)
 {
+    // Handle file upload if present
+    if (isset($_FILES['poster']) && $_FILES['poster']['error'] === UPLOAD_ERR_OK) {
+        $_POST['poster_file'] = $_FILES['poster'];
+    }
+    
     $res = $controller->createEvent($_POST);
     if (!$res)
         throw new Exception("Failed to create event.");
@@ -71,3 +76,5 @@ function put($controller)
         "message" => "Update event successful"
     );
 }
+
+echo json_encode($response);

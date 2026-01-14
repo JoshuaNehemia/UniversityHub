@@ -88,10 +88,6 @@ $(document).ready(function() {
 });
 
 
-// ===========================================================
-// TAMBAH MAHASISWA + FOTO PROFIL
-// POST /MAHASISWA/
-// ===========================================================
 function tambahMahasiswa() {
 
     const username = $("#mhs-username").val().trim();

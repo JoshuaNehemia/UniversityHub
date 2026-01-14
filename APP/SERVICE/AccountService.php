@@ -85,4 +85,26 @@ class AccountService
         return $result;
     }
     #endregion
+
+    #region SEARCH
+    public function searchMahasiswaByKeyword(string $keyword, int $limit, int $offset)
+    {
+        $mahasiswaList = $this->repo_account->findAllMahasiswaByName($limit, $offset, $keyword);
+        $result = [];
+        foreach ($mahasiswaList as $mhs) {
+            $result[] = $mhs->toArray();
+        }
+        return $result;
+    }
+
+    public function searchDosenByKeyword(string $keyword, int $limit, int $offset)
+    {
+        $dosenList = $this->repo_account->findAllDosenByName($limit, $offset, $keyword);
+        $result = [];
+        foreach ($dosenList as $dosen) {
+            $result[] = $dosen->toArray();
+        }
+        return $result;
+    }
+    #endregion
 }

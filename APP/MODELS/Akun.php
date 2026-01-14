@@ -14,11 +14,11 @@ use Exception;
 class Akun
 {
     #region FIELDS
-    private string $username;
+    private ?string $username = null;
 
-    private string $nama;
+    private ?string $nama = null;
 
-    private string $jenis;
+    private ?string $jenis = null;
     #endregion
 
     #region CONSTRUCTOR

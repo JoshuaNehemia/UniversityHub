@@ -54,5 +54,15 @@ class GroupService
     {
         return $this->repo->deleteGroup($id_group);
     }
+
+    public function getGroupByUsername(string $username, int $limit, int $page): array
+    {
+        $arr = $this->repo->findAllGroupByUsername($username, $limit, $page);
+        $res = [];
+        foreach ($arr as $value) {
+            $res[] = $value->toArray();
+        }
+        return $res;
+    }
     #endregion
 }
